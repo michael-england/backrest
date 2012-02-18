@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Nodgo API Tester</title>
+
+	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+
+	<style type="text/css">
+		body
+		{
+			font: 10pt Arial;
+			padding: 20px;
+		}
+		h1
+		{
+			color: #77A6D2;
+			margin-left: 10px;
+			display: block;
+		}
+		label
+		{
+			display: block;
+			margin: 20px 0 0 0;
+		}
+		input
+		{
+			display: block;
+			clear: both;
+		}
+		input:focus,
+		textarea:focus
+		{
+    		outline: none;
+		}
+		input[type=text]
+		{
+			width: 250px;
+			border: solid 1px #e9e9e9;
+			border-radius: 5px;
+			padding: 5px;
+		}
+		textarea
+		{
+			width: 250px;
+			height: 200px;
+			border: solid 1px #e9e9e9;
+			border-radius: 5px;
+			padding: 5px;
+		}
+		input:focus, textarea:focus{
+			background-color: lightyellow;
+		}
+		.input
+		{
+			padding: 20px;
+			margin: 0 20px 0 0;
+			overflow: hidden;
+			background: #ebebeb;
+			width: 270px;
+			border-radius: 10px;
+			float: left;
+		}
+		.output
+		{
+			float: left;
+			overflow: hidden;
+			padding: 20px;
+			width: 810px;
+			border: solid 20px #ebebeb;
+			border-radius: 10px;
+			overflow-y: scroll;
+			height: 356px;
+		}
+		.output div
+		{
+			padding: 10px;
+			color: #fff;
+			font-weight: bold;
+			background-color: #77A6D2;
+			border-radius: 5px;
+			margin-bottom: 10px;
+		}
+		.output div.error
+		{
+			color: #fff;
+			font-weight: bold;
+			background-color: #990033;
+			border-radius: 5px;
+		}
+	</style>
+</head>
+<body>
+	<h1>Nodgo API Tester</h1>
+	
+	<div class="input">
+		<label for="collection">Collection</label><input type="text" name="collection" id="collection" value="users" />
+		<label for="method">Method</label>
+		<select name="method" id="method">
+			<!--<option value="toArray">toArray</option>-->
+			<!--<option value="next">next</option>-->
+			<!--<option value="forEach">forEach</option>-->
+			<option value="count">count</option>
+			<!--<option value="sort">sort</option>-->
+			<!--<option value="limit">limit</option>-->
+			<!--<option value="skip">skip</option>-->
+			<option value="find">find</option>
+			<option value="findOne">findOne</option>
+			<option value="findAndModify">findAndModify</option>
+			<option value="save">save</option>
+			<option value="remove">remove</option>
+		</select>
+		<label for="params">Params</label><textarea  name="params" id="params">{"sex":"male"}</textarea>
+		<input type="button" value="Execute" onclick="execute()" />
+	</div>
+	
+	<div class="output">
+	</div>
+	
+	<script  type="text/javascript">
+		function execute() {
+			
+			try {
+				var url = "/" + $("#collection").val();
+				var params = null;
+				if ($("#params").val() != "")
+					params = JSON.parse($("#params").val());
+				
+				var data = {
+					"jsonrpc": "2.0", 
+					"method": $("#method").val(), 
+					"params": params, 
+					"id": 0
+				};
+				data = JSON.stringify(data);
+				
+				$.ajax({
+					type: "POST",
+					url: url,
+					data: data,
+	          		dataType: "json",
+	        		contentType: "text/json",
+					success: function (data) {
+						$(".output").append("<div>" + JSON.stringify(data.result) + "</div>");
+						$(".output").stop(true);
+						$(".output").animate({ scrollTop: $(".output").get(0).scrollHeight - $(".output").height() }, 500);
+					}
+				});
+			} catch (error) {
+				$(".output").append("<div class=\"error\">" + error.message + "</div>");
+				$(".output").stop(true);
+				$(".output").animate({ scrollTop: $(".output").get(0).scrollHeight - $(".output").height() }, 500);
+			}
+		}
+	</script>
+</body>
+</html>
