@@ -1,4 +1,4 @@
-var databaseUrl = "db"; // "username:password@example.com/mydb"
+var databaseUrl = "db";
 var collections = ["users", "reports"]
 
 var db = require("mongojs").connect(databaseUrl, collections);
@@ -152,18 +152,3 @@ function dbResult(error, result) {
 }
 
 console.log("Server running at http://127.0.0.1:1337/");
-
-
-// app.js
-//db.users.save({email: "srirangan@gmail.com", password: "iLoveMongo", sex: "male"}, function(err, saved) {
-//  if( err || !saved ) console.log("User not saved");
-//  else console.log("User saved");
-//});
-
-// app.js
-//db.users.find({sex: "female"}, function(err, users) {
-//  if( err || !users) console.log("No female users found");
-//  else users.forEach( function(femaleUser) {
-//    console.log(femaleUser);
-//  } );
-//});
