@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Nodgo API Tester</title>
+	<title>mongoRPC Tester</title>
 
 	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
 
@@ -90,7 +90,7 @@
 	</style>
 </head>
 <body>
-	<h1>Nodgo API Tester</h1>
+	<h1>mongoRPC Tester</h1>
 	
 	<div class="input">
 		<label for="collection">Collection</label><input type="text" name="collection" id="collection" value="users" />
@@ -103,13 +103,13 @@
 			<!--<option value="sort">sort</option>-->
 			<!--<option value="limit">limit</option>-->
 			<!--<option value="skip">skip</option>-->
-			<option value="find">find</option>
+			<option value="find" selected="selected">find</option>
 			<option value="findOne">findOne</option>
 			<option value="findAndModify">findAndModify</option>
 			<option value="save">save</option>
 			<option value="remove">remove</option>
 		</select>
-		<label for="params">Params</label><textarea  name="params" id="params">{"sex":"male"}</textarea>
+		<label for="params">Params</label><textarea  name="params" id="params"></textarea>
 		<input type="button" value="Execute" onclick="execute()" />
 	</div>
 	
