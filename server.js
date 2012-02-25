@@ -152,10 +152,18 @@ http.createServer(function (request, response) {
 
 		});
     } else {
-    
+    	
+    	
     	var uri = url.parse(request.url).pathname;
-       	filename = libpath.join(path, uri);
-	    libpath.exists(filename, libpathExists);
+    	console.log(uri.indexOf("settings.json", 0).toString());
+    	if (uri.indexOf("settings.json", 0) < 0) {
+	       	filename = libpath.join(path, uri);
+		    libpath.exists(filename, libpathExists);
+	    } else {		    
+	        currentResponse.writeHead(404, {"Content-Type": "text/plain" });
+	        currentResponse.write("404 Not Found\n");
+	        currentResponse.end();
+	    }
 	}    
     
 }).listen(1337, "127.0.0.1");
