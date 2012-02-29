@@ -6,6 +6,7 @@ var url = require("url");
 var mime = require("mime");
 var currentRequest = null;
 var currentResponse = null;
+var currentValidationSummary = null;
 var filename = null;
 var path = ".";
 var settings = null;
@@ -106,14 +107,30 @@ http.createServer(function (request, response) {
 			  			return;
 			  		}
 			  		
-			  		// write command to log
-			  		console.log("db." + collection + "." + json.method + "(" + JSON.stringify(json.params) + ", dbResult);");
-			  		
 			  		if (validate(collection, json.method, json.params)) {
 			  	
+			  			// write command to log
+			  			console.log("db." + collection + "." + json.method + "(" + JSON.stringify(json.params) + ", dbResult);");
+			  		
 			  			// execute command
 			  			eval("db." + collection + "." + json.method + "(" + JSON.stringify(json.params) + ", dbResult);")
-			  		}			  	
+			  		} else {
+						
+						var json = {
+				  			"jsonrpc": "2.0", 
+				  			"result": currentValidationSummary, 
+				  			"error": {
+				  				"code": -32603, 
+				  				"message": "Internal JSON-RPC error."
+				  			}, 
+				  			"id": null
+				  		};
+				  		
+				  		// respond with procedure not found
+				  		currentResponse.writeHead(200, {"Content-Type": "application/json"});
+		        		currentResponse.write(JSON.stringify(json));
+					  	currentResponse.end();
+			  		} 	
 			  	} else {
 			  	
 			  		// collection not provided, create procedure not found response
@@ -128,11 +145,10 @@ http.createServer(function (request, response) {
 			  		
 			  		// respond with procedure not found
 			  		currentResponse.writeHead(200, {"Content-Type": "application/json"});
-			  		currentResponse.write(json);
+		        	currentResponse.write(JSON.stringify(json));
 				  	currentResponse.end();
 				  	return;
 			  	}
-
 		  	} catch (error) {
 	
 			  	// Internal error occured, create internal error response
@@ -145,15 +161,12 @@ http.createServer(function (request, response) {
 		  			"id": null
 		  		};
 		  		
-		        currentResponse.writeHead(500, {"Content-Type": "application/json" });
+		        currentResponse.writeHead(200, {"Content-Type": "application/json" });
 		        currentResponse.write(JSON.stringify(json));
 		        currentResponse.end();		  		
 		  	}
-
 		});
     } else {
-    	
-    	
     	var uri = url.parse(request.url).pathname;
     	console.log(uri.indexOf("settings.json", 0).toString());
     	if (uri.indexOf("settings.json", 0) < 0) {
@@ -173,12 +186,10 @@ function validate(collection, method, params) {
 	var validationSummary = new Array();
 	var validators = getValidators(collection, method);
 	
-	for (var i = 0; validators.length; i++) {
-
+	for (var i = 0; i < validators.length; i++) {
 		// get the value from params
 		var value = getParamValue(params, validators[i].fieldToValidate);
-		switch (validators[i].type)
-		{
+		switch (validators[i].type) {
 			case "required":
 				if (value == "" || value == null) {
 					if (validators[i].errorMessage != "" && 
@@ -243,7 +254,7 @@ function validate(collection, method, params) {
 				break;
 				
 			case "range":
-				if (value == "" || value == null) {
+				if (value != "" && value != null) {
 					var minimumValue = new Number(validators[i].minimumValue);
 					var maximumValue = new Number(validators[i].maximumValue);
 					var value = new Number(value);
@@ -260,6 +271,17 @@ function validate(collection, method, params) {
 				break;
 				
 			case "regularExpression":
+				if (value != "" && value != null) {
+					var regularExpression = new RegExp(unescape(validators[i].expression));
+					if (value.match(regularExpression) == null) {
+						if (validators[i].errorMessage != "" && 
+							validators[i].errorMessage != null) {
+							validationSummary.push(validators[i].errorMessage);
+						} else {
+							validationSummary.push(validators[i].fieldToValidate + " is invalid.");
+						}
+					}
+				}
 				break;
 				
 			case "custom":
@@ -267,9 +289,8 @@ function validate(collection, method, params) {
 		}
 	}
 	
-	
 	if (validationSummary.length > 0) {
-		console.log(validationSummary);
+		currentValidationSummary = validationSummary;
 		return false;
 	} else {
 		return true;
@@ -277,7 +298,11 @@ function validate(collection, method, params) {
 }
 
 function getParamValue(params, name){
-	return eval("(params." + name + ")");
+	try {
+		return eval("(params." + name + ")");
+	} catch (error) {
+		return null;
+	}
 }
 
 function getValidators(collection, method) {

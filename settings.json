@@ -2,7 +2,11 @@
 	"databaseUrl": "db",
 	"collections": [
 		{
-			"name":"users",					
+			"name":"users",
+			"filters": 
+			[
+			
+			],					
 			"validators":
 			[
 				{
@@ -32,9 +36,9 @@
 				{
 					"type":"regularExpression",
 					"fieldToValidate":"email",
-					"expression":"",
+					"expression":"%5Ba-z0-9%21%23%24%25%26%27%2A%2B%2F%3D%3F%5E_%60%7B%7C%7D%7E-%5D%2B%28%3F%3A%5C.%5Ba-z0-9%21%23%24%25%26%27%2A%2B%2F%3D%3F%5E_%60%7B%7C%7D%7E-%5D%2B%29%2A%40%28%3F%3A%5Ba-z0-9%5D%28%3F%3A%5Ba-z0-9-%5D%2A%5Ba-z0-9%5D%29%3F%5C.%29%2B%5Ba-z0-9%5D%28%3F%3A%5Ba-z0-9-%5D%2A%5Ba-z0-9%5D%29%3F",
 					"errorMessage":"Email address is invalid.",
-					"functions": [ "save", "update" ]
+					"functions": [ "save", "update", "find" ]
 				},
 				{
 					"type":"custom",
