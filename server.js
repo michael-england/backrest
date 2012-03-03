@@ -4,6 +4,8 @@ var libpath = require("path");
 var fs = require("fs");
 var url = require("url");
 var mime = require("mime");
+var currentCollection = null;
+var currentMethod = null;
 var currentRequest = null;
 var currentResponse = null;
 var currentValidationSummary = null;
@@ -79,14 +81,15 @@ http.createServer(function (request, response) {
 	    currentRequest.on("end", function requestEnd() {  	
 	    	try {
 			  	var pathParts = currentRequest.url.split("/");
-			  	var collection = pathParts[pathParts.length - 1];
-			  	if (collection != null && collection != undefined) {
+			  	currentCollection = pathParts[pathParts.length - 1];
+			  	if (currentCollection != null && currentCollection != undefined) {
 			  		
 			  		var json = null;
 			  		try {
 			  		
 			  			// parse data to json
 			  			json = JSON.parse(data);
+			  			currentMethod = json.method;
 			  			
 			  		} catch (error) {
 				  		
@@ -107,13 +110,60 @@ http.createServer(function (request, response) {
 			  			return;
 			  		}
 			  		
-			  		if (validate(collection, json.method, json.params)) {
-			  	
+					// filter out param values
+					var filterMode = "field";
+					var filters = getFilters(currentCollection, currentMethod, "in");
+					var fieldFiltered = new Array();
+					var fieldAllowed = new Array();
+					for (var i = 0; i < filters.length; i++) {
+						if (filters[i].fieldToFilter == "*") {
+							if (filters[i].allowed == false) {
+								filterMode = "allowNone";
+							} else {
+								filterMode = "allowAll";
+							}
+						} else {
+							if (filters[i].allowed) {
+								fieldAllowed.push(filters[i].fieldToFilter);
+							} else {
+								fieldFiltered.push(filters[i].fieldToFilter);
+							}
+						}
+					}
+					
+					// filter based on mode
+					switch (filterMode) {
+						case "allowAll": // allow all params except the filtered ones
+							for (var i = 0; i < fieldFiltered.length; i++) {
+								json.params[fieldFiltered] = undefined;
+							}
+							break;
+							
+						case "allowNone": // excluded all params except the allowed ones
+							for (var key in json.params) {
+								if (fieldAllowed.indexOf(key) == -1) {
+								
+									json.params[key] = undefined;
+								}
+							}
+							break;
+						
+						case "field": // filter on a field basis
+							for (var i = 0; i < filters.length; i++) {
+								if (filters[i].allowed == false) {
+									json.params[filters[i].fieldToFilter] = undefined;
+								}							
+							}
+							break;
+					}
+					
+			  		if (validate(currentCollection, json.method, json.params)) {
+			  		
 			  			// write command to log
-			  			console.log("db." + collection + "." + json.method + "(" + JSON.stringify(json.params) + ", dbResult);");
+			  			console.log("db." + currentCollection + "." + json.method + "(" + JSON.stringify(json.params) + ", dbResult);");
 			  		
 			  			// execute command
-			  			eval("db." + collection + "." + json.method + "(" + JSON.stringify(json.params) + ", dbResult);")
+			  			eval("db." + currentCollection + "." + json.method + "(" + JSON.stringify(json.params) + ", dbResult);")
 			  		} else {
 						
 						var json = {
@@ -323,6 +373,26 @@ function getValidators(collection, method) {
 	return validators;
 }
 
+function getFilters(collection, method, direction) {
+	var filters = new Array();
+	for (var i = 0; i < settings.collections.length; i++) {
+		if (settings.collections[i].name == collection) {
+			for (var n = 0; n < settings.collections[i].filters.length; n++) {
+				if (settings.collections[i].filters[n].direction == direction) {
+					for (var f = 0; f < settings.collections[i].filters[n].functions.length; f++) {
+						if (settings.collections[i].filters[n].functions[f] == method) {
+							filters.push(settings.collections[i].filters[n]);
+							break;
+						}
+					}
+				}
+			}
+		}
+		break;
+	}	
+	return filters;
+}
+
 function libpathExists(exists) {
 
 	
@@ -357,6 +427,17 @@ function fsReadFile(error, file) {
 function dbResult(error, result) {
 	if(error) {
 	} else {
+	
+		// filter out return values
+		var filters = getFilters(currentCollection, currentMethod, "out");
+		for (var i = 0; i < filters.length; i++) {
+			if (filters[i].allowed == false) {
+				for (var n = 0; n < result.length; n++) {
+					result[n][filters[i].fieldToFilter] = undefined;
+				}
+			}
+		}
+	
   		var json = {
   			"jsonrpc": "2.0", 
   			"result": result, 

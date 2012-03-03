@@ -1,53 +1,91 @@
 {
-	"databaseUrl": "db",
-	"collections": [
-		{
-			"name":"users",
-			"filters": 
-			[
-			
-			],					
-			"validators":
-			[
-				{
-					"type":"required",
-					"fieldToValidate":"name",
-					"errorMessage":"Name is required.",
-					"functions": [ "save", "update" ]
-				},
-				{
-					"type":"compare",
-					"fieldToValidate":"password",
-					"fieldToCompare":"passwordConfirmation",
-					"valueToCompare":null,
-					"type": "string",
-					"operator":"==",
-					"errorMessage":"Passwords do not match.",
-					"functions": [ "save", "update" ]
-				},
-				{
-					"type":"range",
-					"fieldToValidate":"age",
-					"minimumValue":13,
-					"maximumValue":120, 
-					"errorMessage":"Age range must be between 13 and 120.",
-					"functions": [ "save", "update" ]
-				},
-				{
-					"type":"regularExpression",
-					"fieldToValidate":"email",
-					"expression":"%5Ba-z0-9%21%23%24%25%26%27%2A%2B%2F%3D%3F%5E_%60%7B%7C%7D%7E-%5D%2B%28%3F%3A%5C.%5Ba-z0-9%21%23%24%25%26%27%2A%2B%2F%3D%3F%5E_%60%7B%7C%7D%7E-%5D%2B%29%2A%40%28%3F%3A%5Ba-z0-9%5D%28%3F%3A%5Ba-z0-9-%5D%2A%5Ba-z0-9%5D%29%3F%5C.%29%2B%5Ba-z0-9%5D%28%3F%3A%5Ba-z0-9-%5D%2A%5Ba-z0-9%5D%29%3F",
-					"errorMessage":"Email address is invalid.",
-					"functions": [ "save", "update", "find" ]
-				},
-				{
-					"type":"custom",
-					"fieldToValidate":"name",
-					"validationFunction": "function (value){ return true; }",
-					"errorMessage": "Custom validator example.",
-					"functions": [ "save", "update" ]
-				}
-			]			
-		}
-	]
+  "httpPort" : "8080",
+  "databaseUrl" : "db",
+  "collections" : [
+    {
+      "name" : "users",
+      "filters" : [
+        {
+          "fieldToFilter" : "*",
+          "direction" : "in",
+          "allowed" : false,
+          "functions" : [
+            "find"
+          ]
+        },
+        {
+          "fieldToFilter" : "email",
+          "direction" : "in",
+          "allowed" : true,
+          "functions" : [
+            "find"
+          ]
+        },
+        {
+          "fieldToFilter" : "password",
+          "direction" : "out",
+          "allowed" : false,
+          "functions" : [
+            "find"
+          ]
+        }
+      ],
+      "validators" : [
+        {
+          "type" : "required",
+          "fieldToValidate" : "name",
+          "errorMessage" : "Name is required.",
+          "functions" : [
+            "save",
+            "update"
+          ]
+        },
+        {
+          "type" : "compare",
+          "fieldToValidate" : "password",
+          "fieldToCompare" : "passwordConfirmation",
+          "valueToCompare" : null,
+          "type" : "string",
+          "operator" : "==",
+          "errorMessage" : "Passwords do not match.",
+          "functions" : [
+            "save",
+            "update"
+          ]
+        },
+        {
+          "type" : "range",
+          "fieldToValidate" : "age",
+          "minimumValue" : 13,
+          "maximumValue" : 120,
+          "errorMessage" : "Age range must be between 13 and 120.",
+          "functions" : [
+            "save",
+            "update"
+          ]
+        },
+        {
+          "type" : "regularExpression",
+          "fieldToValidate" : "email",
+          "expression" : "%5Ba-z0-9%21%23%24%25%26%27%2A%2B%2F%3D%3F%5E_%60%7B%7C%7D%7E-%5D%2B%28%3F%3A%5C.%5Ba-z0-9%21%23%24%25%26%27%2A%2B%2F%3D%3F%5E_%60%7B%7C%7D%7E-%5D%2B%29%2A%40%28%3F%3A%5Ba-z0-9%5D%28%3F%3A%5Ba-z0-9-%5D%2A%5Ba-z0-9%5D%29%3F%5C.%29%2B%5Ba-z0-9%5D%28%3F%3A%5Ba-z0-9-%5D%2A%5Ba-z0-9%5D%29%3F",
+          "errorMessage" : "Email address is invalid.",
+          "functions" : [
+            "save",
+            "update",
+            "find"
+          ]
+        },
+        {
+          "type" : "custom",
+          "fieldToValidate" : "name",
+          "validationFunction" : "function (value){ return true; }",
+          "errorMessage" : "Custom validator example.",
+          "functions" : [
+            "save",
+            "update"
+          ]
+        }
+      ]
+    }
+  ]
 }
