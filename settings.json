@@ -26,7 +26,7 @@
           "direction" : "out",
           "allowed" : false,
           "functions" : [
-            "find"
+            "find", "findOne"
           ]
         }
       ],
@@ -38,7 +38,8 @@
           "functions" : [
             "save",
             "update"
-          ]
+          ],
+          "groups":["groupOne","groupTwo"]
         },
         {
           "type" : "compare",
@@ -51,7 +52,8 @@
           "functions" : [
             "save",
             "update"
-          ]
+          ],
+          "groups":["*"]
         },
         {
           "type" : "range",

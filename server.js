@@ -9,6 +9,7 @@ var currentMethod = null;
 var currentRequest = null;
 var currentResponse = null;
 var currentValidationSummary = null;
+var currentId = null;
 var filename = null;
 var path = ".";
 var settings = null;
@@ -78,93 +79,102 @@ http.createServer(function (request, response) {
 		});
   		
   		// chucks have loaded, continue the request
-	    currentRequest.on("end", function requestEnd() {  	
+	    currentRequest.on("end", function requestEnd() {
+    
+	  		var json = null;
+	  		try {
+	  		
+	  			// parse data to json
+	  			json = JSON.parse(data);
+	  			currentMethod = json.method;
+	  			currentId = json.id;
+	  			
+	  		} catch (error) {
+		  		
+		  		// data failed to parse, create parse error response
+		  		json = {
+		  			"jsonrpc": "2.0", 
+		  			"error": {
+		  				"code": -32700, 
+		  				"message": "Parse error"
+		  			}, 
+		  			"id": null
+		  		};
+	  			
+	  			// respond with parse error 
+	  			currentResponse.writeHead(200, {"Content-Type": "application/json"});
+	  			currentResponse.write(json);
+		  		currentResponse.end();
+	  			return;
+	  		}
+	    
 	    	try {
 			  	var pathParts = currentRequest.url.split("/");
 			  	currentCollection = pathParts[pathParts.length - 1];
 			  	if (currentCollection != null && currentCollection != undefined) {
 			  		
-			  		var json = null;
-			  		try {
-			  		
-			  			// parse data to json
-			  			json = JSON.parse(data);
-			  			currentMethod = json.method;
-			  			
-			  		} catch (error) {
-				  		
-				  		// data failed to parse, create parse error response
-				  		json = {
-				  			"jsonrpc": "2.0", 
-				  			"error": {
-				  				"code": -32700, 
-				  				"message": "Parse error"
-				  			}, 
-				  			"id": null
-				  		};
-			  			
-			  			// respond with parse error 
-			  			currentResponse.writeHead(200, {"Content-Type": "application/json"});
-			  			currentResponse.write(json);
-				  		currentResponse.end();
-			  			return;
-			  		}
-			  		
-					// filter out param values
-					var filterMode = "field";
-					var filters = getFilters(currentCollection, currentMethod, "in");
-					var fieldFiltered = new Array();
-					var fieldAllowed = new Array();
-					for (var i = 0; i < filters.length; i++) {
-						if (filters[i].fieldToFilter == "*") {
-							if (filters[i].allowed == false) {
-								filterMode = "allowNone";
-							} else {
-								filterMode = "allowAll";
-							}
-						} else {
-							if (filters[i].allowed) {
-								fieldAllowed.push(filters[i].fieldToFilter);
-							} else {
-								fieldFiltered.push(filters[i].fieldToFilter);
-							}
-						}
-					}
+					var isValid = true;
+					var command = undefined;
+					if (json.method == "update") {
 					
-					// filter based on mode
-					switch (filterMode) {
-						case "allowAll": // allow all params except the filtered ones
-							for (var i = 0; i < fieldFiltered.length; i++) {
-								json.params[fieldFiltered] = undefined;
-							}
-							break;
-							
-						case "allowNone": // excluded all params except the allowed ones
-							for (var key in json.params) {
-								if (fieldAllowed.indexOf(key) == -1) {
-								
-									json.params[key] = undefined;
-								}
-							}
-							break;
+						// filter the query
+						json.params[0] = filter(json.params[0], "find");
 						
-						case "field": // filter on a field basis
-							for (var i = 0; i < filters.length; i++) {
-								if (filters[i].allowed == false) {
-									json.params[filters[i].fieldToFilter] = undefined;
-								}							
-							}
-							break;
-					}
+						// filter the update
+						json.params[1] = filter(json.params[1], "update");
+						
+						// validate
+				  		if (validate(currentCollection, "find", json.params[0]) && 
+				  			validate(currentCollection, "findAndModify", json.params[1])) {
+				  		
+				  			var params = "";
+				  			for (var i = 0; i < json.params.length; i++) {
+				  				if (i == 0)
+				  					params += JSON.stringify(json.params[i]);
+				  				else
+				  					params += ", " + JSON.stringify(json.params[i]);
+				  				
+				  			}
+				  		
+				  			// create the command
+				  			command = "db." + currentCollection + "." + json.method + "(" + params + ", dbResult);";
+				  		
+				  		} 
+					} else if (json.method == "findAndModify") {
 					
-			  		if (validate(currentCollection, json.method, json.params)) {
-			  		
+						// filter the query
+						json.params.query = filter(json.params.query, "find");
+						
+						// filter the update
+						json.params.update = filter(json.params.update, "update");
+						
+						// validate
+				  		if (validate(currentCollection, "find", json.params.query) && 
+				  			validate(currentCollection, "findAndModify", json.params.update)) {
+				  		
+				  			// create the command
+				  			command = "db." + currentCollection + "." + json.method + "(" + JSON.stringify(json.params) + ", dbResult);";
+				  		} 
+					} else {
+					
+						// filter the params
+						json.params = filter(json.params, json.method);
+					
+				  		if (validate(currentCollection, json.method, json.params)) {
+				  		
+				  			// create the command
+				  			command = "db." + currentCollection + "." + json.method + "(" + JSON.stringify(json.params) + ", dbResult);";
+				  		} 
+					}
+
+					if (isValid) {
+				
 			  			// write command to log
-			  			console.log("db." + currentCollection + "." + json.method + "(" + JSON.stringify(json.params) + ", dbResult);");
+			  			console.log(command);
 			  		
 			  			// execute command
-			  			eval("db." + currentCollection + "." + json.method + "(" + JSON.stringify(json.params) + ", dbResult);")
-			  		} else {
+			  			eval(command)
+					} else {
 						
 						var json = {
 				  			"jsonrpc": "2.0", 
@@ -173,14 +183,14 @@ http.createServer(function (request, response) {
 				  				"code": -32603, 
 				  				"message": "Internal JSON-RPC error."
 				  			}, 
-				  			"id": null
+				  			"id": currentId
 				  		};
 				  		
 				  		// respond with procedure not found
 				  		currentResponse.writeHead(200, {"Content-Type": "application/json"});
 		        		currentResponse.write(JSON.stringify(json));
 					  	currentResponse.end();
-			  		} 	
+			  		} 
 			  	} else {
 			  	
 			  		// collection not provided, create procedure not found response
@@ -190,7 +200,7 @@ http.createServer(function (request, response) {
 			  				"code": -32601, 
 			  				"message": "Procedure not found."
 			  			}, 
-			  			"id": null
+			  			"id": currentId
 			  		};
 			  		
 			  		// respond with procedure not found
@@ -208,7 +218,7 @@ http.createServer(function (request, response) {
 		  				"code": -32603, 
 		  				"message": "Internal JSON-RPC error."
 		  			}, 
-		  			"id": null
+		  			"id": currentId
 		  		};
 		  		
 		        currentResponse.writeHead(200, {"Content-Type": "application/json" });
@@ -231,11 +241,84 @@ http.createServer(function (request, response) {
     
 }).listen(1337, "127.0.0.1");
 
+function filter(params, method) {
+
+	// filter out param values
+	var filterMode = "field";
+	var filters = getFilters(currentCollection, method, "in");
+	var fieldFiltered = new Array();
+	var fieldAllowed = new Array();
+	for (var i = 0; i < filters.length; i++) {
+		if (filters[i].fieldToFilter == "*") {
+			if (filters[i].allowed == false) {
+				filterMode = "allowNone";
+			} else {
+				filterMode = "allowAll";
+			}
+		} else {
+			if (filters[i].allowed) {
+				fieldAllowed.push(filters[i].fieldToFilter);
+			} else {
+				fieldFiltered.push(filters[i].fieldToFilter);
+			}
+		}
+	}
+	
+	// filter based on mode
+	switch (filterMode) {
+		case "allowAll": // allow all params except the filtered ones
+			for (var i = 0; i < fieldFiltered.length; i++) {
+				params[fieldFiltered] = undefined;
+			}
+			break;
+			
+		case "allowNone": // excluded all params except the allowed ones
+			for (var key in params) {
+				if (fieldAllowed.indexOf(key) == -1) {
+					params[key] = undefined;
+				}
+			}
+			break;
+		
+		case "field": // filter on a field basis
+			for (var i = 0; i < filters.length; i++) {
+				if (filters[i].allowed == false) {
+					params[filters[i].fieldToFilter] = undefined;
+				}							
+			}
+			break;
+	}
+	
+	return params;
+}
+
 function validate(collection, method, params) {
 
 	var validationSummary = new Array();
-	var validators = getValidators(collection, method);
+	var validatorGroups = getValidatorGroups(collection, method);
+	if (validatorGroups.length > 0) {
+		for (var i = 0; i < validatorGroups.length; i++) {
+			var validators = getValidatorsByGroup(collection, method, validatorGroups[i]);			
+			validationSummary = validateGroup(validators, params);
+			if (validationSummary.length == 0)
+				break;
+		}
+	} else {
+		var validators = getValidators(collection, method);
+		validationSummary = validateGroup(validators, params);
+	}
 	
+	if (validationSummary.length > 0) {
+		currentValidationSummary = validationSummary;
+		return false;
+	} else {
+		return true;
+	}
+}
+
+function validateGroup(validators, params) {
+	var validationSummary = new Array();
+
 	for (var i = 0; i < validators.length; i++) {
 		// get the value from params
 		var value = getParamValue(params, validators[i].fieldToValidate);
@@ -339,12 +422,7 @@ function validate(collection, method, params) {
 		}
 	}
 	
-	if (validationSummary.length > 0) {
-		currentValidationSummary = validationSummary;
-		return false;
-	} else {
-		return true;
-	}
+	return validationSummary;
 }
 
 function getParamValue(params, name){
@@ -353,6 +431,34 @@ function getParamValue(params, name){
 	} catch (error) {
 		return null;
 	}
+}
+
+function getValidatorGroups(collection, method) {
+	var validatorGroups = new Array();
+	for (var i = 0; i < settings.collections.length; i++) {
+		if (settings.collections[i].name == collection) {
+			for (var n = 0; n < settings.collections[i].validators.length; n++) {
+				if (settings.collections[i].validators[n].groups != undefined) {				
+					var hasFunction = false;
+					for (var f = 0; f < settings.collections[i].validators[n].functions.length; f++) {
+						if (settings.collections[i].validators[n].functions[f] == method) {
+							hasFunction = true;
+							break;
+						}
+					}
+					
+					if (hasFunction)
+						for (var f = 0; f < settings.collections[i].validators[n].groups.length; f++) {
+							if (settings.collections[i].validators[n].groups[f] != "*")
+								if (validatorGroups.indexOf(settings.collections[i].validators[n].groups[f]) == -1)
+									validatorGroups.push(settings.collections[i].validators[n].groups[f]);	
+				
+					}
+				}	
+			}
+		}
+	}	
+	return validatorGroups;
 }
 
 function getValidators(collection, method) {
@@ -373,16 +479,41 @@ function getValidators(collection, method) {
 	return validators;
 }
 
+function getValidatorsByGroup(collection, method, group) {
+	var validators = new Array();
+	for (var i = 0; i < settings.collections.length; i++) {
+		if (settings.collections[i].name == collection) {
+			for (var n = 0; n < settings.collections[i].validators.length; n++) {
+				if (settings.collections[i].validators[n].groups != undefined) {		
+					if (settings.collections[i].validators[n].groups.indexOf(group) != -1 ||
+						settings.collections[i].validators[n].groups.indexOf("*") != -1) {
+						for (var f = 0; f < settings.collections[i].validators[n].functions.length; f++) {
+							if (settings.collections[i].validators[n].functions[f] == method) {
+								validators.push(settings.collections[i].validators[n]);
+								break;
+							}
+						}
+					}
+				}
+			}
+		}
+		break;
+	}	
+	return validators;
+}
+
 function getFilters(collection, method, direction) {
 	var filters = new Array();
 	for (var i = 0; i < settings.collections.length; i++) {
 		if (settings.collections[i].name == collection) {
-			for (var n = 0; n < settings.collections[i].filters.length; n++) {
-				if (settings.collections[i].filters[n].direction == direction) {
-					for (var f = 0; f < settings.collections[i].filters[n].functions.length; f++) {
-						if (settings.collections[i].filters[n].functions[f] == method) {
-							filters.push(settings.collections[i].filters[n]);
-							break;
+			if (settings.collections[i].filters != undefined) {
+				for (var n = 0; n < settings.collections[i].filters.length; n++) {
+					if (settings.collections[i].filters[n].direction == direction) {
+						for (var f = 0; f < settings.collections[i].filters[n].functions.length; f++) {
+							if (settings.collections[i].filters[n].functions[f] == method) {
+								filters.push(settings.collections[i].filters[n]);
+								break;
+							}
 						}
 					}
 				}
@@ -394,8 +525,6 @@ function getFilters(collection, method, direction) {
 }
 
 function libpathExists(exists) {
-
-	
     if (!exists) {
         currentResponse.writeHead(404, {"Content-Type": "text/plain" });
         currentResponse.write("404 Not Found\n");
@@ -426,14 +555,27 @@ function fsReadFile(error, file) {
 
 function dbResult(error, result) {
 	if(error) {
+		var json = {
+  			"jsonrpc": "2.0", 
+  			"result": null, 
+  			"error": {
+  				"code": -32603, 
+  				"message": "Internal JSON-RPC error."
+  			}, 
+  			"id": currentId
+  		};
 	} else {
 	
 		// filter out return values
 		var filters = getFilters(currentCollection, currentMethod, "out");
 		for (var i = 0; i < filters.length; i++) {
 			if (filters[i].allowed == false) {
-				for (var n = 0; n < result.length; n++) {
-					result[n][filters[i].fieldToFilter] = undefined;
+				if (result instanceof Array) {
+					for (var n = 0; n < result.length; n++) {
+						result[n][filters[i].fieldToFilter] = undefined;
+					}
+				} else {
+					result[filters[i].fieldToFilter] = undefined;
 				}
 			}
 		}
@@ -441,7 +583,7 @@ function dbResult(error, result) {
   		var json = {
   			"jsonrpc": "2.0", 
   			"result": result, 
-  			"id": null
+  			"id": currentId
   		};
   		currentResponse.writeHead(200, {"Content-Type": "application/json"});
 	  	currentResponse.end(JSON.stringify(json));
