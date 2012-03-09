@@ -10,15 +10,15 @@
           "direction" : "in",
           "allowed" : false,
           "functions" : [
-            "find"
+            "save"
           ]
         },
         {
           "fieldToFilter" : "email",
           "direction" : "in",
-          "allowed" : true,
+          "allowed" : false,
           "functions" : [
-            "find"
+            "save"
           ]
         },
         {
@@ -87,6 +87,16 @@
             "update"
           ]
         }
+      ],
+      "events": [
+      	{
+      	  "event" : "preValidate"
+      	  "function" : "";
+      	  "functions" : [
+      	  	"find"
+      	  ]
+      	}
+      
       ]
     }
   ]

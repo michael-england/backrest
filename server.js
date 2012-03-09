@@ -74,7 +74,6 @@ http.createServer(function (request, response) {
   		// load chunks into data
   		var data = "";
   		currentRequest.on("data", function (chunk) {
-			console.log("JSON: " + chunk.toString());
 			data += chunk;
 		});
   		
@@ -228,7 +227,6 @@ http.createServer(function (request, response) {
 		});
     } else {
     	var uri = url.parse(request.url).pathname;
-    	console.log(uri.indexOf("settings.json", 0).toString());
     	if (uri.indexOf("settings.json", 0) < 0) {
 	       	filename = libpath.join(path, uri);
 		    libpath.exists(filename, libpathExists);
@@ -343,7 +341,7 @@ function validateGroup(validators, params) {
 				else if (validators[i].valueToCompare != null)
 					valueCompare = validators[i].valueToCompare;		
 					
-				switch (validators[i].type) {
+				switch (validators[i].dataType) {
 					case "string":
 						value = value.toString();
 						valueCompare = valueCompare.toString();
