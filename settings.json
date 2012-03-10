@@ -90,8 +90,7 @@
       ],
       "events": [
       	{
-      	  "event" : "preValidate"
-      	  "function" : "";
+      	  "event" : "preValidate",
       	  "functions" : [
       	  	"find"
       	  ]

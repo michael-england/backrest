@@ -4,17 +4,10 @@ var libpath = require("path");
 var fs = require("fs");
 var url = require("url");
 var mime = require("mime");
-var currentCollection = null;
-var currentMethod = null;
-var currentRequest = null;
-var currentResponse = null;
-var currentValidationSummary = null;
-var currentId = null;
-var filename = null;
-var path = ".";
 var settings = null;
 var collections = null;
 var db = null;
+var path = ".";
 
 var settingsFilename = libpath.join(path, "settings.json");
 libpath.exists(settingsFilename, libpathExists_Settings);
@@ -65,28 +58,29 @@ function fsReadFile_Settings(error, file) {
 }
 
 http.createServer(function (request, response) {
-  	currentResponse = response;
-  	currentRequest = request;
   	
   	// process POST request
-  	if (currentRequest.method == "POST") {	
+  	if (request.method == "POST") {	
   		
   		// load chunks into data
   		var data = "";
-  		currentRequest.on("data", function (chunk) {
+  		request.on("data", function (chunk) {
 			data += chunk;
 		});
   		
   		// chucks have loaded, continue the request
-	    currentRequest.on("end", function requestEnd() {
-    
+	    request.on("end", function () {
+    		
 	  		var json = null;
+	  		var method = null;
+	  		var id = null;
 	  		try {
 	  		
 	  			// parse data to json
 	  			json = JSON.parse(data);
-	  			currentMethod = json.method;
-	  			currentId = json.id;
+	  			
+	  			method = json.method;
+	  			id = json.id;
 	  			
 	  		} catch (error) {
 		  		
@@ -101,30 +95,33 @@ http.createServer(function (request, response) {
 		  		};
 	  			
 	  			// respond with parse error 
-	  			currentResponse.writeHead(200, {"Content-Type": "application/json"});
-	  			currentResponse.write(json);
-		  		currentResponse.end();
+	  			response.writeHead(200, {"Content-Type": "application/json"});
+	  			response.write(json);
+		  		response.end();
 	  			return;
 	  		}
 	    
 	    	try {
-			  	var pathParts = currentRequest.url.split("/");
-			  	currentCollection = pathParts[pathParts.length - 1];
-			  	if (currentCollection != null && currentCollection != undefined) {
+			  	var pathParts = request.url.split("/");
+			  	var collection = pathParts[pathParts.length - 1];
+			  	if (collection != null && collection != undefined) {
 			  		
 					var isValid = true;
 					var command = undefined;
+					var validationSummary = undefined;
 					if (json.method == "update") {
 					
 						// filter the query
-						json.params[0] = filter(json.params[0], "find");
+						json.params[0] = filter(collection, json.params[0], "find");
 						
 						// filter the update
-						json.params[1] = filter(json.params[1], "update");
+						json.params[1] = filter(collection, json.params[1], "update");
 						
 						// validate
-				  		if (validate(currentCollection, "find", json.params[0]) && 
-				  			validate(currentCollection, "findAndModify", json.params[1])) {
+						var validationSummaryFind = validate(collection, "find", json.params[0]);
+				  		var validationSummaryFindAndModify = validate(collection, "findAndModify", json.params[1]);
+						
+				  		if (validationSummaryFind == true && validationSummaryFindAndModify == true) {
 				  		
 				  			var params = "";
 				  			for (var i = 0; i < json.params.length; i++) {
@@ -136,37 +133,100 @@ http.createServer(function (request, response) {
 				  			}
 				  		
 				  			// create the command
-				  			command = "db." + currentCollection + "." + json.method + "(" + params + ", dbResult);";
+				  			command = "db." + collection + "." + json.method + "(" + params + ", dbResult);";
 				  		
-				  		} 
+				  		} else {
+				  			validationSummary = new Array();
+				  			
+				  			if (validationSummaryFind != true)
+				  				validationSummary = validationSummary.concat(validationSummary, validationSummaryFind);
+				  				
+				  			if (validationSummaryFindAndModify != true)
+				  				validationSummary = validationSummary.concat(validationSummary, validationSummaryFindAndModify);
+				  		
+				  			isValid = false;
+				  		}
 					} else if (json.method == "findAndModify") {
 					
 						// filter the query
-						json.params.query = filter(json.params.query, "find");
+						json.params.query = filter(collection, json.params.query, "find");
 						
 						// filter the update
-						json.params.update = filter(json.params.update, "update");
+						json.params.update = filter(collection, json.params.update, "update");
 						
 						// validate
-				  		if (validate(currentCollection, "find", json.params.query) && 
-				  			validate(currentCollection, "findAndModify", json.params.update)) {
+						var validationSummaryFind = validate(collection, "find", json.params.query);
+				  		var validationSummaryFindAndModify = validate(collection, "findAndModify", json.params.update);
+				  		if (validationSummaryFind == true && validationSummaryFindAndModify == true) {
 				  		
 				  			// create the command
-				  			command = "db." + currentCollection + "." + json.method + "(" + JSON.stringify(json.params) + ", dbResult);";
-				  		} 
+				  			command = "db." + collection + "." + json.method + "(" + JSON.stringify(json.params) + ", dbResult);";
+				  		} else {
+				  			validationSummary = new Array();
+				  			
+				  			if (validationSummaryFind != true)
+				  				validationSummary = validationSummary.concat(validationSummary, validationSummaryFind);
+				  				
+				  			if (validationSummaryFindAndModify != true)
+				  				validationSummary = validationSummary.concat(validationSummary, validationSummaryFindAndModify);
+				  		
+				  			isValid = false;
+				  		}
 					} else {
 					
 						// filter the params
-						json.params = filter(json.params, json.method);
+						json.params = filter(collection, json.params, json.method);
 					
-				  		if (validate(currentCollection, json.method, json.params)) {
+						// validate
+						validationSummary = validate(collection, json.method, json.params);
+					
+				  		if (validationSummary == true) {
 				  		
 				  			// create the command
-				  			command = "db." + currentCollection + "." + json.method + "(" + JSON.stringify(json.params) + ", dbResult);";
-				  		} 
+				  			command = "db." + collection + "." + json.method + "(" + JSON.stringify(json.params) + ", dbResult);";
+				  		} else {
+				  			isValid = false;
+				  		}
 					}
 
 					if (isValid) {
+						
+						var dbResult = function (error, result) {
+							if(error) {
+								var json = {
+						  			"jsonrpc": "2.0", 
+						  			"result": null, 
+						  			"error": {
+						  				"code": -32603, 
+						  				"message": "Internal JSON-RPC error."
+						  			}, 
+						  			"id": id
+						  		};
+							} else {
+							
+								// filter out return values
+								var filters = getFilters(collection, method, "out");
+								for (var i = 0; i < filters.length; i++) {
+									if (filters[i].allowed == false) {
+										if (result instanceof Array) {
+											for (var n = 0; n < result.length; n++) {
+												result[n][filters[i].fieldToFilter] = undefined;
+											}
+										} else {
+											result[filters[i].fieldToFilter] = undefined;
+										}
+									}
+								}
+							
+						  		var json = {
+						  			"jsonrpc": "2.0", 
+						  			"result": result, 
+						  			"id": id
+						  		};
+						  		response.writeHead(200, {"Content-Type": "application/json"});
+							  	response.end(JSON.stringify(json));
+							}
+						}
 				
 			  			// write command to log
 			  			console.log(command);
@@ -177,18 +237,18 @@ http.createServer(function (request, response) {
 						
 						var json = {
 				  			"jsonrpc": "2.0", 
-				  			"result": currentValidationSummary, 
+				  			"result": validationSummary, 
 				  			"error": {
 				  				"code": -32603, 
 				  				"message": "Internal JSON-RPC error."
 				  			}, 
-				  			"id": currentId
+				  			"id": json.id
 				  		};
 				  		
 				  		// respond with procedure not found
-				  		currentResponse.writeHead(200, {"Content-Type": "application/json"});
-		        		currentResponse.write(JSON.stringify(json));
-					  	currentResponse.end();
+				  		response.writeHead(200, {"Content-Type": "application/json"});
+		        		response.write(JSON.stringify(json));
+					  	response.end();
 			  		} 
 			  	} else {
 			  	
@@ -199,13 +259,13 @@ http.createServer(function (request, response) {
 			  				"code": -32601, 
 			  				"message": "Procedure not found."
 			  			}, 
-			  			"id": currentId
+			  			"id": json.id
 			  		};
 			  		
 			  		// respond with procedure not found
-			  		currentResponse.writeHead(200, {"Content-Type": "application/json"});
-		        	currentResponse.write(JSON.stringify(json));
-				  	currentResponse.end();
+			  		response.writeHead(200, {"Content-Type": "application/json"});
+		        	response.write(JSON.stringify(json));
+				  	response.end();
 				  	return;
 			  	}
 		  	} catch (error) {
@@ -217,33 +277,58 @@ http.createServer(function (request, response) {
 		  				"code": -32603, 
 		  				"message": "Internal JSON-RPC error."
 		  			}, 
-		  			"id": currentId
+		  			"id": json.id
 		  		};
 		  		
-		        currentResponse.writeHead(200, {"Content-Type": "application/json" });
-		        currentResponse.write(JSON.stringify(json));
-		        currentResponse.end();		  		
+		        response.writeHead(200, {"Content-Type": "application/json" });
+		        response.write(JSON.stringify(json));
+		        response.end();		  		
 		  	}
 		});
     } else {
     	var uri = url.parse(request.url).pathname;
     	if (uri.indexOf("settings.json", 0) < 0) {
-	       	filename = libpath.join(path, uri);
-		    libpath.exists(filename, libpathExists);
+	       	var filename = libpath.join(path, uri);
+		    libpath.exists(filename, function (exists) {
+			    if (!exists) {
+			        response.writeHead(404, {"Content-Type": "text/plain" });
+			        response.write("404 Not Found\n");
+			        response.end();
+			        return;
+			    }
+			
+			    if (fs.statSync(filename).isDirectory()) {
+			        filename += "/index.html";
+			    }
+			
+			    fs.readFile(filename, "binary", function (error, file) {
+					if (error) {
+				        response.writeHead(500, {"Content-Type": "text/plain" });
+				        response.write(error + "\n");
+				        response.end();
+				        return;
+				    } else {
+					    var type = mime.lookup(filename);
+					    response.writeHead(200, { "Content-Type": type });
+					    response.write(file, "binary");
+					    response.end();
+					}
+				});
+			});
 	    } else {		    
-	        currentResponse.writeHead(404, {"Content-Type": "text/plain" });
-	        currentResponse.write("404 Not Found\n");
-	        currentResponse.end();
+	        response.writeHead(404, {"Content-Type": "text/plain" });
+	        response.write("404 Not Found\n");
+	        response.end();
 	    }
 	}    
     
 }).listen(1337, "127.0.0.1");
 
-function filter(params, method) {
+function filter(collection, params, method) {
 
 	// filter out param values
 	var filterMode = "field";
-	var filters = getFilters(currentCollection, method, "in");
+	var filters = getFilters(collection, method, "in");
 	var fieldFiltered = new Array();
 	var fieldAllowed = new Array();
 	for (var i = 0; i < filters.length; i++) {
@@ -307,8 +392,7 @@ function validate(collection, method, params) {
 	}
 	
 	if (validationSummary.length > 0) {
-		currentValidationSummary = validationSummary;
-		return false;
+		return validationSummary;
 	} else {
 		return true;
 	}
@@ -520,72 +604,6 @@ function getFilters(collection, method, direction) {
 		break;
 	}	
 	return filters;
-}
-
-function libpathExists(exists) {
-    if (!exists) {
-        currentResponse.writeHead(404, {"Content-Type": "text/plain" });
-        currentResponse.write("404 Not Found\n");
-        currentResponse.end();
-        return;
-    }
-
-    if (fs.statSync(filename).isDirectory()) {
-        filename += "/index.html";
-    }
-
-    fs.readFile(filename, "binary", fsReadFile);
-}
-
-function fsReadFile(error, file) {
-	if (error) {
-        currentResponse.writeHead(500, {"Content-Type": "text/plain" });
-        currentResponse.write(error + "\n");
-        currentResponse.end();
-        return;
-    } else {
-	    var type = mime.lookup(filename);
-	    currentResponse.writeHead(200, { "Content-Type": type });
-	    currentResponse.write(file, "binary");
-	    currentResponse.end();
-	}
-}
-
-function dbResult(error, result) {
-	if(error) {
-		var json = {
-  			"jsonrpc": "2.0", 
-  			"result": null, 
-  			"error": {
-  				"code": -32603, 
-  				"message": "Internal JSON-RPC error."
-  			}, 
-  			"id": currentId
-  		};
-	} else {
-	
-		// filter out return values
-		var filters = getFilters(currentCollection, currentMethod, "out");
-		for (var i = 0; i < filters.length; i++) {
-			if (filters[i].allowed == false) {
-				if (result instanceof Array) {
-					for (var n = 0; n < result.length; n++) {
-						result[n][filters[i].fieldToFilter] = undefined;
-					}
-				} else {
-					result[filters[i].fieldToFilter] = undefined;
-				}
-			}
-		}
-	
-  		var json = {
-  			"jsonrpc": "2.0", 
-  			"result": result, 
-  			"id": currentId
-  		};
-  		currentResponse.writeHead(200, {"Content-Type": "application/json"});
-	  	currentResponse.end(JSON.stringify(json));
-	}
 }
 
 console.log("Server running at http://127.0.0.1:1337/");
