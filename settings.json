@@ -1,5 +1,6 @@
 {
   "httpPort" : "8080",
+  "httpAuthCollection" : "users",
   "databaseUrl" : "db",
   "collections" : [
     {
@@ -16,7 +17,15 @@
         {
           "fieldToFilter" : "email",
           "direction" : "in",
-          "allowed" : false,
+          "allowed" : true,
+          "functions" : [
+            "save"
+          ]
+        },
+        {
+          "fieldToFilter" : "name",
+          "direction" : "in",
+          "allowed" : true,
           "functions" : [
             "save"
           ]
@@ -26,7 +35,10 @@
           "direction" : "out",
           "allowed" : false,
           "functions" : [
-            "find", "findOne"
+            "save",
+            "update",
+            "find",
+            "findOne"
           ]
         }
       ],
@@ -39,7 +51,22 @@
             "save",
             "update"
           ],
-          "groups":["groupOne","groupTwo"]
+          "groups" : [
+            
+          ]
+        },
+        {
+          "type" : "required",
+          "fieldToValidate" : "email",
+          "errorMessage" : "Email is required.",
+          "functions" : [
+            "save",
+            "update"
+          ],
+          "groups" : [
+            "groupOne",
+            "groupTwo"
+          ]
         },
         {
           "type" : "compare",
@@ -53,7 +80,9 @@
             "save",
             "update"
           ],
-          "groups":["*"]
+          "groups" : [
+            "*"
+          ]
         },
         {
           "type" : "range",
@@ -88,14 +117,13 @@
           ]
         }
       ],
-      "events": [
-      	{
-      	  "event" : "preValidate",
-      	  "functions" : [
-      	  	"find"
-      	  ]
-      	}
-      
+      "events" : [
+        {
+          "event" : "preValidate",
+          "functions" : [
+            "find"
+          ]
+        }
       ]
     }
   ]

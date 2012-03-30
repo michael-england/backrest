@@ -1,0 +1,41 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head runat="server">
+    <title>Proxy</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+    <script type="text/javascript">		        
+        String.prototype.getValueByKey = function (k) {
+            var p = new RegExp('\\b' + k + '\\b', 'gi');
+            return this.search(p) != -1 ? decodeURIComponent(this.substr(this.search(p) + k.length + 1).substr(0, this.substr(this.search(p) + k.length + 1).search(/(&|;|$)/))) : "v4boTbv9_nU";
+        };
+	</script>
+</head>
+<body>
+    <script type="text/javascript">
+        try {
+            var collection = location.search.getValueByKey("collection");
+            var callback = location.search.getValueByKey("callback");
+            var origin = location.search.getValueByKey("origin");
+            var data = JSON.parse(location.search.getValueByKey("json"));
+			var url = "/" + collection;
+
+			$.ajax({
+				type: "POST",
+				url: url,
+				data: data,
+          		dataType: "json",
+        		contentType: "text/json",
+				success: function (data) {
+                    try {
+                        parent.postMessage(escape("response = {\"collection\":\"" + collection + "\",\"callback\":\"" + callback + "\",\"JSON\":\"" + escape(JSON.stringify(data)) + "\"}"), origin);
+                    } catch (error) {
+                        alert(error.Message);
+                    }
+			});
+        } catch (error) {
+        }
+
+    </script>
+</body>
+</html>
