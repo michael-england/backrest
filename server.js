@@ -37,18 +37,15 @@ function fsReadFile(error, file) {
             settings = JSON.parse(file);
             
             // push setting's collection to collections name array
-            collections = new Array();
-            for (var i = 0; i < settings.collections.length; i++) {
-                collections.push(settings.collections[i].name)
-            }
+            collections = Object.keys(settings.collections);
             
             // start the http server
             httpStart();    		
             
             // connect to the database
             db = mongo.connect(settings.databaseUrl, collections);
-           }
-        catch (ex)
+        } 
+        catch (ex) 
         {
             // handle error
             console.log(ex.message);
@@ -150,123 +147,153 @@ function processLogout (request, response, json) {
     return;
 }
 
+function processIsAuthenticated (request, response, json) {
+
+    // change the authenticated user
+    var isAuthenticated = false;
+    
+    if (request.session.data.user != "Guest") {
+        isAuthenticated = true;
+    }
+    
+    // return result
+    processResult (request, response, isAuthenticated, json.id);
+    return;
+}
+
 function processRpc (request, response, json, collection) {
     var isValid = true;
     var command = undefined;
     var validationSummary = undefined;
     
-    if (json.method == "update") {
+    if (settings.collections[collection][json.method] != undefined) {
+        if (settings.collections[collection][json.method].enabled == true) {
+            if (json.method == "update") {
+                
+                // filter the query
+                json.params[0] = filters.filter(settings, collection, "find", json.params[0], "in");
+                
+                // filter the update
+                json.params[1] = filters.filter(settings, collection, "update", json.params[1], "in");
         
-        // filter the query
-        json.params[0] = Filter.filter(settings, collection, "find", json.params[0], "in");
-        
-        // filter the update
-        json.params[1] = Filter.filter(settings, collection, "update", json.params[1], "in");
-
-        // validate
-        var validationSummaryFind = validators.validate(settings, collection, "find", json.params[0]);
-        var validationSummaryFindAndModify = validators.validate(settings, collection, "findAndModify", json.params[1]);
-        if (validationSummaryFind == true && validationSummaryFindAndModify == true) {
-            
-            var params = "";
-            for (var i = 0; i < json.params.length; i++) {
-                if (i == 0) {
-                    params += JSON.stringify(json.params[i]);
+                // validate
+                var validationSummaryFind = validators.validate(settings, collection, "find", json.params[0]);
+                var validationSummaryFindAndModify = validators.validate(settings, collection, "findAndModify", json.params[1]);
+                if (validationSummaryFind == true && validationSummaryFindAndModify == true) {
+                    
+                    var params = "";
+                    for (var i = 0; i < json.params.length; i++) {
+                        if (i == 0) {
+                            params += JSON.stringify(json.params[i]);
+                        } else {
+                            params += ", " + JSON.stringify(json.params[i]);
+                        }
+                    }
+                    
+                    // create the command
+                    command = "db." + collection + "." + json.method + "(" + params + ", dbResult);";
+                    
                 } else {
-                    params += ", " + JSON.stringify(json.params[i]);
+                
+                    validationSummary = new Array();
+                    
+                    if (validationSummaryFind != true) {
+                        validationSummary = validationSummary.concat(validationSummary, validationSummaryFind);
+                    }
+                    
+                    if (validationSummaryFindAndModify != true) {
+                        validationSummary = validationSummary.concat(validationSummary, validationSummaryFindAndModify);
+                    }
+                    
+                    isValid = false;
+                }
+            } else if (json.method == "findAndModify") {
+                
+                // filter the query
+                json.params.query = filters.filter(settings, collection, "find", json.params.query, "in");
+                
+                // filter the update
+                json.params.update = filters.filter(settings, collection, "update", json.params.update, "in");
+                
+                // validate
+                var validationSummaryFind = validators.validate(settings, collection, "find", json.params.query);
+                var validationSummaryFindAndModify = validators.validate(settings, collection, "findAndModify", json.params.update);
+                if (validationSummaryFind == true && validationSummaryFindAndModify == true) {
+                
+                    // create the command
+                    command = "db." + collection + "." + json.method + "(" + JSON.stringify(json.params) + ", dbResult);";
+                } else {
+                
+                    validationSummary = new Array();
+                    
+                    if (validationSummaryFind != true) {
+                        validationSummary = validationSummary.concat(validationSummary, validationSummaryFind);
+                    }
+                    
+                    if (validationSummaryFindAndModify != true) {
+                        validationSummary = validationSummary.concat(validationSummary, validationSummaryFindAndModify);
+                    }
+                    
+                    isValid = false;
+                }
+            } else {
+                
+                // filter the params
+                json.params = filters.filter(settings, collection, json.method, json.params, "in");
+                
+                // validate
+                validationSummary = validators.validate(settings, collection, json.method, json.params);
+        
+                if (validationSummary == true) {
+                    
+                    // create the command
+                    command = "db." + collection + "." + json.method + "(" + JSON.stringify(json.params) + ", dbResult);";
+                } else {
+                
+                    isValid = false;
                 }
             }
-            
-            // create the command
-            command = "db." + collection + "." + json.method + "(" + params + ", dbResult);";
-            
-        } else {
         
-            validationSummary = new Array();
-            
-            if (validationSummaryFind != true) {
-                validationSummary = validationSummary.concat(validationSummary, validationSummaryFind);
-            }
-            
-            if (validationSummaryFindAndModify != true) {
-                validationSummary = validationSummary.concat(validationSummary, validationSummaryFindAndModify);
-            }
-            
-            isValid = false;
-        }
-    } else if (json.method == "findAndModify") {
+            if (isValid) {
         
-        // filter the query
-        json.params.query = Filter.filter(settings, collection, "find", json.params.query, "in");
-        
-        // filter the update
-        json.params.update = Filter.filter(settings, collection, "update", json.params.update, "in");
-        
-        // validate
-        var validationSummaryFind = validators.validate(settings, collection, "find", json.params.query);
-        var validationSummaryFindAndModify = validators.validate(settings, collection, "findAndModify", json.params.update);
-        if (validationSummaryFind == true && validationSummaryFindAndModify == true) {
-        
-            // create the command
-            command = "db." + collection + "." + json.method + "(" + JSON.stringify(json.params) + ", dbResult);";
-        } else {
-        
-            validationSummary = new Array();
+                var dbResult = function (error, result) {
+                    if(error) {
+                    
+                        // collection not provided, create procedure not found response
+                        processError(request, response, -32603, "Internal JSON-RPC error.", json.id);
+                        return;
+                    } else {
             
-            if (validationSummaryFind != true) {
-                validationSummary = validationSummary.concat(validationSummary, validationSummaryFind);
-            }
-            
-            if (validationSummaryFindAndModify != true) {
-                validationSummary = validationSummary.concat(validationSummary, validationSummaryFindAndModify);
-            }
-            
-            isValid = false;
-        }
-    } else {
-        
-        // filter the params
-        json.params = filters.filter(settings, collection, json.method, json.params, "in");
-        
-        // validate
-        validationSummary = validators.validate(settings, collection, json.method, json.params);
-
-        if (validationSummary !== true) {
-            isValid = false;
-        }
-    }
-
-    if (isValid) {
-
-        var dbResult = function (error, result) {
-            if(error) {
-            
-                // collection not provided, create procedure not found response
-                processError(request, response, -32603, "Internal JSON-RPC error.", json.id);
-                return;
-            } else {
-    
-                // filter out return values
-                result = filters.filter(settings, collection, json.method, result, "out");
+                        // filter out return values
+                        result = filters.filter(settings, collection, json.method, result, "out");
+                        
+                        // return result
+                        processResult (request, response, result, json.id);
+                        return;
+                    }
+                };
                 
-                // return result
-                processResult (request, response, result, json.id);
+                // write command to log
+                console.log(request.session.id + ": " + command);
+                
+                // execute command
+                eval(command);
+            } else {
+        
+                // validation not passed, return with error and validation summary
+                processError(request, response, -32603, "Internal JSON-RPC error.", json.id, validationSummary);
                 return;
             }
-        };
-        
-        // create the command
-        command = "db." + collection + "." + json.method + "(" + JSON.stringify(json.params) + ", dbResult);";
-        
-        // write command to log
-        console.log(request.session.id + ": " + command);
-        
-        // execute command
-        eval(command);
+        } else {
+            
+            // method not allowed, return with error and validation summary
+            processError(request, response, -32601, "Procedure not found.", json.id);
+            return;
+        }
     } else {
-
-        // validation not passed, return with error and validation summary
-        processError(request, response, -32603, "Internal JSON-RPC error.", json.id, validationSummary);
+    
+        // method not allowed, return with error and validation summary
+        processError(request, response, -32601, "Procedure not found.", json.id);
         return;
     }
 }
@@ -275,7 +302,7 @@ function processPost (request, response) {
 
     // load chunks into data
     var data = "";
-        request.on("data", function (chunk) {
+    request.on("data", function (chunk) {
         data += chunk;
     });
     
@@ -314,6 +341,11 @@ function processPost (request, response) {
                     // process logout request
                     processLogout(request, response, json);
                 
+                } else if (collection == "isAuthenticated") {
+                
+                    // process authentication status request
+                    processIsAuthenticated(request, response, json);
+                    
                 } else {
                 
                     // process logout request
@@ -382,7 +414,8 @@ function processResult (request, response, result, id) {
         "result": result, 
         "id": id
     };
-    response.writeHead(200, {"Content-Type": "application/json"});
+    
+    response.writeHead(200, {"Content-Type": "application/json", "Access-Control-Allow-Origin" : "*"});
     response.end(JSON.stringify(json));
 }
 
@@ -401,7 +434,7 @@ function processError (request, response, errorCode, errorMessage, id, validatio
         json.result = validationSummary;
     }
         
-    response.writeHead(200, {"Content-Type": "application/json" });
+    response.writeHead(200, {"Content-Type": "application/json", "Access-Control-Allow-Origin" : "*" });
     response.write(JSON.stringify(json));
     response.end();	
 }

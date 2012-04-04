@@ -23,15 +23,21 @@
 			$.ajax({
 				type: "POST",
 				url: url,
-				data: data,
-          		dataType: "json",
-        		contentType: "text/json",
+				data: JSON.stringify(data),
+				dataType: "json",
+				contentType: "text/json",
 				success: function (data) {
                     try {
-                        parent.postMessage(escape("response = {\"collection\":\"" + collection + "\",\"callback\":\"" + callback + "\",\"JSON\":\"" + escape(JSON.stringify(data)) + "\"}"), origin);
+                        var message = {
+                            "collection": collection,
+                            "callback": callback,
+                            "json": data
+                        };
+                        parent.postMessage(message, origin);
                     } catch (error) {
                         alert(error.Message);
                     }
+                }
 			});
         } catch (error) {
         }

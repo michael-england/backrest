@@ -141,9 +141,19 @@
 	          		dataType: "json",
 	        		contentType: "text/json",
 					success: function (data) {
-						$(".output").append("<div>" + JSON.stringify(data.result) + "</div>");
-						$(".output").stop(true);
-						$(".output").animate({ scrollTop: $(".output").get(0).scrollHeight - $(".output").height() }, 500);
+					    
+					    if (data.error != undefined) {
+					    
+					    	$(".output").append("<div class=\"error\">" + data.error.message + (data.result != undefined ? (" " +JSON.stringify(data.result)) : "") + "</div>");
+					    	$(".output").stop(true);
+					    	$(".output").animate({ scrollTop: $(".output").get(0).scrollHeight - $(".output").height() }, 500);
+					    
+					    } else {
+					    
+					    	$(".output").append("<div>" + JSON.stringify(data.result) + "</div>");
+					    	$(".output").stop(true);
+					    	$(".output").animate({ scrollTop: $(".output").get(0).scrollHeight - $(".output").height() }, 500);
+					    }
 					}
 				});
 			} catch (error) {
