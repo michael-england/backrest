@@ -7,11 +7,10 @@ var url = require("url");
 var mime = require("mime");
 var validators = require("./lib/validators");
 var filters = require("./lib/filters");
-var settings = null;
-var collections = null;
-var db = null;
+var settings = undefined;
+var collections = undefined;
+var db = undefined;
 var path = ".";
-//var manager = new Manager();
 
 var settingsFilename = libpath.join(path, "settings.json");
 libpath.exists(settingsFilename, libpathExists);
@@ -84,11 +83,13 @@ function processLogin (request, response, json) {
     var isValid = true;
         
     // filter the params
-    json.params = filters.filter(settings, settings.httpAuthCollection, "findOne", json.params, "in");
+    json.params = filters.filter(settings, settings.httpAuthCollection, "findOne", "default", json.params, "in");
     
     // validate
-    var validationSummary = validators.validate(settings, settings.httpAuthCollection, "findOne", json.params);
-    if (validationSummary !== true) {
+    var validationSummary = validators.validate(settings, settings.httpAuthCollection, "findOne", "default", json.params);
+    if (validationSummary !== true || 
+        !json.params[(!settings.httpAuthUsernameField ? "email" : settings.httpAuthUsernameField)] ||
+        !json.params[(!settings.httpAuthPasswordField ? "password" : settings.httpAuthPasswordField)]) {
         isValid = false;
     }
     
@@ -103,18 +104,26 @@ function processLogin (request, response, json) {
                 
             } else {
                 
-                // change the authenticated user
-                request.session.data.user = result.email;
-            
-                // log authentication change
-                console.log("Session " + request.session.id + " is now logged in as " + request.session.data.user);
-            
-                // filter out return values
-                result = filters.filter(settings, settings.httpAuthCollection, "findOne", result, "out");
+                if (!result) {
                 
-                // return result
-                processResult (request, response, result, json.id);
-                return;
+                      // collection not provided, create procedure not found response
+                    processError(request, response, -32000, "Invalid credentials.", json.id);
+                    
+                } else {
+                
+                    // change the authenticated user
+                    request.session.data.user = result._id;
+                
+                    // log authentication change
+                    console.log("Session " + request.session.id + " is now logged in as " + result[(!settings.httpAuthUsernameField ? settings.httpAuthUsernameField : "email")]);
+                
+                    // filter out return values
+                    result = filters.filter(settings, settings.httpAuthCollection, "findOne", "default", result, "out");
+                    
+                    // return result
+                    processResult (request, response, result, json.id);
+                    return;
+                }
             }
         };
         
@@ -129,7 +138,7 @@ function processLogin (request, response, json) {
     } else {
         
         // validation not passed, return with error and validation summary
-        processError(request, response, -32603, "Internal JSON-RPC error.", id, validationSummary);
+        processError(request, response, -32000, "Invalid credentials.", json.id);
         return;
     }
 }
@@ -165,129 +174,229 @@ function processRpc (request, response, json, collection) {
     var isValid = true;
     var command = undefined;
     var validationSummary = undefined;
+    var method = json.method;
+    var action = "default";
+    var allowed = false;
     
-    if (settings.collections[collection][json.method] != undefined) {
-        if (settings.collections[collection][json.method].enabled == true) {
-            if (json.method == "update") {
+    if (method.indexOf("/") > -1) {
+        action = method.substring(method.indexOf("/"));
+    }
+    
+    if (settings.collections[collection] != undefined) {
+        if (settings.collections[collection][method] != undefined) {
+            if (settings.collections[collection][method].enabled == true) {
+                 if (settings.collections[collection][method][action] != undefined) {
+                     allowed = true;
+                 }
+            }   
+        }
+    }   
+            
+    if (allowed) {
+        if (method == "update") {
+            
+            // filter the query
+            json.params[0] = filters.filter(settings, collection, "find", action, json.params[0], "in");
+            
+            // filter the update
+            var keys = Object.keys(json.params[1]);
+            var modifiers = [ "$inc", "$set", "$unset", "$push", "$pushAll", "$addToSet", "$each", "$pop", "$pull", "$pullAll", "$rename", "$bit"];
+            if (keys != undefined) {
+                if (modifiers.indexOf(keys[0]) > 0) {
+                    json.params[1][keys[0]] = filters.filter(settings, collection, "update", action, json.params[1][keys[0]], "in");
+                } else {
+                    json.params[1] = filters.filter(settings, collection, "update", action, json.params[1], "in");
+                }                
+            }
+            
+            // validate
+            var validationSummaryFind = validators.validate(settings, collection, "find", action, json.params[0]);
+            var validationSummaryFindAndModify = validators.validate(settings, collection, "findAndModify", action, json.params[1]);
+            if (validationSummaryFind == true && validationSummaryFindAndModify == true) {
                 
-                // filter the query
-                json.params[0] = filters.filter(settings, collection, "find", json.params[0], "in");
-                
-                // filter the update
-                json.params[1] = filters.filter(settings, collection, "update", json.params[1], "in");
-        
-                // validate
-                var validationSummaryFind = validators.validate(settings, collection, "find", json.params[0]);
-                var validationSummaryFindAndModify = validators.validate(settings, collection, "findAndModify", json.params[1]);
-                if (validationSummaryFind == true && validationSummaryFindAndModify == true) {
+                var params = "";
+                for (var i = 0; i < json.params.length; i++) {
+                    if (i == 0) {
+                        var tempId = undefined;
+                        if (json.params[i] != undefined) {
+                            if (json.params[i]._id != undefined) {
+                                if (json.params[i]._id.indexOf("ObjectId") > -1) {
+                                    tempId = json.params[i]._id;
+                                    json.params[i]._id = "###tempId###"; 
+                                }
+                            }
+                        }
                     
-                    var params = "";
-                    for (var i = 0; i < json.params.length; i++) {
-                        if (i == 0) {
+                        if (tempId != undefined) {
+                        
+                            // add the parameters
                             params += JSON.stringify(json.params[i]);
+                            params = params.replace("\"###tempId###\"", "db." + tempId);
                         } else {
+                        
+                            // add the parameters
+                            params += JSON.stringify(json.params[i]);
+                        }
+                    } else {
+                    
+                        var tempId = undefined;
+                        if (json.params[i]._id != undefined) {
+                            if (json.params[i]._id.indexOf("ObjectId") > -1) {
+                                tempId = json.params[i]._id;
+                                json.params[i]._id = "###tempId###"; 
+                            }
+                        }
+                    
+                        if (tempId != undefined) {
+                        
+                            // add the parameters
+                            params += ", " + JSON.stringify(json.params[i]);
+                            params = params.replace("\"###tempId###\"", "db." + tempId);
+                        } else {
+                        
+                            // add the parameters
                             params += ", " + JSON.stringify(json.params[i]);
                         }
                     }
-                    
-                    // create the command
-                    command = "db." + collection + "." + json.method + "(" + params + ", dbResult);";
-                    
-                } else {
-                
-                    validationSummary = new Array();
-                    
-                    if (validationSummaryFind != true) {
-                        validationSummary = validationSummary.concat(validationSummary, validationSummaryFind);
-                    }
-                    
-                    if (validationSummaryFindAndModify != true) {
-                        validationSummary = validationSummary.concat(validationSummary, validationSummaryFindAndModify);
-                    }
-                    
-                    isValid = false;
                 }
-            } else if (json.method == "findAndModify") {
                 
-                // filter the query
-                json.params.query = filters.filter(settings, collection, "find", json.params.query, "in");
+                // create the command
+                command = "db." + collection + "." + method + "(" + params + ", dbResult);";
                 
-                // filter the update
-                json.params.update = filters.filter(settings, collection, "update", json.params.update, "in");
-                
-                // validate
-                var validationSummaryFind = validators.validate(settings, collection, "find", json.params.query);
-                var validationSummaryFindAndModify = validators.validate(settings, collection, "findAndModify", json.params.update);
-                if (validationSummaryFind == true && validationSummaryFindAndModify == true) {
-                
-                    // create the command
-                    command = "db." + collection + "." + json.method + "(" + JSON.stringify(json.params) + ", dbResult);";
-                } else {
-                
-                    validationSummary = new Array();
-                    
-                    if (validationSummaryFind != true) {
-                        validationSummary = validationSummary.concat(validationSummary, validationSummaryFind);
-                    }
-                    
-                    if (validationSummaryFindAndModify != true) {
-                        validationSummary = validationSummary.concat(validationSummary, validationSummaryFindAndModify);
-                    }
-                    
-                    isValid = false;
-                }
             } else {
-                
-                // filter the params
-                json.params = filters.filter(settings, collection, json.method, json.params, "in");
-                
-                // validate
-                validationSummary = validators.validate(settings, collection, json.method, json.params);
-        
-                if (validationSummary == true) {
-                    
-                    // create the command
-                    command = "db." + collection + "." + json.method + "(" + JSON.stringify(json.params) + ", dbResult);";
-                } else {
-                
-                    isValid = false;
-                }
-            }
-        
-            if (isValid) {
-        
-                var dbResult = function (error, result) {
-                    if(error) {
-                    
-                        // collection not provided, create procedure not found response
-                        processError(request, response, -32603, "Internal JSON-RPC error.", json.id);
-                        return;
-                    } else {
             
-                        // filter out return values
-                        result = filters.filter(settings, collection, json.method, result, "out");
-                        
-                        // return result
-                        processResult (request, response, result, json.id);
-                        return;
+                validationSummary = [];
+                
+                if (validationSummaryFind != true) {
+                    validationSummary = validationSummary.concat(validationSummary, validationSummaryFind);
+                }
+                
+                if (validationSummaryFindAndModify != true) {
+                    validationSummary = validationSummary.concat(validationSummary, validationSummaryFindAndModify);
+                }
+                
+                isValid = false;
+            }
+        } else if (method == "findAndModify") {
+            
+            // filter the query
+            json.params.query = filters.filter(settings, collection, "find", action, json.params.query, "in");
+            
+            // filter the update
+            var keys = Object.keys(json.params.update);
+            var modifiers = [ "$inc", "$set", "$unset", "$push", "$pushAll", "$addToSet", "$each", "$pop", "$pull", "$pullAll", "$rename", "$bit"];
+            if (keys != undefined) {
+                if (modifiers.indexOf(keys[0]) > 0) {
+                    json.params.update[keys[0]] = filters.filter(settings, collection, "update", action, json.params.update[keys[0]], "in");
+                } else {
+                    json.params.update = filters.filter(settings, collection, "update", action, json.params.update, "in");
+                }                
+            }
+            
+            // validate
+            var validationSummaryFind = validators.validate(settings, collection, "find", action, json.params.query);
+            var validationSummaryFindAndModify = validators.validate(settings, collection, "findAndModify", action, json.params.update);
+            if (validationSummaryFind == true && validationSummaryFindAndModify == true) {
+                
+                var tempId = undefined;
+                if (json.params != undefined) {
+                    if (json.params._id != undefined) {
+                        if (json.params._id.indexOf("ObjectId") > -1) {
+                            tempId = json.params._id;
+                            json.params._id = "###tempId###"; 
+                        }
                     }
-                };
+                }
                 
-                // write command to log
-                console.log(request.session.id + ": " + command);
+                if (tempId != undefined) {
                 
-                // execute command
-                eval(command);
+                    // create the command
+                    command = "db." + collection + "." + method + "(" + JSON.stringify(json.params) + ", dbResult);";
+                    command = command.replace("\"###tempId###\"", "db." + tempId);
+                } else {
+                
+                    // create the command
+                    command = "db." + collection + "." + method + "(" + JSON.stringify(json.params) + ", dbResult);";
+                }
             } else {
-        
-                // validation not passed, return with error and validation summary
-                processError(request, response, -32603, "Internal JSON-RPC error.", json.id, validationSummary);
-                return;
+            
+                validationSummary = [];
+                
+                if (validationSummaryFind != true) {
+                    validationSummary = validationSummary.concat(validationSummary, validationSummaryFind);
+                }
+                
+                if (validationSummaryFindAndModify != true) {
+                    validationSummary = validationSummary.concat(validationSummary, validationSummaryFindAndModify);
+                }
+                
+                isValid = false;
             }
         } else {
             
-            // method not allowed, return with error and validation summary
-            processError(request, response, -32601, "Procedure not found.", json.id);
+            // filter the params
+            json.params = filters.filter(settings, collection, method, action, json.params, "in");
+            
+            // validate
+            validationSummary = validators.validate(settings, collection, method, action, json.params);
+    
+            if (validationSummary == true) {
+                
+                var tempId = undefined;
+                if (json.params != undefined) {
+                    if (json.params._id != undefined) {
+                        if (json.params._id.indexOf("ObjectId") > -1) {
+                            tempId = json.params._id;
+                            json.params._id = "###tempId###"; 
+                        }
+                    }
+                }
+                
+                if (tempId != undefined) {
+                
+                    // create the command
+                    command = "db." + collection + "." + method + "(" + JSON.stringify(json.params) + ", dbResult);";
+                    command = command.replace("\"###tempId###\"", "db." + tempId);
+                } else {
+                
+                    // create the command
+                    command = "db." + collection + "." + method + "(" + JSON.stringify(json.params) + ", dbResult);";
+                }
+                
+            } else {
+            
+                isValid = false;
+            }
+        }
+    
+        if (isValid) {
+    
+            var dbResult = function (error, result) {
+                if(error) {
+                
+                    // collection not provided, create procedure not found response
+                    processError(request, response, -32603, "Internal JSON-RPC error.", json.id);
+                    return;
+                } else {
+        
+                    // filter out return values
+                    result = filters.filter(settings, collection, method, action, result, "out");
+                    
+                    // return result
+                    processResult (request, response, result, json.id);
+                    return;
+                }
+            };
+            
+            // write command to log
+            console.log(request.session.id + ": " + command);
+            
+            // execute command
+            eval(command);
+        } else {
+    
+            // validation not passed, return with error and validation summary
+            processError(request, response, -32603, "Internal JSON-RPC error.", json.id, validationSummary);
             return;
         }
     } else {
@@ -309,28 +418,23 @@ function processPost (request, response) {
     // chucks have loaded, continue the request
     request.on("end", function () {
         
-        var json = null;
-        var method = null;
-        var id = null;
+        var json = undefined;
         try {
             
             // parse data to json
             json = JSON.parse(data);
-            
-            method = json.method;
-            id = json.id;
         
         } catch (error) {
             
             // Internal error occurred, create internal error response
-            processError(request, response, -32700, "Parse error.", null);
+            processError(request, response, -32700, "Parse error.", undefined);
             return;
         }
         
         try {
             var pathParts = request.url.split("/");
             var collection = pathParts[pathParts.length - 1];
-            if (collection != null && collection != undefined) {
+            if (collection != undefined) {
                 if (collection == "login") {
                 
                     // process login request
@@ -354,17 +458,22 @@ function processPost (request, response) {
             } else {
             
                 // collection not provided, create procedure not found response
-                processError(request, response, -32601, "Procedure not found.", id);
+                processError(request, response, -32601, "Procedure not found.", json.id);
                 return;
             }
         } catch (error) {
         
-            // throw error to console
-            console.log(error);
-        
-            // Internal error occurred, create internal error response
-            processError(request, response, -32603, "Internal JSON-RPC error.", id);
-            return;
+            if (settings.isDebug) {
+                throw error;
+            } else {
+            
+                // throw error to console
+                console.log(error);
+            
+                // Internal error occurred, create internal error response
+                processError(request, response, -32603, "Internal JSON-RPC error.", json.id);
+                return;
+            }
         }
     });
 }
@@ -420,7 +529,7 @@ function processResult (request, response, result, id) {
 }
 
 function processError (request, response, errorCode, errorMessage, id, validationSummary) {
-      // Internal error occured, create internal error response
+      // Internal error occurred, create internal error response
     var json = {
         "jsonrpc": "2.0", 
         "error": {

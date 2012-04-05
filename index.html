@@ -110,6 +110,7 @@
 			<option value="update">update</option>
 			<option value="remove">remove</option>
 		</select>
+		<label for="methodAction">Method Action</label><input type="text" name="methodAction" id="methodAction" />
 		<label for="params">Params</label><textarea  name="params" id="params"></textarea>
 		<input type="button" value="Execute" onclick="execute()" />
 	</div>
@@ -122,6 +123,7 @@
 			
 			try {
 				var url = "/" + $("#collection").val();
+				
 				var params = null;
 				if ($("#params").val() != "")
 					params = JSON.parse($("#params").val());
@@ -132,6 +134,13 @@
 					"params": params, 
 					"id": 0
 				};
+				
+				var methodAction = $("#methodAction").val();
+				if (methodAction != "") {
+				    data.method += "/" + methodAction;
+				}
+				
+				
 				data = JSON.stringify(data);
 				
 				$.ajax({
