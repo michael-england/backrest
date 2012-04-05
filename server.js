@@ -83,13 +83,11 @@ function processLogin (request, response, json) {
     var isValid = true;
         
     // filter the params
-    json.params = filters.filter(settings, settings.httpAuthCollection, "findOne", "default", json.params, "in");
+    json.params = filters.filter(settings, settings.httpAuthCollection, "login", "default", json.params, "in");
     
     // validate
-    var validationSummary = validators.validate(settings, settings.httpAuthCollection, "findOne", "default", json.params);
-    if (validationSummary !== true || 
-        !json.params[(!settings.httpAuthUsernameField ? "email" : settings.httpAuthUsernameField)] ||
-        !json.params[(!settings.httpAuthPasswordField ? "password" : settings.httpAuthPasswordField)]) {
+    var validationSummary = validators.validate(settings, settings.httpAuthCollection, "login", "default", json.params);
+    if (validationSummary !== true) {
         isValid = false;
     }
     
@@ -111,14 +109,14 @@ function processLogin (request, response, json) {
                     
                 } else {
                 
-                    // change the authenticated user
-                    request.session.data.user = result._id;
-                
                     // log authentication change
-                    console.log("Session " + request.session.id + " is now logged in as " + result[(!settings.httpAuthUsernameField ? settings.httpAuthUsernameField : "email")]);
+                    console.log("Session " + request.session.id + " is now logged in as " + result[(!settings.httpAuthUsernameField ? "email" : settings.httpAuthUsernameField)]);
                 
                     // filter out return values
-                    result = filters.filter(settings, settings.httpAuthCollection, "findOne", "default", result, "out");
+                    result = filters.filter(settings, settings.httpAuthCollection, "login", "default", result, "out");
+                
+                    // change the authenticated user
+                    request.session.data.user = result;
                     
                     // return result
                     processResult (request, response, result, json.id);
@@ -138,7 +136,7 @@ function processLogin (request, response, json) {
     } else {
         
         // validation not passed, return with error and validation summary
-        processError(request, response, -32000, "Invalid credentials.", json.id);
+        processError(request, response, -32000, "Invalid credentials.", json.id, validationSummary);
         return;
     }
 }
@@ -160,6 +158,8 @@ function processIsAuthenticated (request, response, json) {
 
     // change the authenticated user
     var isAuthenticated = false;
+    
+    console.log(request.session.data.user);
     
     if (request.session.data.user != "Guest") {
         isAuthenticated = true;
@@ -186,11 +186,46 @@ function processRpc (request, response, json, collection) {
         if (settings.collections[collection][method] != undefined) {
             if (settings.collections[collection][method].enabled == true) {
                  if (settings.collections[collection][method][action] != undefined) {
-                     allowed = true;
+                 
+                     // get the action's roles
+                     var roles = settings.collections[collection][method][action].roles;
+                     
+                     // if the action doesn't have a role, allow the request to perform the action
+                     if (roles != undefined) {
+                         if (roles.length > 0) {
+                         
+                             // check if th
+                             if (request.session.data.user != "Guest") {
+                             
+                                 // get the roles field
+                                 var rolesField = !settings.httpAuthRolesField ? "roles" : settings.httpAuthRolesField;
+                                 
+                                 // check if the user has the role field
+                                 if (request.session.data.user[rolesField] != undefined) {
+                                     
+                                     // loop through user's roles
+                                     for (var i = 0; i < request.session.data.user[rolesField].length; i++) {
+                                         
+                                         // check if role is allowed to perform action
+                                         if (roles.indexOf(request.session.data.user[rolesField][i]) > -1) {
+                                         
+                                             // break if allowed
+                                             allowed = true; 
+                                             break;
+                                         }
+                                     }
+                                 }
+                             }
+                         } else {
+                             allowed = true;    
+                         }
+                     } else {
+                         allowed = true;                
+                     }
                  }
             }   
         }
-    }   
+    }
             
     if (allowed) {
         if (method == "update") {
@@ -435,17 +470,17 @@ function processPost (request, response) {
             var pathParts = request.url.split("/");
             var collection = pathParts[pathParts.length - 1];
             if (collection != undefined) {
-                if (collection == "login") {
+                if (collection == settings.httpAuthCollection && json.method == "login") {
                 
                     // process login request
                     processLogin(request, response, json);
                     
-                } else if (collection == "logout") {
+                } else if (collection == settings.httpAuthCollection && json.method == "logout") {
                 
                     // process logout request
                     processLogout(request, response, json);
                 
-                } else if (collection == "isAuthenticated") {
+                } else if (collection == settings.httpAuthCollection && json.method == "isAuthenticated") {
                 
                     // process authentication status request
                     processIsAuthenticated(request, response, json);
@@ -547,4 +582,3 @@ function processError (request, response, errorCode, errorMessage, id, validatio
     response.write(JSON.stringify(json));
     response.end();	
 }
-

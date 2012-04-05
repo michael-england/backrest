@@ -96,19 +96,27 @@
 		<label for="collection">Collection</label><input type="text" name="collection" id="collection" value="users" />
 		<label for="method">Method</label>
 		<select name="method" id="method">
-			<!--<option value="toArray">toArray</option>-->
-			<!--<option value="next">next</option>-->
-			<!--<option value="forEach">forEach</option>-->
-			<option value="count">count</option>
-			<!--<option value="sort">sort</option>-->
-			<!--<option value="limit">limit</option>-->
-			<!--<option value="skip">skip</option>-->
-			<option value="find" selected="selected">find</option>
-			<option value="findOne">findOne</option>
-			<option value="findAndModify">findAndModify</option>
-			<option value="save">save</option>
-			<option value="update">update</option>
-			<option value="remove">remove</option>
+			<optgroup label="Authentication Commands">
+			    <option value="login">login</option>
+			    <option value="logout">logout</option>
+			    <option value="isAuthenticated">isAuthenticated</option>
+			</optgroup>
+			<optgroup label="MongoDB Commands">
+    			<!--<option value="sort">sort</option>-->
+    			<!--<option value="limit">limit</option>-->
+    			<!--<option value="skip">skip</option>-->
+				<!--<option value="toArray">toArray</option>-->
+				<!--<option value="next">next</option>-->
+				<!--<option value="forEach">forEach</option>-->
+    			<option value="count">count</option>
+    			<option value="find" selected="selected">find</option>
+    			<option value="findOne">findOne</option>
+    			<option value="findAndModify">findAndModify</option>
+    			<option value="save">save</option>
+    			<option value="update">update</option>
+    			<option value="remove">remove</option>
+			</optgroup>
+			
 		</select>
 		<label for="methodAction">Method Action</label><input type="text" name="methodAction" id="methodAction" />
 		<label for="params">Params</label><textarea  name="params" id="params"></textarea>

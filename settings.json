@@ -3,14 +3,52 @@
     "httpPort" : "8080",
     "httpAuthCollection" : "users",
     "httpAuthUsernameField" : "email",
-    "httpAuthPasswordField" : "password",
     "httpAuthRolesField" : "roles",
-    "httpAuthDefaultRole" : "user",
     "databaseUrl" : "db",
     "collections" : {
         "users" : {
+            "login": {
+                "enabled" : true,
+                "default" : {
+                    "filters" : [
+                        {
+                            "fieldToFilter" : "*",
+                            "direction" : "in",
+                            "allowed" : false
+                        },
+                        {
+                            "fieldToFilter" : "email",
+                            "direction" : "in",
+                            "allowed" : true
+                        },
+                        {
+                            "fieldToFilter" : "password",
+                            "direction" : "in",
+                            "allowed" : true
+                        },
+                        {
+                            "fieldToFilter" : "password",
+                            "direction" : "out",
+                            "allowed" : false
+                        }
+                    ],
+                    "validators" : [
+                        {
+                            "type" : "required",
+                            "fieldToValidate" : "email",
+                            "errorMessage" : "Email is required."
+                        },
+                        {
+                            "type" : "required",
+                            "fieldToValidate" : "password",
+                            "errorMessage" : "Password is required."
+                        }
+                    ],
+                    "events" : []
+                }
+            },
             "count": {
-                "enabled" : false,
+                "enabled" : true,
                 "default" : {
                     "roles" : ["admin"],
                     "filters" : [],
@@ -152,7 +190,7 @@
             "update": {
                 "enabled" : true,
                 "default" : {
-                    "roles" : ["user"],
+                    "roles" : [],
                     "filters" : [
                         {
                             "fieldToFilter" : "password",
