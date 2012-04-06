@@ -5,6 +5,7 @@ var libpath = require("path");
 var fs = require("fs");
 var url = require("url");
 var mime = require("mime");
+var passwordHash = require("password-hash");
 var validators = require("./lib/validators");
 var filters = require("./lib/filters");
 var settings = undefined;
@@ -125,6 +126,10 @@ function processLogin (request, response, json) {
             }
         };
         
+        // hash the password
+        var passwordField = (!settings.httpAuthPasswordField ? "password" : settings.httpAuthPasswordField);
+        json.params[passwordField] = passwordHash.generate(json.params[passwordField]);
+        
         // build the command		
         var command = "db." + settings.httpAuthCollection + ".findOne(" + JSON.stringify(json.params) + ", dbLoginResult);";
         
@@ -159,8 +164,6 @@ function processIsAuthenticated (request, response, json) {
     // change the authenticated user
     var isAuthenticated = false;
     
-    console.log(request.session.data.user);
-    
     if (request.session.data.user != "Guest") {
         isAuthenticated = true;
     }
@@ -194,7 +197,7 @@ function processRpc (request, response, json, collection) {
                      if (roles != undefined) {
                          if (roles.length > 0) {
                          
-                             // check if th
+                             // check if the current user is guest
                              if (request.session.data.user != "Guest") {
                              
                                  // get the roles field
@@ -248,20 +251,29 @@ function processRpc (request, response, json, collection) {
             var validationSummaryFind = validators.validate(settings, collection, "find", action, json.params[0]);
             var validationSummaryFindAndModify = validators.validate(settings, collection, "findAndModify", action, json.params[1]);
             if (validationSummaryFind == true && validationSummaryFindAndModify == true) {
-                
                 var params = "";
                 for (var i = 0; i < json.params.length; i++) {
-                    if (i == 0) {
-                        var tempId = undefined;
-                        if (json.params[i] != undefined) {
-                            if (json.params[i]._id != undefined) {
-                                if (json.params[i]._id.indexOf("ObjectId") > -1) {
-                                    tempId = json.params[i]._id;
-                                    json.params[i]._id = "###tempId###"; 
-                                }
+                    var tempId = undefined;
+                    if (json.params[i] != undefined) {
+                        if (json.params[i]._id != undefined) {
+                            if (json.params[i]._id.indexOf("ObjectId") > -1) {
+                                tempId = json.params[i]._id;
+                                json.params[i]._id = "###tempId###"; 
                             }
                         }
+                    }
                     
+                    // hash the password
+                    if (collection == settings.httpAuthCollection) {
+                        if (json.params[i] != undefined) {
+                            var passwordField = (!settings.httpAuthPasswordField ? "password" : settings.httpAuthPasswordField);
+                            if (json.params[i][passwordField] != undefined) {
+                                json.params[i][passwordField] = passwordHash.generate(json.params[i][passwordField]);
+                            }
+                        }
+                    }
+                    
+                    if (i == 0) {
                         if (tempId != undefined) {
                         
                             // add the parameters
@@ -273,15 +285,6 @@ function processRpc (request, response, json, collection) {
                             params += JSON.stringify(json.params[i]);
                         }
                     } else {
-                    
-                        var tempId = undefined;
-                        if (json.params[i]._id != undefined) {
-                            if (json.params[i]._id.indexOf("ObjectId") > -1) {
-                                tempId = json.params[i]._id;
-                                json.params[i]._id = "###tempId###"; 
-                            }
-                        }
-                    
                         if (tempId != undefined) {
                         
                             // add the parameters
@@ -343,6 +346,26 @@ function processRpc (request, response, json, collection) {
                     }
                 }
                 
+                // hash the password
+                if (collection == settings.httpAuthCollection) {
+                    if (keys != undefined) {
+                        var passwordField = (!settings.httpAuthPasswordField ? "password" : settings.httpAuthPasswordField);
+                        if (modifiers.indexOf(keys[0]) > 0) {
+                            if (json.params.update[keys[0]] != undefined) {
+                                if (json.params.update[keys[0]][passwordField] != undefined) {
+                                    json.params.update[keys[0]][passwordField] = passwordHash.generate(json.params.update[keys[0]][passwordField]);
+                                }
+                            }
+                        } else {
+                            if (json.params.update != undefined) {
+                                if (json.params.update[passwordField] != undefined) {
+                                    json.params.update[passwordField] = passwordHash.generate(json.params.update[passwordField]);
+                                }
+                            }
+                        }                
+                    }
+                }
+                
                 if (tempId != undefined) {
                 
                     // create the command
@@ -374,7 +397,6 @@ function processRpc (request, response, json, collection) {
             
             // validate
             validationSummary = validators.validate(settings, collection, method, action, json.params);
-    
             if (validationSummary == true) {
                 
                 var tempId = undefined;
@@ -383,6 +405,16 @@ function processRpc (request, response, json, collection) {
                         if (json.params._id.indexOf("ObjectId") > -1) {
                             tempId = json.params._id;
                             json.params._id = "###tempId###"; 
+                        }
+                    }
+                }
+                
+                // hash the password
+                if (collection == settings.httpAuthCollection) {
+                    if (json.params != undefined) {
+                        var passwordField = (!settings.httpAuthPasswordField ? "password" : settings.httpAuthPasswordField);
+                        if (json.params[passwordField] != undefined) {
+                            json.params[passwordField] = passwordHash.generate(json.params[passwordField]);
                         }
                     }
                 }

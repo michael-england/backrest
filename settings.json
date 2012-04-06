@@ -3,6 +3,7 @@
     "httpPort" : "8080",
     "httpAuthCollection" : "users",
     "httpAuthUsernameField" : "email",
+    "httpAuthPasswordField" : "password",
     "httpAuthRolesField" : "roles",
     "databaseUrl" : "db",
     "collections" : {
@@ -88,7 +89,13 @@
                 "enabled" : false,
                 "default" : {
                     "roles" : ["admin"],
-                    "filters" : [],
+                    "filters" : [
+                        {
+                            "fieldToFilter" : "password",
+                            "direction" : "out",
+                            "allowed" : false
+                        }
+                    ],
                     "validators" : [],
                     "events" : []
                 }
