@@ -94,6 +94,11 @@ function processLogin (request, response, json) {
     
     if (isValid) {	
         
+        // temporarily save password and remove it from params
+        var passwordField = (!settings.httpAuthPasswordField ? "password" : settings.httpAuthPasswordField);
+        var password = json.params[passwordField];
+        json.params[passwordField] = undefined;
+        
         // the login response
         var dbLoginResult = function (error, result) {
             if(error) {
@@ -110,25 +115,29 @@ function processLogin (request, response, json) {
                     
                 } else {
                 
-                    // log authentication change
-                    console.log("Session " + request.session.id + " is now logged in as " + result[(!settings.httpAuthUsernameField ? "email" : settings.httpAuthUsernameField)]);
-                
-                    // filter out return values
-                    result = filters.filter(settings, settings.httpAuthCollection, "login", "default", result, "out");
-                
-                    // change the authenticated user
-                    request.session.data.user = result;
+                    // check password
+                    if (passwordHash.verify(password, result[passwordField])) {
                     
-                    // return result
-                    processResult (request, response, result, json.id);
-                    return;
+                        // log authentication change
+                        console.log("Session " + request.session.id + " is now logged in as " + result[(!settings.httpAuthUsernameField ? "email" : settings.httpAuthUsernameField)]);
+                    
+                        // filter out return values
+                        result = filters.filter(settings, settings.httpAuthCollection, "login", "default", result, "out");
+                    
+                        // change the authenticated user
+                        request.session.data.user = result;
+                        
+                        // return result
+                        processResult (request, response, result, json.id);
+                        return;
+                    } else {
+                        
+                        // collection not provided, create procedure not found response
+                        processError(request, response, -32000, "Invalid credentials.", json.id);
+                    }
                 }
             }
         };
-        
-        // hash the password
-        var passwordField = (!settings.httpAuthPasswordField ? "password" : settings.httpAuthPasswordField);
-        json.params[passwordField] = passwordHash.generate(json.params[passwordField]);
         
         // build the command		
         var command = "db." + settings.httpAuthCollection + ".findOne(" + JSON.stringify(json.params) + ", dbLoginResult);";
@@ -233,24 +242,25 @@ function processRpc (request, response, json, collection) {
     if (allowed) {
         if (method == "update") {
             
-            // filter the query
-            json.params[0] = filters.filter(settings, collection, "find", action, json.params[0], "in");
-            
-            // filter the update
-            var keys = Object.keys(json.params[1]);
-            var modifiers = [ "$inc", "$set", "$unset", "$push", "$pushAll", "$addToSet", "$each", "$pop", "$pull", "$pullAll", "$rename", "$bit"];
-            if (keys != undefined) {
-                if (modifiers.indexOf(keys[0]) > 0) {
-                    json.params[1][keys[0]] = filters.filter(settings, collection, "update", action, json.params[1][keys[0]], "in");
-                } else {
-                    json.params[1] = filters.filter(settings, collection, "update", action, json.params[1], "in");
-                }                
-            }
-            
             // validate
             var validationSummaryFind = validators.validate(settings, collection, "find", action, json.params[0]);
             var validationSummaryFindAndModify = validators.validate(settings, collection, "findAndModify", action, json.params[1]);
             if (validationSummaryFind == true && validationSummaryFindAndModify == true) {
+                
+                // filter the query
+                json.params[0] = filters.filter(settings, collection, "find", action, json.params[0], "in");
+                
+                // filter the update
+                var keys = Object.keys(json.params[1]);
+                var modifiers = [ "$inc", "$set", "$unset", "$push", "$pushAll", "$addToSet", "$each", "$pop", "$pull", "$pullAll", "$rename", "$bit"];
+                if (keys != undefined) {
+                    if (modifiers.indexOf(keys[0]) > -1) {
+                        json.params[1][keys[0]] = filters.filter(settings, collection, "update", action, json.params[1][keys[0]], "in");
+                    } else {
+                        json.params[1] = filters.filter(settings, collection, "update", action, json.params[1], "in");
+                    }                
+                }
+            
                 var params = "";
                 for (var i = 0; i < json.params.length; i++) {
                     var tempId = undefined;
@@ -266,9 +276,21 @@ function processRpc (request, response, json, collection) {
                     // hash the password
                     if (collection == settings.httpAuthCollection) {
                         if (json.params[i] != undefined) {
-                            var passwordField = (!settings.httpAuthPasswordField ? "password" : settings.httpAuthPasswordField);
-                            if (json.params[i][passwordField] != undefined) {
-                                json.params[i][passwordField] = passwordHash.generate(json.params[i][passwordField]);
+                            var keys = Object.keys(json.params[1]);
+                            var modifiers = [ "$inc", "$set", "$unset", "$push", "$pushAll", "$addToSet", "$each", "$pop", "$pull", "$pullAll", "$rename", "$bit"];
+                            if (keys != undefined) {
+                                var passwordField = (!settings.httpAuthPasswordField ? "password" : settings.httpAuthPasswordField);
+                                if (modifiers.indexOf(keys[0]) > -1) {
+                                    if (json.params[i][keys[0]] != undefined) {
+                                        if (json.params[i][keys[0]][passwordField] != undefined) {
+                                            json.params[i][keys[0]][passwordField] = passwordHash.generate(json.params[i][keys[0]][passwordField]);
+                                        }
+                                    }
+                                } else {
+                                    if (json.params[i][passwordField] != undefined) {
+                                        json.params[i][passwordField] = passwordHash.generate(json.params[i][passwordField]);
+                                    }
+                                }                
                             }
                         }
                     }
@@ -317,24 +339,24 @@ function processRpc (request, response, json, collection) {
             }
         } else if (method == "findAndModify") {
             
-            // filter the query
-            json.params.query = filters.filter(settings, collection, "find", action, json.params.query, "in");
-            
-            // filter the update
-            var keys = Object.keys(json.params.update);
-            var modifiers = [ "$inc", "$set", "$unset", "$push", "$pushAll", "$addToSet", "$each", "$pop", "$pull", "$pullAll", "$rename", "$bit"];
-            if (keys != undefined) {
-                if (modifiers.indexOf(keys[0]) > 0) {
-                    json.params.update[keys[0]] = filters.filter(settings, collection, "update", action, json.params.update[keys[0]], "in");
-                } else {
-                    json.params.update = filters.filter(settings, collection, "update", action, json.params.update, "in");
-                }                
-            }
-            
             // validate
             var validationSummaryFind = validators.validate(settings, collection, "find", action, json.params.query);
             var validationSummaryFindAndModify = validators.validate(settings, collection, "findAndModify", action, json.params.update);
             if (validationSummaryFind == true && validationSummaryFindAndModify == true) {
+                
+                // filter the query
+                json.params.query = filters.filter(settings, collection, "find", action, json.params.query, "in");
+                
+                // filter the update
+                var keys = Object.keys(json.params.update);
+                var modifiers = [ "$inc", "$set", "$unset", "$push", "$pushAll", "$addToSet", "$each", "$pop", "$pull", "$pullAll", "$rename", "$bit"];
+                if (keys != undefined) {
+                    if (modifiers.indexOf(keys[0]) > -1) {
+                        json.params.update[keys[0]] = filters.filter(settings, collection, "update", action, json.params.update[keys[0]], "in");
+                    } else {
+                        json.params.update = filters.filter(settings, collection, "update", action, json.params.update, "in");
+                    }                
+                }
                 
                 var tempId = undefined;
                 if (json.params != undefined) {
@@ -350,7 +372,7 @@ function processRpc (request, response, json, collection) {
                 if (collection == settings.httpAuthCollection) {
                     if (keys != undefined) {
                         var passwordField = (!settings.httpAuthPasswordField ? "password" : settings.httpAuthPasswordField);
-                        if (modifiers.indexOf(keys[0]) > 0) {
+                        if (modifiers.indexOf(keys[0]) > -1) {
                             if (json.params.update[keys[0]] != undefined) {
                                 if (json.params.update[keys[0]][passwordField] != undefined) {
                                     json.params.update[keys[0]][passwordField] = passwordHash.generate(json.params.update[keys[0]][passwordField]);
@@ -392,13 +414,13 @@ function processRpc (request, response, json, collection) {
             }
         } else {
             
-            // filter the params
-            json.params = filters.filter(settings, collection, method, action, json.params, "in");
-            
             // validate
             validationSummary = validators.validate(settings, collection, method, action, json.params);
             if (validationSummary == true) {
                 
+                // filter the params
+                json.params = filters.filter(settings, collection, method, action, json.params, "in");
+                    
                 var tempId = undefined;
                 if (json.params != undefined) {
                     if (json.params._id != undefined) {

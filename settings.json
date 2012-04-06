@@ -103,7 +103,7 @@
             "save": {
                 "enabled" : true,
                 "default" : {
-                    "roles" : ["*"],
+                    "roles" : [],
                     "filters" : [
                         {
                             "fieldToFilter" : "*",
