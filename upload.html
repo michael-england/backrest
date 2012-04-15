@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload</title>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script type="text/javascript" src="client-js/global.js"></script>
+    <style type="text/css">
+        div, input {
+            height: 20px;
+            font: normal 12px "Helvetica", Arial, Helvetica, Geneva, sans-serif;
+            text-height: 20px;
+        }
+    </style>
+</head>
+<body onload="upload_Load()">
+
+    <div id="step1">
+    	<form method="post" enctype="multipart/form-data" action="/" name="uploadForm" id="uploadForm">
+    	    <input type="hidden" name="_id" id="_id" />
+    	    <input type="hidden" name="collection" id="collection" />
+    	    <input type="hidden" name="method" id="method" value="upload" />
+    		<input type="file" name="uploadFile" id="uploadFile" onchange="upload_Submit()" />
+    	</form>
+	</div>
+	
+	<div id="step2">
+        file uploading...
+    </div>
+
+	<div id="step3">
+        file upload complete
+    </div>
+
+	<div id="error">
+        error uploading file
+    </div>
+</html>

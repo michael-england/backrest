@@ -6,6 +6,9 @@
     "httpAuthPasswordField" : "password",
     "httpAuthRolesField" : "roles",
     "databaseUrl" : "db",
+    "paths" : {
+        "uploads" : "./"
+    },
     "collections" : {
         "users" : {
             "login": {
@@ -43,6 +46,25 @@
                             "type" : "required",
                             "fieldToValidate" : "password",
                             "errorMessage" : "Password is required."
+                        }
+                    ],
+                    "events" : []
+                }
+            },
+            "upload":{
+                "enabled" : true,
+                "default" : {
+                    "roles" : [],
+                    "filters" : [
+                        {
+                            "fieldToFilter" : "*",
+                            "direction" : "in",
+                            "allowed" : false
+                        },
+                        {
+                            "fieldToFilter" : "iconOff",
+                            "direction" : "in",
+                            "allowed" : true
                         }
                     ],
                     "events" : []
@@ -210,9 +232,9 @@
                 }
             },
             "remove": {
-                "enabled" : false,
+                "enabled" : true,
                 "default" : {
-                    "roles" : ["admin"],
+                    "roles" : [],
                     "filters" : [],
                     "validators" : [],
                     "events" : []
