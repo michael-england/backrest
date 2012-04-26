@@ -1,5 +1,8 @@
 {
     "isDebug" : true,
+    "isSecured" : true,
+    "privateKey" : "privatekey.pem",
+    "certificate" : "certificate.pem",
     "httpPort" : "8080",
     "httpAuthCollection" : "users",
     "httpAuthUsernameField" : "email",
@@ -7,7 +10,9 @@
     "httpAuthRolesField" : "roles",
     "databaseUrl" : "db",
     "paths" : {
-        "uploads" : "./"
+        "uploads" : "./",
+        "events" : "./events.js",
+        "customValidators" : "./customValidators.js"
     },
     "collections" : {
         "users" : {
@@ -48,7 +53,7 @@
                             "errorMessage" : "Password is required."
                         }
                     ],
-                    "events" : []
+                    "events" : [ ]
                 }
             },
             "upload":{
@@ -73,7 +78,7 @@
             "count": {
                 "enabled" : true,
                 "default" : {
-                    "roles" : ["admin"],
+                    "roles" : [],
                     "filters" : [],
                     "validators" : [],
                     "events" : []
@@ -91,7 +96,12 @@
                         }
                     ],
                     "validators" : [],
-                    "events" : []
+                    "events" : [
+                        {
+                            "type": "filter", 
+                            "listener": "find_Filter"
+                        }
+                    ]
                 }
             },
             "findOne": {
@@ -189,7 +199,7 @@
                             "fieldToValidate" : "password",
                             "fieldToCompare" : "passwordConfirmation",
                             "valueToCompare" : null,
-                            "type" : "string",
+                            "dataType" : "string",
                             "operator" : "==",
                             "errorMessage" : "Passwords do not match."
                         },
@@ -209,7 +219,7 @@
                         {
                             "type" : "custom",
                             "fieldToValidate" : "email",
-                            "validationFunction" : "function (value){ return true; }",
+                            "validationFunction" : "userExists",
                             "errorMessage" : "User already exists."
                         }
                     ],
