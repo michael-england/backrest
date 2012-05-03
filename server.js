@@ -195,14 +195,14 @@ MongoRpc = function () {
                                 // log authentication change
                                 console.log("Session " + request.session.id + " is now logged in as " + result[(!this.settings.httpAuthUsernameField ? "email" : this.settings.httpAuthUsernameField)]);
                             
-                                // filter out return values
-                                result = filters.filter(this.settings, this.settings.httpAuthCollection, "login", "default", result, "out");
-                            
                                 // change the authenticated user
-                                request.session.data.user = result;
+                                request.session.data.user = JSON.parse(JSON.stringify(result));
                                 
+                                // filter out return values
+                                var resultFiltered = filters.filter(this.settings, this.settings.httpAuthCollection, "login", "default", result, "out");
+                            
                                 // return result
-                                this.processResult(request, response, result, json.id);
+                                this.processResult(request, response, resultFiltered, json.id);
                                 return;
                             } else {
                                 
@@ -233,7 +233,7 @@ MongoRpc = function () {
     this.processLogout = function (request, response, json) {
     
         // change the authenticated user
-        request.session.data.user = "Guest";
+        request.session.data.user = "guest";
     
         // log authentication change
         console.log("Session " + request.session.id + " is now logged in as " + request.session.data.user);
@@ -243,12 +243,36 @@ MongoRpc = function () {
         return;
     }
 
+    this.processIsInRole = function (request, response, json) {
+    
+        // change the authenticated user
+        var isInRole = false;
+        
+        if (request.session.data.user != "guest" && json.params !== undefined && json.params !== null) {
+            if (json.params.name !== undefined) {
+                var roles = request.session.data.user[this.settings.httpAuthRolesField !== undefined ? this.settings.httpAuthRolesField : "roles"];
+                if (roles !== undefined) {
+                    for (var i = 0; i < roles.length; i++) {
+                        if (roles[i] == json.params.name) {
+                            isInRole = true;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        
+        // return result
+        this.processResult (request, response, isInRole, json.id);
+        return;
+    }
+
     this.processIsAuthenticated = function (request, response, json) {
     
         // change the authenticated user
         var isAuthenticated = false;
         
-        if (request.session.data.user != "Guest") {
+        if (request.session.data.user != "guest") {
             isAuthenticated = true;
         }
         
@@ -273,505 +297,524 @@ MongoRpc = function () {
         var modifiers = [ "$inc", "$set", "$unset", "$push", "$pushAll", "$addToSet", "$each", "$pop", "$pull", "$pullAll", "$rename", "$bit"];
         
         // check roles
-        var allowed = roles.check(this.settings, collection, method, action, request.session.data.user);
-        if (allowed) {
-        
-            var execute = function (isValid, validationSummary) {
-                if (isValid) {
-                    var dbResult = function (error, result) {
+        roles.check(this, collection, method, action, request.session.data.user, json.params, function (allowed) {
+            if (allowed) {
+                var execute = function (isValid, validationSummary) {
+                    if (isValid) {
+                        var dbResult = function (error, result) {
+                            
+                            // emit executeEnd event
+                            this.emit(collection + "_" + method + "_" + action + "_executeEnd", { "currentTarget": this, "params": json.params});
+                            
+                            if(error) {
+                            
+                                // collection not provided, create procedure not found response
+                                this.processError(request, response, -32603, "Internal JSON-RPC error.", json.id);
+                                return;
+                            } else {
                         
-                        // emit executeEnd event
-                        this.emit(collection + "_" + method + "_" + action + "_executeEnd", { "currentTarget": this, "params": json.params});
-                        
-                        if(error) {
-                        
-                            // collection not provided, create procedure not found response
-                            this.processError(request, response, -32603, "Internal JSON-RPC error.", json.id);
-                            return;
-                        } else {
-                    
-                            var sendResponse = true;
-                        
-                            // save and clear uploads
-                            if (result != undefined) {
-                                if (json.method.split("/")[0] == "save" && this.hasUploads(collection, "new", request.session.data.uploads)) {
+                                var sendResponse = true;
+                            
+                                // save and clear uploads
+                                if (result != undefined) {
                                     
-                                    // create update object
-                                    var uploads = this.getUploads(collection, "new", request.session.data.uploads);
+                                    // save uploads and update
+                                    if (method == "save" && this.hasUploads(collection, "new", request.session.data.uploads)) {
+                                        
+                                        // create update object
+                                        var uploads = this.getUploads(collection, "new", request.session.data.uploads);
+                                        if (uploads != undefined) {
+                                        
+                                            // copy keys to update object
+                                            var keys = Object.keys(uploads);    
+                                            var update = {};
+                                            for (var i = 0; i < keys.length; i++) {
+                                                update[keys[i]] = "";
+                                            }
+                                            
+                                            // hold off sending results
+                                            sendResult = false;
+                                            
+                                            // save uploads
+                                            var update = this.saveUploads(collection, result._id, request.session.data.uploads, update, true);
+                                            
+                                            // clear uploads
+                                            request.session.data.uploads = this.clearUploads(collection, "new", request.session.data.uploads);
+                                            
+                                            // create command
+                                            var commandUpdate = "this.db." + collection + ".update({\"_id\":this.db.ObjectId(\"" + result._id + "\")},{\"$set\":" + JSON.stringify(update) + "}, dbResultUpdate);";
+                                            var dbResultUpdate = function (errorUpdate, resultUpdate) {
+                                                if(errorUpdate) {
+                                                
+                                                    // collection not provided, create procedure not found response
+                                                    this.processError(request, response, -32603, "Internal JSON-RPC error.", json.id);
+                                                    return;
+                                                } else {
+                                                    // update keys
+                                                    for (var i = 0; i < keys.length; i++) {
+                                                        resultUpdate[keys[i]] = update[keys[i]];
+                                                    }
+                                        
+                                                    // filter out return values
+                                                    resultUpdate = filters.filter(this.settings, collection, method, action, resultUpdate, "out");
+                                                    
+                                                    // return result
+                                                    this.processResult (request, response, resultUpdate, json.id);
+                                                    return;   
+                                                }
+                                            }.bind(this);
+                                                        
+                                            // write command to log
+                                            console.log(request.session.id + ": " + commandUpdate);
+                                            
+                                            // execute command
+                                            eval(commandUpdate);
+                                        }
+                                    }
                                     
-                                    if (uploads != undefined) {
-                                    
-                                        // copy keys to update object
-                                        var keys = Object.keys(uploads);    
-                                        var update = {};
-                                        for (var i = 0; i < keys.length; i++) {
-                                            update[keys[i]] = "";
+                                    // set owner
+                                    if (method === "save") {
+                                        
+                                        // set owner to guest or to user id
+                                        var ownerParams = {};
+                                        if (collection == this.settings.httpAuthCollection) {
+                                            ownerParams._owner = result._id.toString();
+                                        } else {
+                                            if (request.session.data.user === "guest") {
+                                                ownerParams._owner = "guest";
+                                            } else {
+                                                ownerParams._owner = request.session.data.user._id.toString();
+                                            }
                                         }
                                         
-                                        // hold off sending results
-                                        sendResult = false;
-                                        
-                                        // save uploads
-                                        var update = this.saveUploads(collection, result._id, request.session.data.uploads, update, true);
-                                        
-                                        // clear uploads
-                                        request.session.data.uploads = this.clearUploads(collection, "new", request.session.data.uploads);
-                                        
-                                        // create command
-                                        var commandUpdate = "this.db." + collection + ".update({\"_id\":this.db.ObjectId(\"" + result._id + "\")},{\"$set\":" + JSON.stringify(update) + "}, dbResultUpdate);";
-                                        var dbResultUpdate = function (errorUpdate, resultUpdate) {
-                                            if(errorUpdate) {
-                                            
-                                                // collection not provided, create procedure not found response
-                                                this.processError(request, response, -32603, "Internal JSON-RPC error.", json.id);
-                                                return;
-                                            } else {
-                                                // update keys
-                                                for (var i = 0; i < keys.length; i++) {
-                                                    resultUpdate[keys[i]] = update[keys[i]];
-                                                }
+                                        this.db[collection].update({"_id":result._id}, {"$set": ownerParams}, function (errorOwner, resultOwner) {}.bind(this));
+                                    }
+                                }
+                    
+                                if (sendResponse) {
+                        
+                                    // filter out return values
+                                    result = filters.filter(this.settings, collection, method, action, result, "out");
                                     
-                                                // filter out return values
-                                                resultUpdate = filters.filter(this.settings, collection, method, action, resultUpdate, "out");
-                                                
-                                                // return result
-                                                this.processResult (request, response, resultUpdate, json.id);
-                                                return;   
-                                            }
-                                        }.bind(this);
-                                                    
-                                        // write command to log
-                                        console.log(request.session.id + ": " + commandUpdate);
-                                        
-                                        // execute command
-                                        eval(commandUpdate);
+                                    // return result
+                                    this.processResult (request, response, result, json.id);
+                                    return;            
+                                }
+                            }
+                        }.bind(this);
+                        
+                        // write command to log
+                        console.log(request.session.id + ": " + command);
+                        
+                        // emit executeStart event
+                        this.emit(collection + "_" + method + "_" + action + "_executeStart", { "currentTarget": this });
+                        
+                        // execute command
+                        eval(command);
+                        
+                    } else {
+                
+                        // validation not passed, return with error and validation summary
+                        this.processError(request, response, -32603, "Internal JSON-RPC error.", json.id, validationSummary);
+                        return;
+                    }
+                }.bind(this);
+                
+                if (method == "update") {
+                    
+                    var validationComplete = function (validationSummaryFind, validationSummaryUpdate) {
+                        if (validationSummaryFind == true && validationSummaryUpdate == true) {
+                        
+                            var params = "";
+                            for (var i = 0; i < json.params.length; i++) {
+                                var tempId = undefined;
+                                if (json.params[i] != undefined) {
+                                    if (json.params[i]._id != undefined) {
+                                        if (json.params[i]._id.indexOf("ObjectId") > -1) {
+                                            tempId = json.params[i]._id;
+                                            json.params[i]._id = "###tempId###"; 
+                                        }
+                                    }
+                                }
+                                
+                                // hash the password
+                                if (collection == this.settings.httpAuthCollection) {
+                                    if (json.params[i] != undefined) {
+                                        var keys = Object.keys(json.params[1]);
+                                        if (keys != undefined) {
+                                            var passwordField = (!this.settings.httpAuthPasswordField ? "password" : this.settings.httpAuthPasswordField);
+                                            if (modifiers.indexOf(keys[0]) > -1) {
+                                                if (json.params[i][keys[0]] != undefined) {
+                                                    if (json.params[i][keys[0]][passwordField] != undefined) {
+                                                        json.params[i][keys[0]][passwordField] = passwordHash.generate(json.params[i][keys[0]][passwordField]);
+                                                    }
+                                                }
+                                            } else {
+                                                if (json.params[i][passwordField] != undefined) {
+                                                    json.params[i][passwordField] = passwordHash.generate(json.params[i][passwordField]);
+                                                }
+                                            }                
+                                        }
+                                    }
+                                }
+                                
+                                if (i == 0) {
+                                    if (tempId != undefined) {
+                                    
+                                        // add the parameters
+                                        params += JSON.stringify(json.params[i]);
+                                        params = params.replace("\"###tempId###\"", "this.db." + tempId);
+                                    } else {
+                                    
+                                        // add the parameters
+                                        params += JSON.stringify(json.params[i]);
+                                    }
+                                } else {
+                                    if (tempId != undefined) {
+                                    
+                                        // add the parameters
+                                        params += ", " + JSON.stringify(json.params[i]);
+                                        params = params.replace("\"###tempId###\"", "this.db." + tempId);
+                                    } else {
+                                    
+                                        // add the parameters
+                                        params += ", " + JSON.stringify(json.params[i]);
                                     }
                                 }
                             }
-                
-                            if (sendResponse) {
-                    
-                                // filter out return values
-                                result = filters.filter(this.settings, collection, method, action, result, "out");
-                                
-                                // return result
-                                this.processResult (request, response, result, json.id);
-                                return;            
+                            
+                            // create the command
+                            command = "this.db." + collection + "." + method + "(" + params + ", dbResult);";
+                            
+                        } else {
+                        
+                            validationSummary = [];
+                            
+                            if (validationSummaryFind != true) {
+                                validationSummary = validationSummary.concat(validationSummary, validationSummaryFind);
                             }
+                            
+                            if (validationSummaryUpdate != true) {
+                                validationSummary = validationSummary.concat(validationSummary, validationSummaryUpdate);
+                            }
+                            
+                            isValid = false;
                         }
+                        
+                        // execute the response
+                        execute(isValid, validationSummary);
                     }.bind(this);
                     
-                    // write command to log
-                    console.log(request.session.id + ": " + command);
+                    // validate the query
+                    validators.validate(this, collection, "find", action, json.params[0], function (validationSummaryFind) {
+                        
+                        // emit validateFind event
+                        this.emit(collection + "_" + method + "_" + action + "_validateFind", { "currentTarget": this, "params": json.params[0]});
+                        
+                        // filter the query
+                        json.params[0] = filters.filter(this.settings, collection, "find", action, json.params[0], "in");
+                        
+                        // emit filterFind event
+                        this.emit(collection + "_" + method + "_" + action + "_filterFind", { "direction": "in", "currentTarget": this, "params": json.params[0]});
+                        
+                        // filter the update and handle uploads
+                        var keys = Object.keys(json.params[1]);
+                        if (keys != undefined) {
+                            if (modifiers.indexOf(keys[0]) > -1) {
+                            
+                                // validate the update
+                                validators.validate(this, collection, "update", action, json.params[1][keys[0]], function (validationSummaryUpdate) {
+                                    
+                                    // emit validate event
+                                    this.emit(collection + "_" + method + "_" + action + "_validate", { "currentTarget": this, "params": json.params[1][keys[0]]});
+                                    
+                                    if (validationSummaryUpdate == true) {
+                                        
+                                        // filter the update
+                                        json.params[1][keys[0]] = filters.filter(this.settings, collection, "update", action, json.params[1][keys[0]], "in");
+                                        
+                                        // emit filter event
+                                        this.emit(collection + "_" + method + "_" + action + "_filter", { "direction": "in", "currentTarget": this, "params": json.params[1][keys[0]]});
+                                                
+                                        // save and clear uploads
+                                        if (json.params[0]._id !== undefined) {
+                                            
+                                            var id;
+                                            if (json.params[0]._id.indexOf("ObjectId") > -1) {
+                                                id = eval("this.db." + json.params[0]._id).toString();
+                                            } else {
+                                                id = json.params[0]._id;
+                                            }
+                                            
+                                            // save uploads
+                                            json.params[1][keys[0]] = this.saveUploads(collection, id, request.session.data.uploads, json.params[1][keys[0]]);
+                                            
+                                            // clear uploads
+                                            request.session.data.uploads = this.clearUploads(collection, id, request.session.data.uploads);
+                                        }
+                                    }
+                                    
+                                    validationComplete(validationSummaryFind, validationSummaryUpdate);
+                                }.bind(this));
+                            } else {
+                                // validate the update
+                                validators.validate(this, collection, "update", action, json.params[1], function (validationSummaryUpdate) {
+                                    
+                                    // emit validate event
+                                    this.emit(collection + "_" + method + "_" + action + "_validate", { "currentTarget": this, "params": json.params[1]});
+                                    
+                                    if (validationSummaryUpdate == true) {
+                                        
+                                        // filter the update
+                                        json.params[1] = filters.filter(this.settings, collection, "update", action, json.params[1], "in");
+                                        
+                                        // emit filtered event
+                                        this.emit(collection + "_" + method + "_" + action + "_filter", { "direction": "in", "currentTarget": this, "params": json.params[1]});
+                                        
+                                        // save and clear uploads
+                                        if (json.params[0]._id !== undefined) {
+                                            
+                                            var id;
+                                            if (json.params[0]._id.indexOf("ObjectId") > -1) {
+                                                id = eval("this.db." + json.params[0]._id).toString();
+                                            } else {
+                                                id = json.params[0]._id;
+                                            }
+                                            
+                                            // save uploads
+                                            json.params[1] = this.saveUploads(collection, id, request.session.data.uploads, json.params[1]);
+                                            
+                                            // clear uploads
+                                            request.session.data.uploads = this.clearUploads(collection, id, request.session.data.uploads);
+                                        }
+                                    }
+                                    
+                                    validationComplete(validationSummaryFind, validationSummaryUpdate);
+                                }.bind(this));
+                            }                
+                        }
+                    }.bind(this));
+                } else if (method == "findAndModify") {
                     
-                    // emit executeStart event
-                    this.emit(collection + "_" + method + "_" + action + "_executeStart", { "currentTarget": this });
-                    
-                    // execute command
-                    eval(command);
-                    
-                } else {
-            
-                    // validation not passed, return with error and validation summary
-                    this.processError(request, response, -32603, "Internal JSON-RPC error.", json.id, validationSummary);
-                    return;
-                }
-            }.bind(this);
-            
-            if (method == "update") {
-                
-                var validationComplete = function (validationSummaryFind, validationSummaryUpdate) {
-                    if (validationSummaryFind == true && validationSummaryUpdate == true) {
-                    
-                        var params = "";
-                        for (var i = 0; i < json.params.length; i++) {
+                    var validationComplete = function (validationSummaryFind, validationSummaryFindAndModify) { 
+                        if (validationSummaryFind == true && validationSummaryFindAndModify == true) {
                             var tempId = undefined;
-                            if (json.params[i] != undefined) {
-                                if (json.params[i]._id != undefined) {
-                                    if (json.params[i]._id.indexOf("ObjectId") > -1) {
-                                        tempId = json.params[i]._id;
-                                        json.params[i]._id = "###tempId###"; 
+                            if (json.params != undefined) {
+                                if (json.params._id != undefined) {
+                                    if (json.params._id.indexOf("ObjectId") > -1) {
+                                        tempId = json.params._id;
+                                        json.params._id = "###tempId###"; 
                                     }
                                 }
                             }
                             
                             // hash the password
                             if (collection == this.settings.httpAuthCollection) {
-                                if (json.params[i] != undefined) {
-                                    var keys = Object.keys(json.params[1]);
-                                    if (keys != undefined) {
-                                        var passwordField = (!this.settings.httpAuthPasswordField ? "password" : this.settings.httpAuthPasswordField);
-                                        if (modifiers.indexOf(keys[0]) > -1) {
-                                            if (json.params[i][keys[0]] != undefined) {
-                                                if (json.params[i][keys[0]][passwordField] != undefined) {
-                                                    json.params[i][keys[0]][passwordField] = passwordHash.generate(json.params[i][keys[0]][passwordField]);
-                                                }
+                                if (keys != undefined) {
+                                    var passwordField = (!this.settings.httpAuthPasswordField ? "password" : this.settings.httpAuthPasswordField);
+                                    if (modifiers.indexOf(keys[0]) > -1) {
+                                        if (json.params.update[keys[0]] != undefined) {
+                                            if (json.params.update[keys[0]][passwordField] != undefined) {
+                                                json.params.update[keys[0]][passwordField] = passwordHash.generate(json.params.update[keys[0]][passwordField]);
                                             }
-                                        } else {
-                                            if (json.params[i][passwordField] != undefined) {
-                                                json.params[i][passwordField] = passwordHash.generate(json.params[i][passwordField]);
+                                        }
+                                    } else {
+                                        if (json.params.update != undefined) {
+                                            if (json.params.update[passwordField] != undefined) {
+                                                json.params.update[passwordField] = passwordHash.generate(json.params.update[passwordField]);
                                             }
-                                        }                
-                                    }
+                                        }
+                                    }                
                                 }
                             }
                             
-                            if (i == 0) {
-                                if (tempId != undefined) {
-                                
-                                    // add the parameters
-                                    params += JSON.stringify(json.params[i]);
-                                    params = params.replace("\"###tempId###\"", "this.db." + tempId);
-                                } else {
-                                
-                                    // add the parameters
-                                    params += JSON.stringify(json.params[i]);
-                                }
+                            if (tempId != undefined) {
+                            
+                                // create the command
+                                command = "this.db." + collection + "." + method + "(" + JSON.stringify(json.params) + ", dbResult);";
+                                command = command.replace("\"###tempId###\"", "this.db." + tempId);
                             } else {
-                                if (tempId != undefined) {
-                                
-                                    // add the parameters
-                                    params += ", " + JSON.stringify(json.params[i]);
-                                    params = params.replace("\"###tempId###\"", "this.db." + tempId);
-                                } else {
-                                
-                                    // add the parameters
-                                    params += ", " + JSON.stringify(json.params[i]);
-                                }
+                            
+                                // create the command
+                                command = "this.db." + collection + "." + method + "(" + JSON.stringify(json.params) + ", dbResult);";
                             }
+                        } else {
+                        
+                            validationSummary = [];
+                            
+                            if (validationSummaryFind != true) {
+                                validationSummary = validationSummary.concat(validationSummary, validationSummaryFind);
+                            }
+                            
+                            if (validationSummaryFindAndModify != true) {
+                                validationSummary = validationSummary.concat(validationSummary, validationSummaryFindAndModify);
+                            }
+                            
+                            isValid = false;
                         }
                         
-                        // create the command
-                        command = "this.db." + collection + "." + method + "(" + params + ", dbResult);";
+                        // execute the response
+                        execute(isValid, validationSummary);
+                    }.bind(this);
+                    
+                    // validate the query
+                    validators.validate(this, collection, "find", action, json.params.query, function (validationSummaryFind) {
+                    
+                        // emit validateFind event
+                        this.emit(collection + "_" + method + "_" + action + "_validateFind", { "currentTarget": this, "params": json.params.query});
                         
-                    } else {
-                    
-                        validationSummary = [];
+                        // filter the query
+                        json.params.query = filters.filter(this.settings, collection, "find", action, json.params.query, "in");
                         
-                        if (validationSummaryFind != true) {
-                            validationSummary = validationSummary.concat(validationSummary, validationSummaryFind);
-                        }
+                        // emit filterFind event
+                        this.emit(collection + "_" + method + "_" + action + "_filterFind", { "direction": "in", "currentTarget": this, "params": json.params.query});
                         
-                        if (validationSummaryUpdate != true) {
-                            validationSummary = validationSummary.concat(validationSummary, validationSummaryUpdate);
-                        }
+                        // filter the update and handle uploads
+                        var keys = Object.keys(json.params.update);
+                        if (keys != undefined) {
                         
-                        isValid = false;
-                    }
-                    
-                    // execute the response
-                    execute(isValid, validationSummary);
-                }.bind(this);
-                
-                // validate the query
-                validators.validate(this, collection, "find", action, json.params[0], function (validationSummaryFind) {
-                    
-                    // emit validateFind event
-                    this.emit(collection + "_" + method + "_" + action + "_validateFind", { "currentTarget": this, "params": json.params[0]});
-                    
-                    // filter the query
-                    json.params[0] = filters.filter(this.settings, collection, "find", action, json.params[0], "in");
-                    
-                    // emit filterFind event
-                    this.emit(collection + "_" + method + "_" + action + "_filterFind", { "direction": "in", "currentTarget": this, "params": json.params[0]});
-                    
-                    // filter the update and handle uploads
-                    var keys = Object.keys(json.params[1]);
-                    if (keys != undefined) {
-                        if (modifiers.indexOf(keys[0]) > -1) {
-                        
-                            // validate the update
-                            validators.validate(this, collection, "update", action, json.params[1][keys[0]], function (validationSummaryUpdate) {
+                            if (modifiers.indexOf(keys[0]) > -1) {
+                            
+                                // validate the update
+                                validators.validate(this, collection, "findAndModify", action, json.params.update[keys[0]], function (validationSummaryFindAndModify) {
                                 
-                                // emit validate event
-                                this.emit(collection + "_" + method + "_" + action + "_validate", { "currentTarget": this, "params": json.params[1][keys[0]]});
+                                    // emit validate event
+                                    this.emit(collection + "_" + method + "_" + action + "_validate", { "currentTarget": this, "params": json.params.update[keys[0]]});
+                                    
+                                    if (validationSummaryFindAndModify == true) {
                                 
-                                if (validationSummaryUpdate == true) {
-                                    
-                                    // filter the update
-                                    json.params[1][keys[0]] = filters.filter(this.settings, collection, "update", action, json.params[1][keys[0]], "in");
-                                    
-                                    // emit filter event
-                                    this.emit(collection + "_" + method + "_" + action + "_filter", { "direction": "in", "currentTarget": this, "params": json.params[1][keys[0]]});
+                                        // filter the update                 
+                                        json.params.update[keys[0]] = filters.filter(this.settings, collection, "findAndModify", action, json.params.update[keys[0]], "in");
+                                        
+                                        // emit filter event
+                                        this.emit(collection + "_" + method + "_" + action + "_filter", { "direction": "in", "currentTarget": this, "params": json.params.update[keys[0]]});
+                                        
+                                        // save and clear uploads
+                                        if (json.params.query._id !== undefined) {
+                                        
+                                            var id;
+                                            if (json.params.query._id.indexOf("ObjectId") > -1) {
+                                                id = eval("this.db." + jjson.params.query._id);
+                                            } else {
+                                                id = json.params.query._id;
+                                            }
                                             
-                                    // save and clear uploads
-                                    if (json.params[0]._id !== undefined) {
-                                        
-                                        var id;
-                                        if (json.params[0]._id.indexOf("ObjectId") > -1) {
-                                            id = eval("this.db." + json.params[0]._id).toString();
-                                        } else {
-                                            id = json.params[0]._id;
+                                            // save uploads
+                                            json.params.update[keys[0]] = this.saveUploads(collection, id, request.session.data.uploads, json.update[keys[0]]);
+                                            
+                                            // clear uploads
+                                            request.session.data.uploads = this.clearUploads(collection, id, request.session.data.uploads);
                                         }
-                                        
-                                        // save uploads
-                                        json.params[1][keys[0]] = this.saveUploads(collection, id, request.session.data.uploads, json.params[1][keys[0]]);
-                                        
-                                        // clear uploads
-                                        request.session.data.uploads = this.clearUploads(collection, id, request.session.data.uploads);
                                     }
-                                }
-                                
-                                validationComplete(validationSummaryFind, validationSummaryUpdate);
-                            }.bind(this));
-                        } else {
-                            // validate the update
-                            validators.validate(this, collection, "update", action, json.params[1], function (validationSummaryUpdate) {
-                                
-                                // emit validate event
-                                this.emit(collection + "_" + method + "_" + action + "_validate", { "currentTarget": this, "params": json.params[1]});
-                                
-                                if (validationSummaryUpdate == true) {
                                     
-                                    // filter the update
-                                    json.params[1] = filters.filter(this.settings, collection, "update", action, json.params[1], "in");
-                                    
-                                    // emit filtered event
-                                    this.emit(collection + "_" + method + "_" + action + "_filter", { "direction": "in", "currentTarget": this, "params": json.params[1]});
-                                    
-                                    // save and clear uploads
-                                    if (json.params[0]._id !== undefined) {
-                                        
-                                        var id;
-                                        if (json.params[0]._id.indexOf("ObjectId") > -1) {
-                                            id = eval("this.db." + json.params[0]._id).toString();
-                                        } else {
-                                            id = json.params[0]._id;
-                                        }
-                                        
-                                        // save uploads
-                                        json.params[1] = this.saveUploads(collection, id, request.session.data.uploads, json.params[1]);
-                                        
-                                        // clear uploads
-                                        request.session.data.uploads = this.clearUploads(collection, id, request.session.data.uploads);
-                                    }
-                                }
+                                    validationComplete(validationSummaryFind, validationSummaryFindAndModify);
                                 
-                                validationComplete(validationSummaryFind, validationSummaryUpdate);
-                            }.bind(this));
-                        }                
-                    }
-                }.bind(this));
-            } else if (method == "findAndModify") {
-                
-                var validationComplete = function (validationSummaryFind, validationSummaryFindAndModify) { 
-                    if (validationSummaryFind == true && validationSummaryFindAndModify == true) {
-                        var tempId = undefined;
-                        if (json.params != undefined) {
-                            if (json.params._id != undefined) {
-                                if (json.params._id.indexOf("ObjectId") > -1) {
-                                    tempId = json.params._id;
-                                    json.params._id = "###tempId###"; 
-                                }
-                            }
-                        }
-                        
-                        // hash the password
-                        if (collection == this.settings.httpAuthCollection) {
-                            if (keys != undefined) {
-                                var passwordField = (!this.settings.httpAuthPasswordField ? "password" : this.settings.httpAuthPasswordField);
-                                if (modifiers.indexOf(keys[0]) > -1) {
-                                    if (json.params.update[keys[0]] != undefined) {
-                                        if (json.params.update[keys[0]][passwordField] != undefined) {
-                                            json.params.update[keys[0]][passwordField] = passwordHash.generate(json.params.update[keys[0]][passwordField]);
-                                        }
-                                    }
-                                } else {
-                                    if (json.params.update != undefined) {
-                                        if (json.params.update[passwordField] != undefined) {
-                                            json.params.update[passwordField] = passwordHash.generate(json.params.update[passwordField]);
-                                        }
-                                    }
-                                }                
-                            }
-                        }
-                        
-                        if (tempId != undefined) {
-                        
-                            // create the command
-                            command = "this.db." + collection + "." + method + "(" + JSON.stringify(json.params) + ", dbResult);";
-                            command = command.replace("\"###tempId###\"", "this.db." + tempId);
-                        } else {
-                        
-                            // create the command
-                            command = "this.db." + collection + "." + method + "(" + JSON.stringify(json.params) + ", dbResult);";
-                        }
-                    } else {
-                    
-                        validationSummary = [];
-                        
-                        if (validationSummaryFind != true) {
-                            validationSummary = validationSummary.concat(validationSummary, validationSummaryFind);
-                        }
-                        
-                        if (validationSummaryFindAndModify != true) {
-                            validationSummary = validationSummary.concat(validationSummary, validationSummaryFindAndModify);
-                        }
-                        
-                        isValid = false;
-                    }
-                    
-                    // execute the response
-                    execute(isValid, validationSummary);
-                }.bind(this);
-                
-                // validate the query
-                validators.validate(this, collection, "find", action, json.params.query, function (validationSummaryFind) {
-                
-                    // emit validateFind event
-                    this.emit(collection + "_" + method + "_" + action + "_validateFind", { "currentTarget": this, "params": json.params.query});
-                    
-                    // filter the query
-                    json.params.query = filters.filter(this.settings, collection, "find", action, json.params.query, "in");
-                    
-                    // emit filterFind event
-                    this.emit(collection + "_" + method + "_" + action + "_filterFind", { "direction": "in", "currentTarget": this, "params": json.params.query});
-                    
-                    // filter the update and handle uploads
-                    var keys = Object.keys(json.params.update);
-                    if (keys != undefined) {
-                    
-                        if (modifiers.indexOf(keys[0]) > -1) {
-                        
-                            // validate the update
-                            validators.validate(this, collection, "findAndModify", action, json.params.update[keys[0]], function (validationSummaryFindAndModify) {
+                                }.bind(this));
+                            } else {
                             
-                                // emit validate event
-                                this.emit(collection + "_" + method + "_" + action + "_validate", { "currentTarget": this, "params": json.params.update[keys[0]]});
-                                
-                                if (validationSummaryFindAndModify == true) {
-                            
-                                    // filter the update                 
-                                    json.params.update[keys[0]] = filters.filter(this.settings, collection, "findAndModify", action, json.params.update[keys[0]], "in");
+                                // validate the update
+                                validators.validate(this, collection, "findAndModify", action, json.params.update, function (validationSummaryFindAndModify) {
                                     
-                                    // emit filter event
-                                    this.emit(collection + "_" + method + "_" + action + "_filter", { "direction": "in", "currentTarget": this, "params": json.params.update[keys[0]]});
+                                    // emit validate event
+                                    this.emit(collection + "_" + method + "_" + action + "_validate", { "currentTarget": this, "params": json.params.update});
                                     
-                                    // save and clear uploads
-                                    if (json.params.query._id !== undefined) {
+                                    if (validationSummaryFindAndModify == true) {
                                     
-                                        var id;
-                                        if (json.params.query._id.indexOf("ObjectId") > -1) {
-                                            id = eval("this.db." + jjson.params.query._id);
-                                        } else {
-                                            id = json.params.query._id;
+                                        // filter the update
+                                        json.params.update = filters.filter(this.settings, collection, "findAndModify", action, json.params.update, "in");
+                                        
+                                        // emit filter event
+                                        this.emit(collection + "_" + method + "_" + action + "_filter", { "direction": "in", "currentTarget": this, "params": json.params.update});
+                                        
+                                        // save and clear uploads
+                                        if (json.params.query._id !== undefined) {
+                                        
+                                            var id;
+                                            if (json.params.query._id.indexOf("ObjectId") > -1) {
+                                                id = eval("this.db." + jjson.params.query._id);
+                                            } else {
+                                                id = json.params.query._id;
+                                            }
+                                            
+                                            // save uploads
+                                            json.params.update = this.saveUploads(collection, id, request.session.data.uploads, json.update);
+                                            
+                                            // clear uploads
+                                            request.session.data.uploads = this.clearUploads(collection, id, request.session.data.uploads);
                                         }
-                                        
-                                        // save uploads
-                                        json.params.update[keys[0]] = this.saveUploads(collection, id, request.session.data.uploads, json.update[keys[0]]);
-                                        
-                                        // clear uploads
-                                        request.session.data.uploads = this.clearUploads(collection, id, request.session.data.uploads);
                                     }
-                                }
-                                
-                                validationComplete(validationSummaryFind, validationSummaryFindAndModify);
-                            
-                            }.bind(this));
-                        } else {
-                        
-                            // validate the update
-                            validators.validate(this, collection, "findAndModify", action, json.params.update, function (validationSummaryFindAndModify) {
-                                
-                                // emit validate event
-                                this.emit(collection + "_" + method + "_" + action + "_validate", { "currentTarget": this, "params": json.params.update});
-                                
-                                if (validationSummaryFindAndModify == true) {
-                                
-                                    // filter the update
-                                    json.params.update = filters.filter(this.settings, collection, "findAndModify", action, json.params.update, "in");
                                     
-                                    // emit filter event
-                                    this.emit(collection + "_" + method + "_" + action + "_filter", { "direction": "in", "currentTarget": this, "params": json.params.update});
-                                    
-                                    // save and clear uploads
-                                    if (json.params.query._id !== undefined) {
-                                    
-                                        var id;
-                                        if (json.params.query._id.indexOf("ObjectId") > -1) {
-                                            id = eval("this.db." + jjson.params.query._id);
-                                        } else {
-                                            id = json.params.query._id;
-                                        }
-                                        
-                                        // save uploads
-                                        json.params.update = this.saveUploads(collection, id, request.session.data.uploads, json.update);
-                                        
-                                        // clear uploads
-                                        request.session.data.uploads = this.clearUploads(collection, id, request.session.data.uploads);
-                                    }
-                                }
+                                    validationComplete(validationSummaryFind, validationSummaryFindAndModify);
                                 
-                                validationComplete(validationSummaryFind, validationSummaryFindAndModify);
-                            
-                            }.bind(this));
-                        }                
-                    }
-                }.bind(this));
-                
-            } else {
-                
-                // validate
-                validators.validate(this, collection, method, action, json.params, function (validationSummary) {
-                    
-                    // emit validate event
-                    this.emit(collection + "_" + method + "_" + action + "_validate", { "currentTarget": this, "params": json.params});
-                    
-                    if (validationSummary == true) {
-                        
-                        // filter the params
-                        json.params = filters.filter(this.settings, collection, method, action, json.params, "in");
-                        
-                        // emit filtered event
-                        this.emit(collection + "_" + method + "_" + action + "_filter", { "direction": "in", "currentTarget": this, "params": json.params});
-                        
-                        var tempId = undefined;
-                        if (json.params != undefined) {
-                            if (json.params._id != undefined) {
-                                if (json.params._id.indexOf("ObjectId") > -1) {
-                                    tempId = json.params._id;
-                                    json.params._id = "###tempId###"; 
-                                }
-                            }
+                                }.bind(this));
+                            }                
                         }
+                    }.bind(this));
+                    
+                } else {
+                    
+                    // validate
+                    validators.validate(this, collection, method, action, json.params, function (validationSummary) {
                         
-                        // hash the password
-                        if (collection == this.settings.httpAuthCollection) {
+                        // emit validate event
+                        this.emit(collection + "_" + method + "_" + action + "_validate", { "currentTarget": this, "params": json.params});
+                        
+                        if (validationSummary == true) {
+                            
+                            // filter the params
+                            json.params = filters.filter(this.settings, collection, method, action, json.params, "in");
+                            
+                            // emit filtered event
+                            this.emit(collection + "_" + method + "_" + action + "_filter", { "direction": "in", "currentTarget": this, "params": json.params});
+                            
+                            var tempId = undefined;
                             if (json.params != undefined) {
-                                var passwordField = (!this.settings.httpAuthPasswordField ? "password" : this.settings.httpAuthPasswordField);
-                                if (json.params[passwordField] != undefined) {
-                                    json.params[passwordField] = passwordHash.generate(json.params[passwordField]);
+                                if (json.params._id != undefined) {
+                                    if (json.params._id.indexOf("ObjectId") > -1) {
+                                        tempId = json.params._id;
+                                        json.params._id = "###tempId###"; 
+                                    }
                                 }
                             }
-                        }
-                        
-                        if (tempId != undefined) {
-                        
-                            // create the command
-                            command = "this.db." + collection + "." + method + "(" + JSON.stringify(json.params) + ", dbResult);";
-                            command = command.replace("\"###tempId###\"", "this.db." + tempId);
+                            
+                            // hash the password
+                            if (collection == this.settings.httpAuthCollection) {
+                                if (json.params != undefined) {
+                                    var passwordField = (!this.settings.httpAuthPasswordField ? "password" : this.settings.httpAuthPasswordField);
+                                    if (json.params[passwordField] != undefined) {
+                                        json.params[passwordField] = passwordHash.generate(json.params[passwordField]);
+                                    }
+                                }
+                            }
+                            
+                            if (tempId != undefined) {
+                            
+                                // create the command
+                                command = "this.db." + collection + "." + method + "(" + JSON.stringify(json.params) + ", dbResult);";
+                                command = command.replace("\"###tempId###\"", "this.db." + tempId);
+                            } else {
+                            
+                                // create the command
+                                command = "this.db." + collection + "." + method + "(" + JSON.stringify(json.params) + ", dbResult);";
+                            }
+                            
                         } else {
                         
-                            // create the command
-                            command = "this.db." + collection + "." + method + "(" + JSON.stringify(json.params) + ", dbResult);";
+                            isValid = false;
                         }
                         
-                    } else {
-                    
-                        isValid = false;
-                    }
-                    
-                    // execute the response
-                    execute(isValid, validationSummary);
-                }.bind(this));
+                        // execute the response
+                        execute(isValid, validationSummary);
+                    }.bind(this));
+                }
+            
+            } else {
+            
+                // method not allowed, return with error and validation summary
+                this.processError(request, response, -32601, "Procedure not found.", json.id);
+                return;
             }
-        
-        } else {
-        
-            // method not allowed, return with error and validation summary
-            this.processError(request, response, -32601, "Procedure not found.", json.id);
-            return;
-        }
+        }.bind(this));
     }
 
     this.processPost = function (request, response) {
@@ -800,55 +843,64 @@ MongoRpc = function () {
                     field = keys[0];
                 }
                 
-                // check roles
-                var allowed = roles.check(this.settings, fields.collection, fields.method, fields.action, request.session.data.user);
-                if (allowed) {
-                    if (fields.method === "upload") {
+                if (fields.method === "upload") {
+                    // check roles
+                    roles.check(this, fields.collection, fields.method, fields.action, request.session.data.user, function (allowed) {
+                        if (allowed) {
+                            
+                            // filter the params
+                            files = filters.filter(this.settings, fields.collection, fields.method, fields.action, files, "in");
+                            
+                            // set id to new if not defined    
+                            if (fields._id ==="" || fields._id === undefined) {
+                                fields._id = "new";
+                            }
                         
-                        // filter the params
-                        files = filters.filter(this.settings, fields.collection, fields.method, fields.action, files, "in");
+                            // create uploads
+                            if (request.session.data["uploads"] === undefined) {
+                                request.session.data["uploads"] = {};
+                            }
+                            
+                            // create collection for uploads
+                            if (request.session.data["uploads"][fields.collection] === undefined) {
+                                request.session.data["uploads"][fields.collection] = {};
+                            }
+                            
+                            // create document for uploads
+                            if (request.session.data["uploads"][fields.collection][fields._id] === undefined) {
+                                request.session.data["uploads"][fields.collection][fields._id] = {};
+                            }
+                            
+                            keys = Object.keys(files);
+                            if (keys.length > 0) {
+            
+                                // loop through files and add them to the session
+                                request.session.data["uploads"][fields.collection][fields._id][keys[0]] = files[keys[0]];
+                                
+                                // write to log
+                                console.log(request.session.id + ": uploaded a file (" + files[keys[0]].path + ")"); 
+                                
+                                // respond and show the final step
+                                this.processUpload(request, response, fields.collection, field, 3);
+                                return;
+                            }
+                        } 
                         
-                        // set id to new if not defined    
-                        if (fields._id ==="" || fields._id === undefined) {
-                            fields._id = "new";
-                        }
+                        // respond to request with error
+                        this.processUpload(request, response, fields.collection, field, "error");
+                        return;
+                        
+                    }.bind(this));
+                    return;
                     
-                        // create uploads
-                        if (request.session.data["uploads"] === undefined) {
-                            request.session.data["uploads"] = {};
-                        }
-                        
-                        // create collection for uploads
-                        if (request.session.data["uploads"][fields.collection] === undefined) {
-                            request.session.data["uploads"][fields.collection] = {};
-                        }
-                        
-                        // create document for uploads
-                        if (request.session.data["uploads"][fields.collection][fields._id] === undefined) {
-                            request.session.data["uploads"][fields.collection][fields._id] = {};
-                        }
-                        
-                        keys = Object.keys(files);
-                        if (keys.length > 0) {
-        
-                            // loop through files and add them to the session
-                            request.session.data["uploads"][fields.collection][fields._id][keys[0]] = files[keys[0]];
-                            
-                            // write to log
-                            console.log(request.session.id + ": uploaded a file (" + files[keys[0]].path + ")"); 
-                            
-                            // respond and show the final step
-                            this.processUpload(request, response, fields.collection, field, 3);
-                            return;
-                        }
-                    }
-                }
+                } else {
                 
-                // respond to request with error
-                this.processUpload(request, response, fields.collection, field, "error");
-                return;
-            });
-            return;
+                    // respond to request with error
+                    this.processUpload(request, response, fields.collection, field, "error");
+                    return;
+                }
+            }.bind(this));
+        
         } else {
         
             // load chunks into data
@@ -891,6 +943,11 @@ MongoRpc = function () {
                         
                             // process authentication status request
                             this.processIsAuthenticated(request, response, json);
+                        
+                        } else if (collection == this.settings.httpAuthCollection && json.method == "isInRole") {
+                        
+                            // process authentication status request
+                            this.processIsInRole(request, response, json);
                             
                         } else {
                         
@@ -932,35 +989,69 @@ MongoRpc = function () {
     this.processGet = function (request, response) {
     
         var uri = url.parse(request.url).pathname;
-        if (uri.indexOf("settings.json", 0) < 0 && uri.indexOf("server.js", 0) < 0) {
-            var filename = libpath.join(this.path, uri);
-            libpath.exists(filename, function (exists) {
-                if (!exists) {
-                    response.writeHead(404, {"Content-Type": "text/plain" });
-                    response.write("404 Not Found\n");
-                    response.end();
-                    return;
-                }
+        if (uri.indexOf("settings.json", 0) < 0 && 
+            uri.indexOf("server.js", 0) < 0 && 
+            uri.indexOf("lib/", 0) < 0 && 
+            uri.indexOf("node_modules/", 0) < 0) {
             
-                if (fs.statSync(filename).isDirectory()) {
-                    filename += "/index.html";
-                }
-            
-                fs.readFile(filename, "binary", function (error, file) {
-                    if (error) {
-                        response.writeHead(500, {"Content-Type": "text/plain" });
-                        response.write(error + "\n");
-                        response.end();
+            if ((uri.indexOf("index.html") === 1 && !this.settings.isDebug) || 
+                (uri === "/" && !this.settings.isDebug) ) {
+                response.writeHead(404, {"Content-Type": "text/plain" });
+                response.write("404 Not Found\n");
+                response.end();
+            } else {
+                
+                var filename = libpath.join(this.path, uri);
+                libpath.exists(filename, function (exists) {
+                    if (!exists) {
+                        libpath.exists("./lib/" + filename + ".js", function (requireExists) {
+                            if (!requireExists) {
+                                response.writeHead(404, {"Content-Type": "text/plain" });
+                                response.write("404 Not Found\n");
+                                response.end();
+                                return;
+                            }
+                            
+                            try {
+                                var file = require("./lib/" + filename + ".js");   
+                                if (file.render !== undefined) {
+                                    file.render(this, request, response);
+                                    return;
+                                } else  {
+                                    response.writeHead(404, {"Content-Type": "text/plain" });
+                                    response.write("404 Not Found\n");
+                                    response.end();
+                                    return;                        
+                                }
+                            } catch (error) {
+                                response.writeHead(500, {"Content-Type": "text/plain" });
+                                response.write("500 Internal Server Error\n");
+                                response.end();
+                            }
+                        }.bind(this));
                         return;
-                    } else {
-                        var type = mime.lookup(filename);
-                        response.writeHead(200, { "Content-Type": type });
-                        response.write(file, "binary");
-                        response.end();
                     }
-                });
-            });
-        } else {		    
+                
+                    if (fs.statSync(filename).isDirectory()) {
+                        filename += "/index.html";
+                    }
+                
+                    fs.readFile(filename, "binary", function (error, file) {
+                        if (error) {
+                            response.writeHead(500, {"Content-Type": "text/plain" });
+                            response.write(error + "\n");
+                            response.end();
+                            return;
+                        } else {
+                            var type = mime.lookup(filename);
+                            response.writeHead(200, { "Content-Type": type });
+                            response.write(file, "binary");
+                            response.end();
+                        }
+                    }.bind(this));
+                }.bind(this));
+            }
+        } else {
             response.writeHead(404, {"Content-Type": "text/plain" });
             response.write("404 Not Found\n");
             response.end();

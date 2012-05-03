@@ -69,7 +69,7 @@ function proxy_Load () {
                         "callback": callback,
                         "json": data
                     };
-                    parent.postMessage(message, origin);
+                    parent.postMessage(JSON.stringify(message), origin);
                 } catch (error) {
                     alert(error.Message);
                 }
@@ -99,7 +99,6 @@ function execute() {
 		if (methodAction != "") {
 		    data.method += "/" + methodAction;
 		}
-		
 		
 		data = JSON.stringify(data);
 		

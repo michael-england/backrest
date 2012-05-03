@@ -1,6 +1,6 @@
 {
     "isDebug" : true,
-    "isSecured" : true,
+    "isSecured" : false,
     "privateKey" : "privatekey.pem",
     "certificate" : "certificate.pem",
     "httpPort" : "8080",
@@ -229,7 +229,7 @@
             "update": {
                 "enabled" : true,
                 "default" : {
-                    "roles" : [],
+                    "roles" : ["admin","owner"],
                     "filters" : [
                         {
                             "fieldToFilter" : "password",
