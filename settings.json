@@ -84,6 +84,31 @@
                     "events" : []
                 }
             },
+            "group": {
+                "enabled" : true,
+                "default" : {
+                    "roles" : [],
+                    "filters" : [],
+                    "validators" : [],
+                    "events" : [],
+                    "params" : {
+                        "reduce" : null,
+                        "keyf" : null,
+                        "finalize" : null
+                    }
+                }
+            },
+            "mapReduce": {
+                "enabled" : true,
+                "default" : {
+                    "roles" : [],
+                    "filters" : [],
+                    "validators" : [],
+                    "events" : [],
+                    "params" : {
+                    }
+                }
+            },
             "find": {
                 "enabled" : true,
                 "roles" : ["admin"],
