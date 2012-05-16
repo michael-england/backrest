@@ -171,7 +171,7 @@ MongoRpc = function () {
                 // temporarily save password and remove it from params
                 var passwordField = (!this.settings.httpAuthPasswordField ? "password" : this.settings.httpAuthPasswordField);
                 var password = json.params[passwordField];
-                json.params[passwordField] = undefined;
+                delete json.params[passwordField];
                 
                 // the login response
                 var dbLoginResult = function (error, result) {
@@ -242,7 +242,94 @@ MongoRpc = function () {
         this.processResult (request, response, "Logout successful.", json.id);
         return;
     }
-
+    
+    this.processChangePassword = function (request, response, json) {
+        
+        if (request.session.data.user != "guest") {
+            var isValid = true;
+            
+            // filter the params
+            json.params = filters.filter(this.settings, this.settings.httpAuthCollection, "changePassword", "default", json.params, "in");
+            
+            // validate
+            validators.validate(this, this.settings.httpAuthCollection, "changePassword", "default", json.params, function (validationSummary) {
+                if (validationSummary !== true) {
+                    isValid = false;
+                }
+                    
+                if (isValid) {	
+                    
+                    // temporarily save password and remove it from params
+                    var passwordField = (!this.settings.httpAuthPasswordField ? "password" : this.settings.httpAuthPasswordField);
+                    var password = json.params[passwordField];
+                    delete json.params[passwordField];
+                    
+                    if (passwordHash.verify(password, request.session.data.user[passwordField])) {
+                    
+                        // ensure new password and password confirmation match
+                        if (json.params.newPassword == json.params.confirmPassword) {
+                        
+                            // encrypt the new password
+                            json.params[passwordField] = passwordHash.generate(json.params.newPassword);
+                            
+                            // removed new password and password confirmation
+                            delete json.params.newPassword;
+                            delete json.params.confirmPassword;
+                        
+                            // save changes to db
+                            var dbResult = function (error, result) {
+                                if(error) {
+                                
+                                      // collection not provided, create procedure not found response
+                                    this.processError(request, response, -32603, "Internal JSON-RPC error.", json.id);
+                                    
+                                } else {
+                                    // log password change
+                                    console.log("Session " + request.session.id + " has changed their password");
+                                
+                                    // store new password in session
+                                    request.session.data.user[passwordField] = json.params.newPassword;
+                                
+                                    // return success
+                                    this.processResult(request, response, "Password successfully changed.", json.id);
+                                }
+                            
+                            }.bind(this);
+                            
+                            var update = {"$set":json.params};
+                            
+                            // build the command		
+                            var command = "this.db." + this.settings.httpAuthCollection + ".update({\"_id\":this.db.ObjectId(\"" + request.session.data.user._id.toString() + "\")}," + JSON.stringify(update) + ", dbResult);";
+                            
+                            // write command to log
+                            console.log(request.session.id + ": " + command);
+                        
+                            // execute command
+                            eval(command)
+                        } else {
+                            
+                            // new password and password confirmation do not match
+                            this.processError(request, response, -32000, "New password and confirm password do not match.", json.id, validationSummary);
+                        }
+                    } else {
+                        
+                        // user currently not logged in
+                        this.processError(request, response, -32000, "Invalid credentials.", json.id, validationSummary);
+                    }    
+                } else {
+                    
+                    // validation not passed, return with error and validation summary
+                    this.processError(request, response, -32603, "Internal JSON-RPC error.", json.id, validationSummary);
+                }
+            }.bind(this));
+        } else {
+            
+            // user currently not logged in
+            this.processError(request, response, -32000, "User not logged in.", json.id, validationSummary);
+            return;
+        }
+    }
+    
     this.processIsInRole = function (request, response, json) {
     
         // change the authenticated user
@@ -1084,6 +1171,11 @@ MongoRpc = function () {
                         
                             // process authentication status request
                             this.processIsInRole(request, response, json);
+                            
+                        } else if (collection == this.settings.httpAuthCollection && json.method == "changePassword") {
+                        
+                            // process authentication status request
+                            this.processChangePassword(request, response, json);
                             
                         } else {
                         

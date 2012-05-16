@@ -56,6 +56,60 @@
                     "events" : [ ]
                 }
             },
+            "changePassword": {
+                "enabled" : true,
+                "default" : {
+                    "filters" : [
+                        {
+                            "fieldToFilter" : "*",
+                            "direction" : "in",
+                            "allowed" : false
+                        },
+                        {
+                            "fieldToFilter" : "password",
+                            "direction" : "in",
+                            "allowed" : true
+                        },
+                        {
+                            "fieldToFilter" : "newPassword",
+                            "direction" : "in",
+                            "allowed" : true
+                        },
+                        {
+                            "fieldToFilter" : "confirmPassword",
+                            "direction" : "in",
+                            "allowed" : true
+                        }
+                    ],
+                    "validators" : [
+                        {
+                            "type" : "required",
+                            "fieldToValidate" : "password",
+                            "errorMessage" : "Password is required."
+                        },
+                        {
+                            "type" : "required",
+                            "fieldToValidate" : "newPassword",
+                            "errorMessage" : "New password is required."
+                        },
+                        {
+                            "type" : "required",
+                            "fieldToValidate" : "confirmPassword",
+                            "errorMessage" : "Confirm password is required."
+                        },
+                        {
+                            "type" : "compare",
+                            "fieldToValidate" : "newPassword",
+                            "fieldToCompare" : "confirmPassword",
+                            "valueToCompare" : null,
+                            "dataType" : "string",
+                            "operator" : "==",
+                            "errorMessage" : "Passwords do not match."
+                        }
+                    ],
+                    "events" : [ ]
+                }
+            },
             "upload":{
                 "enabled" : true,
                 "default" : {
