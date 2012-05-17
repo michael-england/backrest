@@ -521,10 +521,8 @@ MongoRpc = function () {
 	                                var tempId = undefined;
 	                                if (json.params[i] != undefined) {
 	                                    if (json.params[i]._id != undefined) {
-	                                        if (json.params[i]._id.indexOf("ObjectId") > -1) {
-	                                            tempId = json.params[i]._id;
-	                                            json.params[i]._id = "###tempId###"; 
-	                                        }
+                                            tempId = json.params[i]._id;
+                                            json.params[i]._id = "###tempId###";
 	                                    }
 	                                }
 	                                
@@ -554,7 +552,7 @@ MongoRpc = function () {
 	                                    
 	                                        // add the parameters
 	                                        params += JSON.stringify(json.params[i]);
-	                                        params = params.replace("\"###tempId###\"", "this.db." + tempId);
+	                                        params = params.replace("\"###tempId###\"", "this.db.ObjectId(\"" + tempId + "\")");
 	                                    } else {
 	                                    
 	                                        // add the parameters
@@ -565,7 +563,7 @@ MongoRpc = function () {
 	                                    
 	                                        // add the parameters
 	                                        params += ", " + JSON.stringify(json.params[i]);
-	                                        params = params.replace("\"###tempId###\"", "this.db." + tempId);
+	                                        params = params.replace("\"###tempId###\"", "this.db.ObjectId(\"" + tempId + "\")");
 	                                    } else {
 	                                    
 	                                        // add the parameters
@@ -692,10 +690,8 @@ MongoRpc = function () {
 	                            var tempId = undefined;
 	                            if (json.params != undefined) {
 	                                if (json.params._id != undefined) {
-	                                    if (json.params._id.indexOf("ObjectId") > -1) {
-	                                        tempId = json.params._id;
-	                                        json.params._id = "###tempId###"; 
-	                                    }
+                                        tempId = json.params._id;
+                                        json.params._id = "###tempId###"; 	                                    
 	                                }
 	                            }
 	                            
@@ -723,7 +719,7 @@ MongoRpc = function () {
 	                            
 	                                // create the command
 	                                command = "this.db." + collection + "." + method + "(" + JSON.stringify(json.params) + ", dbResult);";
-	                                command = command.replace("\"###tempId###\"", "this.db." + tempId);
+	                                command = command.replace("\"###tempId###\"", "this.db.ObjectId(\"" + tempId + "\")");
 	                            } else {
 	                            
 	                                // create the command
@@ -850,10 +846,8 @@ MongoRpc = function () {
     	                        if (json.params != undefined) {
     	                            if (json.params.cond != undefined) {
         	                            if (json.params.cond._id != undefined) {
-        	                                if (json.params.cond._id.indexOf("ObjectId") > -1) {
-        	                                    tempId = json.params.cond._id;
-        	                                    json.params.cond._id = "###tempId###"; 
-        	                                }
+    	                                    tempId = json.params.cond._id;
+    	                                    json.params.cond._id = "###tempId###"; 
         	                            }
         	                        }
     	                        }
@@ -872,7 +866,7 @@ MongoRpc = function () {
     	                        
     	                            // create the command
     	                            command = "this.db." + collection + "." + method + "(" + JSON.stringify(json.params) + ", dbResult);";
-    	                            command = command.replace("\"###tempId###\"", "this.db." + tempId);
+    	                            command = command.replace("\"###tempId###\"", "this.db.ObjectId(\"" + tempId + "\")");
     	                        } else {
     	                        
     	                            // create the command
@@ -911,10 +905,8 @@ MongoRpc = function () {
     	                        if (json.params != undefined) {
     	                            if (json.params.query != undefined) {
     	                                if (json.params.query._id != undefined) {
-    	                                    if (json.params.query._id.indexOf("ObjectId") > -1) {
-    	                                        tempId = json.params.query._id;
-    	                                        json.params.query._id = "###tempId###"; 
-    	                                    }
+	                                        tempId = json.params.query._id;
+	                                        json.params.query._id = "###tempId###";
     	                                }
     	                            }
     	                        }
@@ -933,7 +925,7 @@ MongoRpc = function () {
     	                        
     	                            // create the command
     	                            command = "this.db." + collection + "." + method + "(" + JSON.stringify(json.params) + ", dbResult);";
-    	                            command = command.replace("\"###tempId###\"", "this.db." + tempId);
+    	                            command = command.replace("\"###tempId###\"", "this.db.ObjectId(\"" + tempId + "\")");
     	                        } else {
     	                        
     	                            // create the command
@@ -985,10 +977,8 @@ MongoRpc = function () {
 	                            var tempId = undefined;
 	                            if (json.params != undefined) {
 	                                if (json.params._id != undefined) {
-	                                    if (json.params._id.indexOf("ObjectId") > -1) {
-	                                        tempId = json.params._id;
-	                                        json.params._id = "###tempId###"; 
-	                                    }
+                                        tempId = json.params._id;
+                                        json.params._id = "###tempId###";
 	                                }
 	                            }
 	                            
@@ -1006,7 +996,7 @@ MongoRpc = function () {
 	                            
 	                                // create the command
 	                                command = "this.db." + collection + "." + method + "(" + JSON.stringify(json.params) + ", dbResult);";
-	                                command = command.replace("\"###tempId###\"", "this.db." + tempId);
+	                                command = command.replace("\"###tempId###\"", "this.db.ObjectId(\"" + tempId + "\")");
 	                            } else {
 	                            
 	                                // create the command
