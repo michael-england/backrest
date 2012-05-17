@@ -1058,7 +1058,7 @@ MongoRpc = function () {
                 
                 if (fields.method === "upload") {
                     // check roles
-                    roles.check(this, fields.collection, fields.method, fields.action, request.session.data.user, function (allowed) {
+                    roles.check(this, fields.collection, fields.method, fields.action, request.session.data.user, null, function (allowed) {
                         if (allowed) {
                             
                             // filter the params
