@@ -8,16 +8,12 @@ var fs = require("./lib/fs");
 var url = require("url");
 var mime = require("mime");
 var util = require("util");
-var crypto = require("crypto");
 var passwordHash = require("password-hash");
 var formidable = require("formidable");
 var validators = require("./lib/validators");
 var filters = require("./lib/filters");
 var roles = require("./lib/roles");
 var params = require("./lib/params");
-var email   = require("./node_modules/emailjs/email");
-
-
 
 MongoRpc = function () {
     events.EventEmitter.call(this);
@@ -28,7 +24,6 @@ MongoRpc = function () {
     this.events = undefined;
     this.customValidators = undefined;
     this.db = undefined;
-    this.mail = undefined;
 
     this.init = function () {
         this.settingsFilename = libpath.join(this.path, "settings.json");
@@ -79,42 +74,6 @@ MongoRpc = function () {
                             }
                         }
                     }
-                }
-                
-                // create mail server
-                if (this.settings.mail) {
-	                this.mail = email.server.connect(this.settings.mail.server);
-	                
-	                var messages = Object.keys(this.settings.mail.messages);
-	                for (var m = 0; m < messages.length; m++) {
-	                	if (this.settings.mail.messages[messages[m]]) {
-	                		
-	                		var index = m;
-	                		libpath.exists(this.settings.mail.messages[messages[index]].text, function (exists) {
-		                		if (exists) {
-						            fs.readFile(this.settings.mail.messages[messages[index]].text, "binary", function (errorMessage, fileMessage) {
-							            this.settings.mail.messages[messages[index]].text = fileMessage;
-						            }.bind(this));
-						        }
-	                		}.bind(this));
-	                		
-	                		if (this.settings.mail.messages[messages[index]].attachment) {
-	                			for (var a = 0; a < this.settings.mail.messages[messages[index]].attachment.length; a++) {
-		                			if (this.settings.mail.messages[messages[index]].attachment[a].alternative === true) {
-
-			                			var indexA = a;
-			                			libpath.exists(this.settings.mail.messages[messages[index]].attachment[indexA].data, function (exists) {
-					                		if (exists) {
-									            fs.readFile(this.settings.mail.messages[messages[index]].attachment[indexA].data, "binary", function (errorAttachment, fileAttachment) {
-										            this.settings.mail.messages[messages[index]].attachment[indexA].data = fileAttachment;
-									            }.bind(this));
-									        }
-				                		}.bind(this));
-		                			}
-	                			}
-	                		}
-	                	}
-	                }
                 }
                 
                 // register validators
@@ -202,7 +161,7 @@ MongoRpc = function () {
         json.params = filters.filter(this.settings, this.settings.httpAuthCollection, "login", "default", json.params, "in");
         
         // validate
-        validators.validate(this, this.settings.httpAuthCollection, "login", "default", json, json.params, function (validationSummary) {
+        validators.validate(this, this.settings.httpAuthCollection, "login", "default", json.params, function (validationSummary) {
             if (validationSummary !== true) {
                 isValid = false;
             }
@@ -293,7 +252,7 @@ MongoRpc = function () {
             json.params = filters.filter(this.settings, this.settings.httpAuthCollection, "changePassword", "default", json.params, "in");
             
             // validate
-            validators.validate(this, this.settings.httpAuthCollection, "changePassword", "default", json, json.params, function (validationSummary) {
+            validators.validate(this, this.settings.httpAuthCollection, "changePassword", "default", json.params, function (validationSummary) {
                 if (validationSummary !== true) {
                     isValid = false;
                 }
@@ -371,191 +330,6 @@ MongoRpc = function () {
         }
     }
     
-    this.processPasswordResetRequest = function (request, response, json) {
-	    
-        var isValid = true;
-        
-        // filter the params
-        json.params = filters.filter(this.settings, this.settings.httpAuthCollection, "passwordResetRequest", "default", json.params, "in");
-        
-        // validate
-        validators.validate(this, this.settings.httpAuthCollection, "passwordResetRequest", "default", json, json.params, function (validationSummary) {
-            if (validationSummary !== true) {
-                isValid = false;
-            }
-            
-            if (isValid) {	
-                
-                // the login response
-                var dbResult = function (error, result) {
-                    if (error) {
-                    
-                          // internal MongoDB error
-                        this.processError(request, response, -32603, "Internal JSON-RPC error.", json.id);
-                        
-                    } else {
-                        
-                        if (!result) {
-        
-                            // return result
-                            this.processResult(request, response, false, json.id);
-			                           
-                        } else {
-                        
-                        	if (this.settings.mail) {
-	                        	if (this.settings.mail.messages && this.settings.httpAuthPasswordResetToken) {
-	                        		
-	                        		// create and encrypt the token
-	                        		var expiration = new Date(); 
-	                        		expiration.setMinutes(expiration.getMinutes() + this.settings.httpAuthPasswordResetToken.timeout);
-	                        		
-	                        		var algorithm = this.settings.httpAuthPasswordResetToken.algorithm;
-	                        		var password = this.settings.httpAuthPasswordResetToken.password;
-	                        		var cipher = crypto.createCipher(algorithm, password);
-									
-									var token = {};
-	                        		token._id = result._id;
-									token.expiration = expiration;                       		
-	                        		token = cipher.update(JSON.stringify(token), "utf8", "hex");
-									token += cipher.final("hex");
-									
-									// format the email message - textevents.js
-				                    var mailMessage = JSON.parse(JSON.stringify(this.settings.mail.messages.passwordResetRequest));
-				                    mailMessage.text = mailMessage.text.replace(/{firstName}/g, result.firstName);
-				                    mailMessage.text = mailMessage.text.replace(/{lastName}/g, result.lastName);
-				                    mailMessage.text = mailMessage.text.replace(/{token}/g, encodeURIComponent(token));
-				                    mailMessage.to = result.firstName + " " + result.lastName + " <" + result[(!this.settings.httpAuthUsernameField ? "email" : this.settings.httpAuthUsernameField)] + ">";
-				                            
-									// format the email message - html
-			                		if (mailMessage.attachment) {
-			                			for (var a = 0; a < mailMessage.attachment.length; a++) {
-				                			if (mailMessage.attachment[a].alternative === true) {
-					                			mailMessage.attachment[a].data = mailMessage.attachment[a].data.replace(/{firstName}/g, result.firstName);
-							                    mailMessage.attachment[a].data = mailMessage.attachment[a].data.replace(/{lastName}/g, result.lastName);
-							                    mailMessage.attachment[a].data = mailMessage.attachment[a].data.replace(/{token}/g, encodeURIComponent(token));
-							                    mailMessage.attachment[a].data = mailMessage.attachment[a].data.replace(/{token}/g, "");
-				                			}
-			                			}
-			                		}
-				                    
-				                    // send the email
-		                        	this.mail.send(mailMessage, function(error, message) { 
-		                        		if (error) {
-				                        		
-			                                // error sending mail
-			                                this.processError(request, response, -32000, error.message, json.id);	                        		
-		                        		} else {
-				                        		
-			                                // return result
-			                                this.processResult(request, response, true, json.id);
-		                        		}  
-		                        	}.bind(this));			                        	
-	                        	} else {
-		                        	
-		                        	// reset not enabled
-		                        	this.processError(request, response, -32000, "Reset password not enabled.", json.id);
-	                        	}
-                        	} else {
-	                        	
-		                        // reset not enabled
-                            	this.processError(request, response, -32000, "Reset password not enabled.", json.id);
-                        	}
-                        }
-                    }
-                }.bind(this);
-                
-                // build the command		
-                var command = "this.db." + this.settings.httpAuthCollection + ".findOne(" + JSON.stringify(json.params) + ", dbResult);";
-                
-                // write command to log
-                console.log(request.session.id + ": " + command);
-            
-                // execute command
-                eval(command)
-            } else {
-                
-                // validation not passed, return with error and validation summary
-	            this.processError(request, response, -32603, "Internal JSON-RPC error.", json.id, validationSummary);
-                return;
-            }
-        }.bind(this));
-    }
-    
-    this.processPasswordReset = function (request, response, json) {
-	    
-        var isValid = true;
-        
-        // filter the params
-        json.params = filters.filter(this.settings, this.settings.httpAuthCollection, "passwordReset", "default", json.params, "in");
-        
-        // validate
-        validators.validate(this, this.settings.httpAuthCollection, "passwordReset", "default", json, json.params, function (validationSummary) {
-            if (validationSummary !== true) {
-                isValid = false;
-            }
-            
-            if (isValid) {	
-	    
-        		var algorithm = this.settings.httpAuthPasswordResetToken.algorithm;
-        		var password = this.settings.httpAuthPasswordResetToken.password;
-				var decipher = crypto.createDecipher(algorithm, password);
-				var token = decipher.update(json.params.token, "hex", "utf8");
-				token += decipher.final("utf8");
-				token = JSON.parse(token);
-				
-				if (new Date() < new Date(token.expiration)) {
-				
-					var passwordField = (!this.settings.httpAuthPasswordField ? "password" : this.settings.httpAuthPasswordField);
-					var password = json.params[passwordField];
-					
-	                // ensure new password and password confirmation match
-	                if (json.params.newPassword == json.params.confirmPassword) {
-	            
-	                    // create params and encrypt the new password
-						var params = {};
-	                    params[passwordField] = passwordHash.generate(json.params.newPassword);
-						
-	                    // update the user
-						this.db[this.settings.httpAuthCollection].update({"_id":this.db.ObjectId(token._id)}, {"$set":params}, function (error, result) {
-	                        if(error) {
-	                        
-	                              // collection not provided, create procedure not found response
-	                            this.processError(request, response, -32603, "Internal JSON-RPC error.", json.id);
-	                            
-	                        } else {
-	                            // log password change
-	                            console.log("Session " + request.session.id + " has reset their password");
-	                        
-	                            // return success
-	                            this.processResult(request, response, "Password successfully reset.", json.id);
-	                        }
-	                    
-	                    }.bind(this));
-		
-		
-		                // return result
-		                this.processResult(request, response, true, json.id);
-		                
-	                } else {
-	                    
-	                    // new password and password confirmation do not match
-	                    this.processError(request, response, -32000, "New password and confirm password do not match.", json.id, validationSummary);
-	                }
-                } else {
-                    
-                    // new password and password confirmation do not match
-                    this.processError(request, response, -32000, "Password reset token has expired.", json.id);
-                }
-	    
-            } else {
-                
-                // validation not passed, return with error and validation summary
-	            this.processError(request, response, -32603, "Internal JSON-RPC error.", json.id, validationSummary);
-                return;
-            }
-        }.bind(this));
-    }
-    
     this.processIsInRole = function (request, response, json) {
     
         // change the authenticated user
@@ -585,8 +359,7 @@ MongoRpc = function () {
         // change the authenticated user
         var isAuthenticated = false;
         
-        if (request.session.data.user !== "guest" && 
-            request.session.data.user !== "Guest") {
+        if (request.session.data.user != "guest") {
             isAuthenticated = true;
         }
         
@@ -605,8 +378,7 @@ MongoRpc = function () {
 	        // set action to default then check for action in method
 	        var action = "default";
 	        if (method.indexOf("/") > -1) {
-	            action = method.substring(method.indexOf("/") + 1);
-	        	method = method.substring(0, method.indexOf("/"));
+	            action = method.substring(method.indexOf("/"));
 	        }
 	        
 	        // mongodb modifiers
@@ -623,7 +395,7 @@ MongoRpc = function () {
 	                        var dbResult = function (error, result) {
 	                            
 	                            // emit executeEnd event
-	                            this.emit(collection + "_" + method + "_" + action + "_executeEnd", { "currentTarget": this, "params": json.params, "error": error, "result": result, "request": request});
+	                            this.emit(collection + "_" + method + "_" + action + "_executeEnd", { "currentTarget": this, "params": json.params});
 	                            
 	                            if(error) {
 	                            
@@ -726,7 +498,7 @@ MongoRpc = function () {
 	                        console.log(request.session.id + ": " + command);
 	                        
 	                        // emit executeStart event
-	                        this.emit(collection + "_" + method + "_" + action + "_executeStart", { "currentTarget": this, "request": request });
+	                        this.emit(collection + "_" + method + "_" + action + "_executeStart", { "currentTarget": this });
 	                        
 	                        // execute command
 	                        eval(command);
@@ -823,16 +595,16 @@ MongoRpc = function () {
 	                    }.bind(this);
 	                    
 	                    // validate the query
-	                    validators.validate(this, collection, "find", action, json, json.params[0], function (validationSummaryFind) {
+	                    validators.validate(this, collection, "find", action, json.params[0], function (validationSummaryFind) {
 	                        
 	                        // emit validateFind event
-	                        this.emit(collection + "_" + method + "_" + action + "_validateFind", { "currentTarget": this, "params": json.params[0], "request": request});
+	                        this.emit(collection + "_" + method + "_" + action + "_validateFind", { "currentTarget": this, "params": json.params[0]});
 	                        
 	                        // filter the query
 	                        json.params[0] = filters.filter(this.settings, collection, "find", action, json.params[0], "in");
 	                        
 	                        // emit filterFind event
-	                        this.emit(collection + "_" + method + "_" + action + "_filterFind", { "direction": "in", "currentTarget": this, "params": json.params[0], "request": request});
+	                        this.emit(collection + "_" + method + "_" + action + "_filterFind", { "direction": "in", "currentTarget": this, "params": json.params[0]});
 	                        
 	                        // filter the update and handle uploads
 	                        var keys = Object.keys(json.params[1]);
@@ -840,10 +612,10 @@ MongoRpc = function () {
 	                            if (modifiers.indexOf(keys[0]) > -1) {
 	                            
 	                                // validate the update
-	                                validators.validate(this, collection, "update", action, json, json.params[1][keys[0]], function (validationSummaryUpdate) {
+	                                validators.validate(this, collection, "update", action, json.params[1][keys[0]], function (validationSummaryUpdate) {
 	                                    
 	                                    // emit validate event
-	                                    this.emit(collection + "_" + method + "_" + action + "_validate", { "currentTarget": this, "request": request, "params": json.params[1][keys[0]]});
+	                                    this.emit(collection + "_" + method + "_" + action + "_validate", { "currentTarget": this, "params": json.params[1][keys[0]]});
 	                                    
 	                                    if (validationSummaryUpdate == true) {
 	                                        
@@ -851,7 +623,7 @@ MongoRpc = function () {
 	                                        json.params[1][keys[0]] = filters.filter(this.settings, collection, "update", action, json.params[1][keys[0]], "in");
 	                                        
 	                                        // emit filter event
-	                                        this.emit(collection + "_" + method + "_" + action + "_filter", { "direction": "in", "currentTarget": this, "request": request, "params": json.params[1][keys[0]]});
+	                                        this.emit(collection + "_" + method + "_" + action + "_filter", { "direction": "in", "currentTarget": this, "params": json.params[1][keys[0]]});
 	                                                
 	                                        // save and clear uploads
 	                                        if (json.params[0]._id !== undefined) {
@@ -875,10 +647,10 @@ MongoRpc = function () {
 	                                }.bind(this));
 	                            } else {
 	                                // validate the update
-	                                validators.validate(this, collection, "update", action, json, json.params[1], function (validationSummaryUpdate) {
+	                                validators.validate(this, collection, "update", action, json.params[1], function (validationSummaryUpdate) {
 	                                    
 	                                    // emit validate event
-	                                    this.emit(collection + "_" + method + "_" + action + "_validate", { "currentTarget": this, "request": request, "params": json.params[1]});
+	                                    this.emit(collection + "_" + method + "_" + action + "_validate", { "currentTarget": this, "params": json.params[1]});
 	                                    
 	                                    if (validationSummaryUpdate == true) {
 	                                        
@@ -886,7 +658,7 @@ MongoRpc = function () {
 	                                        json.params[1] = filters.filter(this.settings, collection, "update", action, json.params[1], "in");
 	                                        
 	                                        // emit filtered event
-	                                        this.emit(collection + "_" + method + "_" + action + "_filter", { "direction": "in", "currentTarget": this, "request": request, "params": json.params[1]});
+	                                        this.emit(collection + "_" + method + "_" + action + "_filter", { "direction": "in", "currentTarget": this, "params": json.params[1]});
 	                                        
 	                                        // save and clear uploads
 	                                        if (json.params[0]._id !== undefined) {
@@ -973,16 +745,16 @@ MongoRpc = function () {
 	                    }.bind(this);
 	                    
 	                    // validate the query
-	                    validators.validate(this, collection, "find", action, json, json.params.query, function (validationSummaryFind) {
+	                    validators.validate(this, collection, "find", action, json.params.query, function (validationSummaryFind) {
 	                    
 	                        // emit validateFind event
-	                        this.emit(collection + "_" + method + "_" + action + "_validateFind", { "currentTarget": this, "request": request, "params": json.params.query});
+	                        this.emit(collection + "_" + method + "_" + action + "_validateFind", { "currentTarget": this, "params": json.params.query});
 	                        
 	                        // filter the query
 	                        json.params.query = filters.filter(this.settings, collection, "find", action, json.params.query, "in");
 	                        
 	                        // emit filterFind event
-	                        this.emit(collection + "_" + method + "_" + action + "_filterFind", { "direction": "in", "currentTarget": this, "request": request, "params": json.params.query});
+	                        this.emit(collection + "_" + method + "_" + action + "_filterFind", { "direction": "in", "currentTarget": this, "params": json.params.query});
 	                        
 	                        // filter the update and handle uploads
 	                        var keys = Object.keys(json.params.update);
@@ -991,10 +763,10 @@ MongoRpc = function () {
 	                            if (modifiers.indexOf(keys[0]) > -1) {
 	                            
 	                                // validate the update
-	                                validators.validate(this, collection, "findAndModify", action, json, json.params.update[keys[0]], function (validationSummaryFindAndModify) {
+	                                validators.validate(this, collection, "findAndModify", action, json.params.update[keys[0]], function (validationSummaryFindAndModify) {
 	                                
 	                                    // emit validate event
-	                                    this.emit(collection + "_" + method + "_" + action + "_validate", { "currentTarget": this, "request": request, "params": json.params.update[keys[0]]});
+	                                    this.emit(collection + "_" + method + "_" + action + "_validate", { "currentTarget": this, "params": json.params.update[keys[0]]});
 	                                    
 	                                    if (validationSummaryFindAndModify == true) {
 	                                
@@ -1002,7 +774,7 @@ MongoRpc = function () {
 	                                        json.params.update[keys[0]] = filters.filter(this.settings, collection, "findAndModify", action, json.params.update[keys[0]], "in");
 	                                        
 	                                        // emit filter event
-	                                        this.emit(collection + "_" + method + "_" + action + "_filter", { "direction": "in", "currentTarget": this, "request": request, "params": json.params.update[keys[0]]});
+	                                        this.emit(collection + "_" + method + "_" + action + "_filter", { "direction": "in", "currentTarget": this, "params": json.params.update[keys[0]]});
 	                                        
 	                                        // save and clear uploads
 	                                        if (json.params.query._id !== undefined) {
@@ -1028,10 +800,10 @@ MongoRpc = function () {
 	                            } else {
 	                            
 	                                // validate the update
-	                                validators.validate(this, collection, "findAndModify", action, json, json.params.update, function (validationSummaryFindAndModify) {
+	                                validators.validate(this, collection, "findAndModify", action, json.params.update, function (validationSummaryFindAndModify) {
 	                                    
 	                                    // emit validate event
-	                                    this.emit(collection + "_" + method + "_" + action + "_validate", { "currentTarget": this, "request": request, "params": json.params.update});
+	                                    this.emit(collection + "_" + method + "_" + action + "_validate", { "currentTarget": this, "params": json.params.update});
 	                                    
 	                                    if (validationSummaryFindAndModify == true) {
 	                                    
@@ -1039,7 +811,7 @@ MongoRpc = function () {
 	                                        json.params.update = filters.filter(this.settings, collection, "findAndModify", action, json.params.update, "in");
 	                                        
 	                                        // emit filter event
-	                                        this.emit(collection + "_" + method + "_" + action + "_filter", { "direction": "in", "currentTarget": this, "request": request, "params": json.params.update});
+	                                        this.emit(collection + "_" + method + "_" + action + "_filter", { "direction": "in", "currentTarget": this, "params": json.params.update});
 	                                        
 	                                        // save and clear uploads
 	                                        if (json.params.query._id !== undefined) {
@@ -1109,16 +881,16 @@ MongoRpc = function () {
     	                }.bind(this);
     	                
     	                // validate the query
-    	                validators.validate(this, collection, "find", action, json, json.params.query, function (validationCondition) {
+    	                validators.validate(this, collection, "find", action, json.params.query, function (validationCondition) {
     	                
     	                    // emit validateFind event
-    	                    this.emit(collection + "_" + method + "_" + action + "_validate", { "currentTarget": this, "request": request, "params": json.params.cond});
+    	                    this.emit(collection + "_" + method + "_" + action + "_validate", { "currentTarget": this, "params": json.params.cond});
     	                    
     	                    // filter the query
     	                    json.params.cond = filters.filter(this.settings, collection, "group", action, json.params.cond, "in");
     	                    
     	                    // emit filterFind event
-    	                    this.emit(collection + "_" + method + "_" + action + "_filter", { "direction": "in", "currentTarget": this, "request": request, "params": json.params.cond});
+    	                    this.emit(collection + "_" + method + "_" + action + "_filter", { "direction": "in", "currentTarget": this, "params": json.params.cond});
     	                    
     	                    // finish validating, filtering, then execute
                             validationComplete(validationCondition);
@@ -1168,16 +940,16 @@ MongoRpc = function () {
     	                }.bind(this);
     	                
     	                // validate the query
-    	                validators.validate(this, collection, "find", action, json, json.params.query, function (validationCondition) {
+    	                validators.validate(this, collection, "find", action, json.params.query, function (validationCondition) {
     	                
     	                    // emit validateFind event
-    	                    this.emit(collection + "_" + method + "_" + action + "_validate", { "currentTarget": this, "request": request, "params": json.params.query});
+    	                    this.emit(collection + "_" + method + "_" + action + "_validate", { "currentTarget": this, "params": json.params.query});
     	                    
     	                    // filter the query
     	                    json.params.query = filters.filter(this.settings, collection, "group", action, json.params.query, "in");
     	                    
     	                    // emit filterFind event
-    	                    this.emit(collection + "_" + method + "_" + action + "_filter", { "direction": "in", "currentTarget": this, "request": request, "params": json.params.query});
+    	                    this.emit(collection + "_" + method + "_" + action + "_filter", { "direction": "in", "currentTarget": this, "params": json.params.query});
     	                    
     	                    // finish validating, filtering, then execute
     	                    validationComplete(validationCondition);
@@ -1189,10 +961,10 @@ MongoRpc = function () {
 	                } else {
 	                    
 	                    // validate
-	                    validators.validate(this, collection, method, action, json, json.params, function (validationSummary) {
+	                    validators.validate(this, collection, method, action, json.params, function (validationSummary) {
 	                        
 	                        // emit validate event
-	                        this.emit(collection + "_" + method + "_" + action + "_validate", { "currentTarget": this, "request": request, "params": json.params});
+	                        this.emit(collection + "_" + method + "_" + action + "_validate", { "currentTarget": this, "params": json.params});
 	                        
 	                        if (validationSummary == true) {
 	                            
@@ -1200,7 +972,7 @@ MongoRpc = function () {
 	                            json.params = filters.filter(this.settings, collection, method, action, json.params, "in");
 	                            
 	                            // emit filtered event
-	                            this.emit(collection + "_" + method + "_" + action + "_filter", { "direction": "in", "currentTarget": this, "request": request, "params": json.params});
+	                            this.emit(collection + "_" + method + "_" + action + "_filter", { "direction": "in", "currentTarget": this, "params": json.params});
 	                            
 	                            var tempId = undefined;
 	                            if (json.params != undefined) {
@@ -1387,24 +1159,14 @@ MongoRpc = function () {
                         
                         } else if (collection == this.settings.httpAuthCollection && json.method == "isInRole") {
                         
-                            // process role verficiation request
+                            // process authentication status request
                             this.processIsInRole(request, response, json);
                             
                         } else if (collection == this.settings.httpAuthCollection && json.method == "changePassword") {
                         
-                            // process change passwor request
+                            // process authentication status request
                             this.processChangePassword(request, response, json);
-                              
-                        } else if (collection == this.settings.httpAuthCollection && json.method == "passwordResetRequest") {
-                        
-                            // process password reset request request
-                            this.processPasswordResetRequest(request, response, json);
-                             
-                        } else if (collection == this.settings.httpAuthCollection && json.method == "passwordReset") {
-                        
-                            // process password reset request
-                            this.processPasswordReset(request, response, json);
-                           
+                            
                         } else {
                         
                             // process logout request
