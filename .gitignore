@@ -1,10 +1,5 @@
-node_modules/
 uploads/
-mongorpc.esproj/
 .DS_Store
-
 certificate.pem
-
 certrequest.csr
-
 privatekey.pem
