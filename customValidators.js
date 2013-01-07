@@ -1,4 +1,4 @@
-exports.userExists = function (server, value, isValid) {
+exports.userExists = function (server, request, value, json, isValid) {
     var query = {};
     query[(!server.settings.httpAuthUsernameField ? "email" : server.settings.httpAuthUsernameField)] = value;
     

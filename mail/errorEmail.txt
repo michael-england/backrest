@@ -1,0 +1,16 @@
+An error occured on Example
+---------------------------------
+
+Timestamp: {timestamp}
+
+Error: {error}
+
+URL: {url}
+
+Method: {method}
+
+Headers: {headers}
+
+Data: {data}
+
+Session: {session}

@@ -9,10 +9,10 @@
             margin: 0;
             padding: 0;
         }
-        div, input {
-            height: 20px;
+        div {
+            height: 30px;
             font: normal 12px "Helvetica", Arial, Helvetica, Geneva, sans-serif;
-            text-height: 20px;
+            line-height: 30px;
         }
     </style>
 </head>
@@ -23,19 +23,21 @@
     	    <input type="hidden" name="_id" id="_id" />
     	    <input type="hidden" name="collection" id="collection" />
     	    <input type="hidden" name="method" id="method" value="upload" />
+    	    <input type="hidden" name="origin" id="origin" />
     		<input type="file" name="uploadFile" id="uploadFile" onchange="upload_Submit()" />
     	</form>
 	</div>
 	
 	<div id="step2">
-        file uploading...
+        File uploading...
     </div>
 
 	<div id="step3">
-        file upload complete
+        File upload complete
     </div>
 
 	<div id="error">
-        error uploading file
+        There was an error uploading your file
     </div>
+</body>
 </html>

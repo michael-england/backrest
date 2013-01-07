@@ -1,0 +1,11 @@
+{firstName},
+Please confirm your email address by clicking on the link below:
+
+http://example.com/#/user/confirmEmail/{token}
+
+If you do not confirm your email address within the first 24 hours after registering you will not be allowed to log into your account
+
+Regards,
+Example.com
+
+Please do not reply to this message; it was sent from an unmonitored email address. This message is a service email related to your use of Example. For general inquiries or to request support with your account, please visit us at http://help..com/
