@@ -6,7 +6,7 @@ The behavior of MongoRPC depends entirely on the settings.json file.
 Collections are mapped directly to the collections within a MongoDB database.  An example of a users collection is below.  The collection below is named “users”.  This collection includes the find method.  Each method can be enabled or disabled, and can contain variations (or different actions) for controlling data input and output.  
 
 For instance the default action below can be used to display a list of owners, but can only be executed by users in the admin role.  Another action could be created to display a list of users related to another user.  Each action contains fields for “roles”, “filters”, “validators”, and “events”.
-
+```javascript
 {
   "databaseUrl" : "db",
   "collections" : [
@@ -23,6 +23,7 @@ For instance the default action below can be used to display a list of owners, b
     }
   ]
 }
+```
 
 ##Filters
 Filters are used to allow or disallow a field entering or leaving MongoRPC for a specific function.  
