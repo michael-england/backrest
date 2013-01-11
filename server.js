@@ -142,33 +142,35 @@ MongoRpc = function () {
 
     this.httpStart = function () {
     
-        if (this.settings.isSecured) {
-            if (this.settings.privateKey !== undefined && this.settings.privateKey !== "" &&
-                this.settings.certificate !== undefined && this.settings.certificate !== "") {
-                
-                var options = {
-                    key: fs.readFileSync(this.settings.privateKey).toString(),
-                    cert: fs.readFileSync(this.settings.certificate).toString()
-                };
-                
-                https.createServer(options, function (request, response) {
-                    session (request, response, function(request, response) {
-                        if (request.method == "POST") {	
+        if (this.settings.https) {
+            if (this.settings.https.enabled) {
+                if (this.settings.https.privateKey !== undefined && this.settings.https.privateKey !== "" &&
+                    this.settings.https.certificate !== undefined && this.settings.https.certificate !== "") {
+                    
+                    var options = {
+                        key: fs.readFileSync(this.settings.https.privateKey).toString(),
+                        cert: fs.readFileSync(this.settings.https.certificate).toString()
+                    };
+                    
+                    https.createServer(options, function (request, response) {
+                        session (request, response, function(request, response) {
+                            if (request.method == "POST") {	
+                                
+                                // process POST request
+                                this.processPost(request, response);
+                                  
+                            } else {
                             
-                            // process POST request
-                            this.processPost(request, response);
-                              
-                        } else {
-                        
-                            // process with the requested file
-                            this.processGet(request, response);
-                        } 
-                    }.bind(this));   
-                }.bind(this)).listen(this.settings.httpPortSecured);
-                
-                console.log("HTTPS Server running on port " + this.settings.httpPortSecured + ".");
-            } else {
-                throw new Error("HTTPS credientials are not valid.");
+                                // process with the requested file
+                                this.processGet(request, response);
+                            } 
+                        }.bind(this));   
+                    }.bind(this)).listen(this.settings.https.port);
+                    
+                    console.log("HTTPS Server running on port " + this.settings.https.port + ".");
+                } else {
+                    throw new Error("HTTPS credientials are not valid.");
+                }
             }
         }
             
@@ -185,9 +187,9 @@ MongoRpc = function () {
                     this.processGet(request, response);
                 } 
             }.bind(this));   
-        }.bind(this)).listen(this.settings.httpPort);
+        }.bind(this)).listen(this.settings.http.port);
         
-        console.log("HTTP Server running on port " + this.settings.httpPort + ".");
+        console.log("HTTP Server running on port " + this.settings.http.port + ".");
     }
 
     this.processLogin = function (request, response, json) {
@@ -195,10 +197,10 @@ MongoRpc = function () {
         var isValid = true;
         
         // filter the params
-        json.params = filters.filter(this.settings, this.settings.httpAuthCollection, "login", "default", json.params, "in");
+        json.params = filters.filter(this.settings, this.settings.authentication.collection, "login", "default", json.params, "in");
         
         // validate
-        validators.validate(this, request, this.settings.httpAuthCollection, "login", "default", json, json.params, function (validationSummary) {
+        validators.validate(this, request, this.settings.authentication.collection, "login", "default", json, json.params, function (validationSummary) {
             if (validationSummary !== true) {
                 isValid = false;
             }
@@ -206,7 +208,7 @@ MongoRpc = function () {
             if (isValid) {	
                 
                 // temporarily save password and remove it from params
-                var passwordField = (!this.settings.httpAuthPasswordField ? "password" : this.settings.httpAuthPasswordField);
+                var passwordField = (!this.settings.authentication.passwordField ? "password" : this.settings.authentication.passwordField);
                 var password = json.params[passwordField];
                 delete json.params[passwordField];
                 
@@ -231,10 +233,10 @@ MongoRpc = function () {
                             
                                 var emailConfirmed = true;
                                 if (this.confirmEmailEnabled() && result._created) {
-                                    if (result[(!this.settings.httpAuthConfirmEmailField ? "isConfirmed" : this.settings.httpAuthConfirmEmailField)] !== true) {
+                                    if (result[(!this.settings.authentication.confirmEmailField ? "isConfirmed" : this.settings.authentication.confirmEmailField)] !== true) {
                                     
                                         // calculate timeout
-                                        var timeout = (this.settings.httpAuthConfirmEmailTimeout ? this.settings.httpAuthConfirmEmailTimeout : 1440) * 60;
+                                        var timeout = (this.settings.authentication.confirmEmailTimeout ? this.settings.authentication.confirmEmailTimeout : 1440) * 60;
                                         timeout = timeout * 60;
                                         timeout = timeout + result._created;
                                         
@@ -254,18 +256,18 @@ MongoRpc = function () {
                                 if (emailConfirmed) {
                                     
                                     // log authentication change
-                                    console.log("Session " + request.session.id + " is now logged in as " + result[(!this.settings.httpAuthUsernameField ? "email" : this.settings.httpAuthUsernameField)]);
+                                    console.log("Session " + request.session.id + " is now logged in as " + result[(!this.settings.authentication.usernameField ? "email" : this.settings.authentication.usernameField)]);
                                 
                                     // change the authenticated user
                                     request.session.data.user = JSON.parse(JSON.stringify(result));
                                     
                                     // set last login
                                     var params = {};
-                                    params[(!this.settings.httpAuthLastLoginField ? "_lastLogin" : this.settings.httpAuthLastLoginField)] = Math.round(new Date().getTime()/1000.0);
-                                    this.db[this.settings.httpAuthCollection].update({"_id": result._id}, {"$set": params});
+                                    params[(!this.settings.authentication.lastLoginField ? "_lastLogin" : this.settings.authentication.lastLoginField)] = Math.round(new Date().getTime()/1000.0);
+                                    this.db[this.settings.authentication.collection].update({"_id": result._id}, {"$set": params});
                                     
                                     // filter out return values
-                                    var resultFiltered = filters.filter(this.settings, this.settings.httpAuthCollection, "login", "default", result, "out");
+                                    var resultFiltered = filters.filter(this.settings, this.settings.authentication.collection, "login", "default", result, "out");
                                 
                                     // return result
                                     this.processResult(request, response, resultFiltered, json.id);
@@ -286,7 +288,7 @@ MongoRpc = function () {
                 }.bind(this);
                 
                 // build the command		
-                var command = "this.db." + this.settings.httpAuthCollection + ".findOne(" + JSON.stringify(json.params) + ", dbLoginResult);";
+                var command = "this.db." + this.settings.authentication.collection + ".findOne(" + JSON.stringify(json.params) + ", dbLoginResult);";
                 
                 // write command to log
                 console.log(request.session.id + ": " + command);
@@ -321,10 +323,10 @@ MongoRpc = function () {
             var isValid = true;
             
             // filter the params
-            json.params = filters.filter(this.settings, this.settings.httpAuthCollection, "changePassword", "default", json.params, "in");
+            json.params = filters.filter(this.settings, this.settings.authentication.collection, "changePassword", "default", json.params, "in");
             
             // validate
-            validators.validate(this, request, this.settings.httpAuthCollection, "changePassword", "default", json, json.params, function (validationSummary) {
+            validators.validate(this, request, this.settings.authentication.collection, "changePassword", "default", json, json.params, function (validationSummary) {
                 if (validationSummary !== true) {
                     isValid = false;
                 }
@@ -332,7 +334,7 @@ MongoRpc = function () {
                 if (isValid) {	
                     
                     // temporarily save password and remove it from params
-                    var passwordField = (!this.settings.httpAuthPasswordField ? "password" : this.settings.httpAuthPasswordField);
+                    var passwordField = (!this.settings.authentication.passwordField ? "password" : this.settings.authentication.passwordField);
                     var password = json.params[passwordField];
                     delete json.params[passwordField];
                     
@@ -371,7 +373,7 @@ MongoRpc = function () {
                             var update = {"$set":json.params};
                             
                             // build the command		
-                            var command = "this.db." + this.settings.httpAuthCollection + ".update({\"_id\":this.db.ObjectId(\"" + request.session.data.user._id.toString() + "\")}," + JSON.stringify(update) + ", dbResult);";
+                            var command = "this.db." + this.settings.authentication.collection + ".update({\"_id\":this.db.ObjectId(\"" + request.session.data.user._id.toString() + "\")}," + JSON.stringify(update) + ", dbResult);";
                             
                             // write command to log
                             console.log(request.session.id + ": " + command);
@@ -409,10 +411,10 @@ MongoRpc = function () {
         var isValid = true;
         
         // filter the params
-        json.params = filters.filter(this.settings, this.settings.httpAuthCollection, "passwordResetRequest", "default", json.params, "in");
+        json.params = filters.filter(this.settings, this.settings.authentication.collection, "passwordResetRequest", "default", json.params, "in");
         
         // validate
-        validators.validate(this, request, this.settings.httpAuthCollection, "passwordResetRequest", "default", json, json.params, function (validationSummary) {
+        validators.validate(this, request, this.settings.authentication.collection, "passwordResetRequest", "default", json, json.params, function (validationSummary) {
             if (validationSummary !== true) {
                 isValid = false;
             }
@@ -436,14 +438,14 @@ MongoRpc = function () {
                         } else {
                         
                         	if (this.settings.mail) {
-	                        	if (this.settings.mail.messages && this.settings.httpAuthPasswordResetToken) {
+	                        	if (this.settings.mail.messages && this.settings.authentication.passwordResetToken) {
 	                        		
 	                        		// create and encrypt the token
 	                        		var expiration = new Date(); 
-	                        		expiration.setMinutes(expiration.getMinutes() + this.settings.httpAuthPasswordResetToken.timeout);
+	                        		expiration.setMinutes(expiration.getMinutes() + this.settings.authentication.passwordResetToken.timeout);
 	                        		
-	                        		var algorithm = this.settings.httpAuthPasswordResetToken.algorithm;
-	                        		var password = this.settings.httpAuthPasswordResetToken.password;
+	                        		var algorithm = this.settings.authentication.passwordResetToken.algorithm;
+	                        		var password = this.settings.authentication.passwordResetToken.password;
 	                        		var cipher = crypto.createCipher(algorithm, password);
 									
 									var token = {};
@@ -457,7 +459,7 @@ MongoRpc = function () {
 				                    mailMessage.text = mailMessage.text.replace(/{firstName}/g, (result.firstName || ""));
 				                    mailMessage.text = mailMessage.text.replace(/{lastName}/g, (result.lastName || ""));
 				                    mailMessage.text = mailMessage.text.replace(/{token}/g, encodeURIComponent(token));
-				                    mailMessage.to = (result.firstName || "") + " " + (result.lastName || "") + " <" + result[(!this.settings.httpAuthUsernameField ? "email" : this.settings.httpAuthUsernameField)] + ">";
+				                    mailMessage.to = (result.firstName || "") + " " + (result.lastName || "") + " <" + result[(!this.settings.authentication.usernameField ? "email" : this.settings.authentication.usernameField)] + ">";
 				                            
 									// format the email message - html
 			                		if (mailMessage.attachment) {
@@ -502,7 +504,7 @@ MongoRpc = function () {
                 }.bind(this);
                 
                 // build the command		
-                var command = "this.db." + this.settings.httpAuthCollection + ".findOne(" + JSON.stringify(json.params) + ", dbResult);";
+                var command = "this.db." + this.settings.authentication.collection + ".findOne(" + JSON.stringify(json.params) + ", dbResult);";
                 
                 // write command to log
                 console.log(request.session.id + ": " + command);
@@ -523,18 +525,18 @@ MongoRpc = function () {
         var isValid = true;
         
         // filter the params
-        json.params = filters.filter(this.settings, this.settings.httpAuthCollection, "passwordReset", "default", json.params, "in");
+        json.params = filters.filter(this.settings, this.settings.authentication.collection, "passwordReset", "default", json.params, "in");
         
         // validate
-        validators.validate(this, request, this.settings.httpAuthCollection, "passwordReset", "default", json, json.params, function (validationSummary) {
+        validators.validate(this, request, this.settings.authentication.collection, "passwordReset", "default", json, json.params, function (validationSummary) {
             if (validationSummary !== true) {
                 isValid = false;
             }
             
             if (isValid) {	
 	    
-        		var algorithm = this.settings.httpAuthPasswordResetToken.algorithm;
-        		var password = this.settings.httpAuthPasswordResetToken.password;
+        		var algorithm = this.settings.authentication.passwordResetToken.algorithm;
+        		var password = this.settings.authentication.passwordResetToken.password;
 				var decipher = crypto.createDecipher(algorithm, password);
 				var token = decipher.update(json.params.token, "hex", "utf8");
 				token += decipher.final("utf8");
@@ -542,7 +544,7 @@ MongoRpc = function () {
 				
 				if (new Date() < new Date(token.expiration)) {
 				
-					var passwordField = (!this.settings.httpAuthPasswordField ? "password" : this.settings.httpAuthPasswordField);
+					var passwordField = (!this.settings.authentication.passwordField ? "password" : this.settings.authentication.passwordField);
 					var password = json.params[passwordField];
 					
 	                // ensure new password and password confirmation match
@@ -553,7 +555,7 @@ MongoRpc = function () {
 	                    params[passwordField] = passwordHash.generate(json.params.newPassword);
 						
 	                    // update the user
-						this.db[this.settings.httpAuthCollection].update({"_id":this.db.ObjectId(token._id)}, {"$set":params}, function (error, result) {
+						this.db[this.settings.authentication.collection].update({"_id":this.db.ObjectId(token._id)}, {"$set":params}, function (error, result) {
     						if (error) {
 	                        
         						// collection not provided, create procedure not found response
@@ -592,10 +594,10 @@ MongoRpc = function () {
         var isValid = true;
         
         // filter the params
-        json.params = filters.filter(this.settings, this.settings.httpAuthCollection, "confirmEmailRequest", "default", json.params, "in");
+        json.params = filters.filter(this.settings, this.settings.authentication.collection, "confirmEmailRequest", "default", json.params, "in");
         
         // validate
-        validators.validate(this, request, this.settings.httpAuthCollection, "confirmEmailRequest", "default", json, json.params, function (validationSummary) {
+        validators.validate(this, request, this.settings.authentication.collection, "confirmEmailRequest", "default", json, json.params, function (validationSummary) {
             if (validationSummary !== true) {
                 isValid = false;
             }
@@ -637,7 +639,7 @@ MongoRpc = function () {
                 }.bind(this);
                 
                 // build the command		
-                var command = "this.db." + this.settings.httpAuthCollection + ".findOne(" + JSON.stringify(json.params) + ", dbResult);";
+                var command = "this.db." + this.settings.authentication.collection + ".findOne(" + JSON.stringify(json.params) + ", dbResult);";
                 
                 // write command to log
                 console.log(request.session.id + ": " + command);
@@ -658,18 +660,18 @@ MongoRpc = function () {
         var isValid = true;
         
         // filter the params
-        json.params = filters.filter(this.settings, this.settings.httpAuthCollection, "confirmEmail", "default", json.params, "in");
+        json.params = filters.filter(this.settings, this.settings.authentication.collection, "confirmEmail", "default", json.params, "in");
         
         // validate
-        validators.validate(this, request, this.settings.httpAuthCollection, "confirmEmail", "default", json, json.params, function (validationSummary) {
+        validators.validate(this, request, this.settings.authentication.collection, "confirmEmail", "default", json, json.params, function (validationSummary) {
             if (validationSummary !== true) {
                 isValid = false;
             }
             
             if (isValid) {
                 
-                var algorithm = this.settings.httpAuthConfirmEmailToken.algorithm;
-        		var password = this.settings.httpAuthConfirmEmailToken.password;
+                var algorithm = this.settings.authentication.confirmEmailToken.algorithm;
+        		var password = this.settings.authentication.confirmEmailToken.password;
         		var decipher = crypto.createDecipher(algorithm, password);
 				var token = decipher.update(json.params.token, "hex", "utf8");
 				token += decipher.final("utf8");
@@ -679,10 +681,10 @@ MongoRpc = function () {
 				    
                     // create params
 					var params = {};
-                    params[(!this.settings.httpAuthConfirmEmailField ? "isConfirmed" : this.settings.httpAuthConfirmEmailField)] = true;
+                    params[(!this.settings.authentication.confirmEmailField ? "isConfirmed" : this.settings.authentication.confirmEmailField)] = true;
 					
                     // update the user
-					this.db[this.settings.httpAuthCollection].update({"_id":this.db.ObjectId(token._id)}, {"$set":params}, function (error, result) {
+					this.db[this.settings.authentication.collection].update({"_id":this.db.ObjectId(token._id)}, {"$set":params}, function (error, result) {
                         if(error) {
                         
                               // collection not provided, create procedure not found response
@@ -720,7 +722,7 @@ MongoRpc = function () {
         
         if (request.session.data.user != "guest" && json.params !== undefined && json.params !== null) {
             if (json.params.name !== undefined) {
-                var roles = request.session.data.user[this.settings.httpAuthRolesField !== undefined ? this.settings.httpAuthRolesField : "roles"];
+                var roles = request.session.data.user[this.settings.authentication.rolesField !== undefined ? this.settings.authentication.rolesField : "roles"];
                 if (roles !== undefined) {
                     for (var i = 0; i < roles.length; i++) {
                         if (roles[i] == json.params.name) {
@@ -854,9 +856,9 @@ MongoRpc = function () {
         	                            }
         	                            
         	                            // hash the password
-        	                            if (collection == this.settings.httpAuthCollection) {
+        	                            if (collection == this.settings.authentication.collection) {
         	                                if (json.params[index] != undefined) {
-        	                                    var passwordField = (!this.settings.httpAuthPasswordField ? "password" : this.settings.httpAuthPasswordField);
+        	                                    var passwordField = (!this.settings.authentication.passwordField ? "password" : this.settings.authentication.passwordField);
         	                                    if (json.params[index][passwordField] != undefined) {
         	                                        json.params[index][passwordField] = passwordHash.generate(json.params[index][passwordField]);
         	                                    }
@@ -1058,7 +1060,7 @@ MongoRpc = function () {
     	                                        
     	                                        // set owner to guest or to user id
     	                                        var ownerParams = { "_created" : new Date().getTime() / 1000 };
-    	                                        if (collection == this.settings.httpAuthCollection) {
+    	                                        if (collection == this.settings.authentication.collection) {
     	                                        
     	                                            // set owner
     	                                            ownerParams._owner = result._id.toString();
@@ -1069,11 +1071,11 @@ MongoRpc = function () {
                                                         		
                                                             // error sending mail
                                                             console.log(errorMail);
-                                                            console.log(request.session.id + ": Failed to send email confirmation email to " + result[(!this.settings.httpAuthUsernameField ? "email" : this.settings.httpAuthUsernameField)]);
+                                                            console.log(request.session.id + ": Failed to send email confirmation email to " + result[(!this.settings.authentication.usernameField ? "email" : this.settings.authentication.usernameField)]);
                                                 		} else {
                                                         		
                                                             // log mail sent
-                                                            console.log(request.session.id + ": Sent email confirmation email to " + result[(!this.settings.httpAuthUsernameField ? "email" : this.settings.httpAuthUsernameField)]);
+                                                            console.log(request.session.id + ": Sent email confirmation email to " + result[(!this.settings.authentication.usernameField ? "email" : this.settings.authentication.usernameField)]);
                                                 		}  
                                                 	}.bind(this));
     	                                        
@@ -1139,11 +1141,11 @@ MongoRpc = function () {
     	                                }
     	                                
     	                                // hash the password
-    	                                if (collection == this.settings.httpAuthCollection) {
+    	                                if (collection == this.settings.authentication.collection) {
     	                                    if (json.params[i] != undefined) {
     	                                        var keys = Object.keys(json.params[1]);
     	                                        if (keys != undefined) {
-    	                                            var passwordField = (!this.settings.httpAuthPasswordField ? "password" : this.settings.httpAuthPasswordField);
+    	                                            var passwordField = (!this.settings.authentication.passwordField ? "password" : this.settings.authentication.passwordField);
     	                                            if (modifiers.indexOf(keys[0]) > -1) {
     	                                                if (json.params[i][keys[0]] != undefined) {
     	                                                    if (json.params[i][keys[0]][passwordField] != undefined) {
@@ -1314,9 +1316,9 @@ MongoRpc = function () {
     	                            }
     	                            
     	                            // hash the password
-    	                            if (collection == this.settings.httpAuthCollection) {
+    	                            if (collection == this.settings.authentication.collection) {
     	                                if (keys != undefined) {
-    	                                    var passwordField = (!this.settings.httpAuthPasswordField ? "password" : this.settings.httpAuthPasswordField);
+    	                                    var passwordField = (!this.settings.authentication.passwordField ? "password" : this.settings.authentication.passwordField);
     	                                    if (modifiers.indexOf(keys[0]) > -1) {
     	                                        if (json.params.update[keys[0]] != undefined) {
     	                                            if (json.params.update[keys[0]][passwordField] != undefined) {
@@ -1476,8 +1478,8 @@ MongoRpc = function () {
         	                        }
         	                        
         	                        // hash the password
-        	                        if (collection == this.settings.httpAuthCollection) {
-    	                                var passwordField = (!this.settings.httpAuthPasswordField ? "password" : this.settings.httpAuthPasswordField);
+        	                        if (collection == this.settings.authentication.collection) {
+    	                                var passwordField = (!this.settings.authentication.passwordField ? "password" : this.settings.authentication.passwordField);
                                         if (json.params.cond != undefined) {
                                             if (json.params.cond[passwordField] != undefined) {
                                                 json.params.cond[passwordField] = passwordHash.generate(json.params.cond[passwordField]);
@@ -1540,8 +1542,8 @@ MongoRpc = function () {
         	                        }
         	                        
         	                        // hash the password
-        	                        if (collection == this.settings.httpAuthCollection) {
-        	                            var passwordField = (!this.settings.httpAuthPasswordField ? "password" : this.settings.httpAuthPasswordField);
+        	                        if (collection == this.settings.authentication.collection) {
+        	                            var passwordField = (!this.settings.authentication.passwordField ? "password" : this.settings.authentication.passwordField);
         	                            if (json.params.query != undefined) {
         	                                if (json.params.query[passwordField] != undefined) {
         	                                    json.params.query[passwordField] = passwordHash.generate(json.params.query[passwordField]);
@@ -1609,9 +1611,9 @@ MongoRpc = function () {
     	                            }
     	                            
     	                            // hash the password
-    	                            if (collection == this.settings.httpAuthCollection) {
+    	                            if (collection == this.settings.authentication.collection) {
     	                                if (json.params != undefined) {
-    	                                    var passwordField = (!this.settings.httpAuthPasswordField ? "password" : this.settings.httpAuthPasswordField);
+    	                                    var passwordField = (!this.settings.authentication.passwordField ? "password" : this.settings.authentication.passwordField);
     	                                    if (json.params[passwordField] != undefined) {
     	                                        json.params[passwordField] = passwordHash.generate(json.params[passwordField]);
     	                                    }
@@ -1889,47 +1891,47 @@ MongoRpc = function () {
                     var pathParts = request.url.split("/");
                     var collection = pathParts[pathParts.length - 1];
                     if (collection != undefined) {
-                        if (collection == this.settings.httpAuthCollection && json.method == "login") {
+                        if (collection == this.settings.authentication.collection && json.method == "login") {
                         
                             // process login request
                             this.processLogin(request, response, json);
                             
-                        } else if (collection == this.settings.httpAuthCollection && json.method == "logout") {
+                        } else if (collection == this.settings.authentication.collection && json.method == "logout") {
                         
                             // process logout request
                             this.processLogout(request, response, json);
                         
-                        } else if (collection == this.settings.httpAuthCollection && json.method == "isAuthenticated") {
+                        } else if (collection == this.settings.authentication.collection && json.method == "isAuthenticated") {
                         
                             // process authentication status request
                             this.processIsAuthenticated(request, response, json);
                         
-                        } else if (collection == this.settings.httpAuthCollection && json.method == "isInRole") {
+                        } else if (collection == this.settings.authentication.collection && json.method == "isInRole") {
                         
                             // process role verficiation request
                             this.processIsInRole(request, response, json);
                             
-                        } else if (collection == this.settings.httpAuthCollection && json.method == "changePassword") {
+                        } else if (collection == this.settings.authentication.collection && json.method == "changePassword") {
                         
                             // process change passwor request
                             this.processChangePassword(request, response, json);
                               
-                        } else if (collection == this.settings.httpAuthCollection && json.method == "passwordResetRequest") {
+                        } else if (collection == this.settings.authentication.collection && json.method == "passwordResetRequest") {
                         
                             // process password reset request request
                             this.processPasswordResetRequest(request, response, json);
                              
-                        } else if (collection == this.settings.httpAuthCollection && json.method == "passwordReset") {
+                        } else if (collection == this.settings.authentication.collection && json.method == "passwordReset") {
                         
                             // process password reset request
                             this.processPasswordReset(request, response, json);
                          
-                        } else if (collection == this.settings.httpAuthCollection && json.method == "confirmEmail") {
+                        } else if (collection == this.settings.authentication.collection && json.method == "confirmEmail") {
                         
                             // process confirm email
                             this.processConfirmEmail(request, response, json);
                         
-                        } else if (collection == this.settings.httpAuthCollection && json.method == "confirmEmailRequest") {
+                        } else if (collection == this.settings.authentication.collection && json.method == "confirmEmailRequest") {
                         
                             // process confirm email request
                             this.processConfirmEmailRequest(request, response, json);
@@ -2088,7 +2090,16 @@ MongoRpc = function () {
                             return;
                         } else {
                             var type = mime.lookup(filename);
-                            response.writeHead(200, { "Content-Type": type });
+                            
+                            var headers = {};
+                            if (request.connection.encrypted) {
+                                headers = this.settings.https.static.headers;
+                            } else {
+                                headers = this.settings.http.static.headers;
+                            }
+                            headers["Content-Type"] = type;
+                            
+                            response.writeHead(200, headers);
                             response.write(file, "binary");
                             response.end();
                         }
@@ -2138,7 +2149,7 @@ MongoRpc = function () {
         
         var enabled = false;
         if (this.settings.mail) {
-            if (this.settings.mail.messages && this.settings.httpAuthConfirmEmailToken) {
+            if (this.settings.mail.messages && this.settings.authentication.confirmEmailToken) {
                 if (this.settings.mail.messages.confirmEmail) {
                     if (this.settings.mail.messages.confirmEmail.enabled) {
                         enabled = true;
@@ -2151,14 +2162,14 @@ MongoRpc = function () {
 
     this.sendConfirmEmail = function (request, response, user, callback) {
         if (this.confirmEmailEnabled()) {
-            if (user[(!this.settings.httpAuthConfirmEmailField ? "isConfirmed" : this.settings.httpAuthConfirmEmailField)] !== true) {
+            if (user[(!this.settings.authentication.confirmEmailField ? "isConfirmed" : this.settings.authentication.confirmEmailField)] !== true) {
                 
         		// create and encrypt the token
         		var expiration = new Date(); 
-        		expiration.setMinutes(expiration.getMinutes() + this.settings.httpAuthConfirmEmailTimeout);
+        		expiration.setMinutes(expiration.getMinutes() + this.settings.authentication.confirmEmailTimeout);
         		
-        		var algorithm = this.settings.httpAuthConfirmEmailToken.algorithm;
-        		var password = this.settings.httpAuthConfirmEmailToken.password;
+        		var algorithm = this.settings.authentication.confirmEmailToken.algorithm;
+        		var password = this.settings.authentication.confirmEmailToken.password;
         		var cipher = crypto.createCipher(algorithm, password);
 				
 				var token = {};
@@ -2172,7 +2183,7 @@ MongoRpc = function () {
                 mailMessage.text = mailMessage.text.replace(/{firstName}/g, (user.firstName || ""));
                 mailMessage.text = mailMessage.text.replace(/{lastName}/g, (user.lastName || ""));
                 mailMessage.text = mailMessage.text.replace(/{token}/g, encodeURIComponent(token));
-                mailMessage.to = (user.firstName || "") + " " + (user.lastName || "") + " <" + user[(!this.settings.httpAuthUsernameField ? "email" : this.settings.httpAuthUsernameField)] + ">";
+                mailMessage.to = (user.firstName || "") + " " + (user.lastName || "") + " <" + user[(!this.settings.authentication.usernameField ? "email" : this.settings.authentication.usernameField)] + ">";
                 
 				// format the email message - html
         		if (mailMessage.attachment) {

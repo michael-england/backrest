@@ -1,25 +1,44 @@
 {
+    "databaseUrl" : "db",
     "isDebug" : true,
-    "isSecured" : false,
-    "httpPort" : "80",
-    "httpPortSecured" : "443",
-    "privateKey" : "privatekey.pem",
-    "certificate" : "certificate.pem",
-    "httpAuthCollection" : "users",
-    "httpAuthUsernameField" : "email",
-    "httpAuthPasswordField" : "password",
-    "httpAuthRolesField" : "roles",
-    "httpAuthConfirmEmailField" : "isConfirmed",
-    "httpAuthConfirmEmailTimeout" : 1440,
-    "httpAuthPasswordResetToken" : {
-	    "timeout" : 120,
-	    "algorithm" : "aes-256-cbc",
-	    "password" : "012345678"
+    "http" : {
+        "enabled" : true,       
+        "port" : "80",
+        "static" : {
+            "headers" : {
+                "Cache-Control": "max-age=1200"
+            }
+        }
     },
-    "httpAuthConfirmEmailToken" : {
-	    "timeout" : 1440,
-	    "algorithm" : "aes-256-cbc",
-	    "password" : "0123456"
+    "https" : {
+        "enabled" : true,
+        "port" : "443",            
+        "privateKey" : "privatekey.pem",
+        "certificate" : "certificate.pem",
+        "static" : {
+            "headers" : {
+                "Cache-Control": "max-age=1200"
+            }
+        }
+    },
+    "authentication" : {
+        "collection" : "users",
+        "usernameField" : "email",
+        "passwordField" : "password",
+        "rolesField" : "roles",
+        "lastLoginField" : "_lastLogin",
+        "confirmEmailField" : "isConfirmed",
+        "confirmEmailTimeout" : 1440,
+        "passwordResetToken" : {
+    	    "timeout" : 120,
+    	    "algorithm" : "aes-256-cbc",
+    	    "password" : "012345678"
+        },
+        "confirmEmailToken" : {
+    	    "timeout" : 1440,
+    	    "algorithm" : "aes-256-cbc",
+    	    "password" : "0123456"
+        }
     },
     "mail" : {
     	"server" : {
@@ -53,7 +72,6 @@
 
     	}		
     },
-    "databaseUrl" : "db",
     "paths" : { 
         "uploads" : "./",
         "events" : "./events.js",
