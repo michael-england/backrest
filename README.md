@@ -36,6 +36,7 @@ __allowed__: Determines if the filter allows the field or disallows the field.  
 
 __Example Filter__
 
+```javascript
 {
   "databaseUrl" : "db",
   "collections" : [
@@ -58,6 +59,7 @@ __Example Filter__
     }
   ]
 }
+```
 
 ##Validators
 
@@ -74,6 +76,7 @@ __errorMessage__: The message to display the field fails to validate.
 
 __Example Required Validator__
 
+```javascript
 {
   "databaseUrl" : "db",
   "collections" : [
@@ -96,9 +99,7 @@ __Example Required Validator__
     }
   ]
 }
-
-
-
+```
 ###Compare
 This validator requires a field against a value or a different field.  
 
@@ -118,6 +119,7 @@ __errorMessage__: The message to display the field fails to validate.
 
 __Example Custom Validator__
 
+```javascript
 {
   "databaseUrl" : "db",
   "collections" : [
@@ -144,7 +146,7 @@ __Example Custom Validator__
     }
   ]
 }
-
+```
 
 ###Range
 This validator requires a field to be greater than a minimum value and less than a maximum value..  Validation will fail if the field is greater than the maximum value or less than the minimum value.
@@ -161,6 +163,7 @@ __errorMessage__: The message to display the field fails to validate.
 
 __Example Range Validator__
 
+```javascript
 {
   "databaseUrl" : "db",
   "collections" : [
@@ -185,6 +188,7 @@ __Example Range Validator__
     }
   ]
 }
+```
 
 ###Regular Expression
 This validator requires a field to pass a regularExpression.  Validation will fail if the field does pass the regularExpression.  More on regular expressions can be found here: http://www.regular-expressions.info/
@@ -199,6 +203,7 @@ __errorMessage__: The message to display the field fails to validate.
 
 __Example Regular Expression Validator__
 
+```javascript
 {
   "databaseUrl" : "db",
   "collections" : [
@@ -222,6 +227,7 @@ __Example Regular Expression Validator__
     }
   ]
 }
+```
 
 ###Custom
 This validator is not yet implemented.
