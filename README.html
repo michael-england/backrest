@@ -1,0 +1,211 @@
+<html>
+    <head>
+    
+    </head>
+    <body>
+<h1>MongoRPC</h1>
+<p>The behavior of MongoRPC depends entirely on the settings.json file.</p>
+
+<h2>Collections</h2>
+<p>Collections are mapped directly to the collections within a MongoDB database.  An example of a users collection is below.  The collection below is named "users".  This collection includes the find method.  Each method can be enabled or disabled, and can contain variations (or different actions) for controlling data input and output.</p>
+<p>For instance the default action below can be used to display a list of owners, but can only be executed by users in the admin role.  Another action could be created to display a list of users related to another user.  Each action contains fields for "roles", "filters", "validators", and "events".</p>
+<code>
+<pre>
+{
+  "databaseUrl" : "db",
+  "collections" : [
+    "users" : {
+      "find" : {
+        "enabled" : true,
+        "default" : {
+          "roles" : [ "admin" ],
+          "filters" : [],
+          "validators" : [],
+          "events": []
+        }
+      }
+    }
+  ]
+}
+</pre>
+</code>
+<h2>Filters</h2>
+<p>Filters are used to allow or disallow a field entering or leaving MongoRPC for a specific function.</p>
+<p><strong>fieldToFilter</strong>: This can be set as any value, however it typically matches a field in a MongoDB.  Additionally, this can be set to a wildcard ("*").  When set to a wildcard, the filter will be ran across all fields.  For instance if you wanted to block all fields entering, you would set the fieldToFilter to a wildcard, the "direction" to "in", and "allowed" to "false".</p>
+<p><strong>direction</strong>: Determines whether the filter is processed on data entering a MongoDB through MongoRPC or data being return from a MongoDB through MongoRPC.  Relevant values are "in" for values entering, and "out" for values leaving.</p>
+<p><strong>allowed</strong>: Determines if the filter allows the field or disallows the field.  This property is boolean and accepts either a true or false value.</p>
+<p><strong>Example Filter</strong></p>
+<code>
+<pre>
+{
+  "databaseUrl" : "db",
+  "collections" : [
+    "users" : {
+      "find" : {
+        "enabled" : true,
+        "default" : {
+          "roles" : [],
+          "filters" : [
+            {
+              "fieldToFilter" : "*",
+              "direction" : "in",
+              "allowed" : false,
+            }
+          ],
+          "validators" : [],
+          "events": []
+        }
+      }
+    }
+  ]
+}
+</pre>
+</code>
+<h2>Validators</h2>
+<p>An array of validators.  Validators ensure fields entering MongoRPC are allowed to be passed through to MongoDB.  If the fields being validate fail, the command being executed against MongoDB will not be executed.  The following is a list of the different types of validators.</p>
+<h3>Required</h3>
+<p>This validator requires a field to have a value.  Validation will fail if the field does not have a value.</p>
+<p><strong>type</strong>: The type of validator.  For the required validator this must be set to "required".</p>
+<p><strong>fieldToValidate</strong>: Specifies the field to be validated.</p>
+<p><strong>errorMessage</strong>: The message to display the field fails to validate.</p>
+<p><strong>Example Required Validator</strong></p>
+<code>
+<pre>
+{
+  "databaseUrl" : "db",
+  "collections" : [
+    "users" : {
+      "find" : {
+        "enabled" : true,
+        "default" : {
+          "roles" : [ "admin" ],
+          "filters" : [],
+          "validators" : [
+            {
+              "type" : "required",
+              "fieldToValidate" : "name",
+              "errorMessage" : "Name is required."
+            }
+          ],
+          "events": []
+        }
+      }
+    }
+  ]
+}
+</pre>
+</code>
+<h3>Compare</h3>
+<p>This validator requires a field against a value or a different field.</p>
+<p><strong>type</strong>: The type of validator.  For the compare validator this must be set to "compare".</p>
+<p><strong>fieldToValidate</strong>: Specifies the field to be validated.</p>
+<p><strong>fieldToCompare</strong>: Specifies the field to be compared when being validated.  If this field is null or left empty, the value assigned to valueToCompare will be used.</p>
+<p><strong>valueToCompare</strong>: Rather than comparing against a field, a value can be compared.</p>
+<p><strong>dataType</strong>: Sets the data type for comparing values.  Valid dataType include "string", "integer", "float", "date", or "currency".</p>
+<p><strong>operator</strong>: Determines how the fieldToValue should be compared against valueToCompare or fieldToCompare. Valid values include "==", "!=", "&lt;=", "&gt;=", "&lt;", or "&gt;".  Only "==" and "!=" operators are valid for the "string" data type.</p>
+<p><strong>errorMessage</strong>: The message to display the field fails to validate.</p>
+<p><strong>Example Custom Validator</strong></p>
+<code>
+<pre>
+{
+  "databaseUrl" : "db",
+  "collections" : [
+    "users" : {
+      "find" : {
+        "enabled" : true,
+        "default" : {
+          "roles" : [ "admin" ],
+          "filters" : [],
+          "validators" : [
+            {
+              "type" : "required",
+              "fieldToValidate" : "password",
+              "fieldToCompare" : "passwordConfirmation",
+              "valueToCompare" : null,
+              "dateType" : "string",
+              "operator" : "==",
+              "errorMessage" : "Passwords do not match"
+            }
+          ],
+          "events": []
+        }
+      }
+    }
+  ]
+}
+</pre>
+</code>
+<h3>Range</h3>
+<p>This validator requires a field to be greater than a minimum value and less than a maximum value..  Validation will fail if the field is greater than the maximum value or less than the minimum value.</p>
+<p><strong>type</strong>: The type of validator.  For the range validator this must be set to "range".</p>
+<p><strong>fieldToValidate</strong>: Specifies the field to be validated.</p>
+<p><strong>minimumValue</strong>: The minimum the value must be to pass validation.</p>
+<p><strong>maximumValue</strong>: The maximum the value must be to pass validation.</p>
+<p><strong>errorMessage</strong>: The message to display the field fails to validate.</p>
+<p><strong>Example Range Validator</strong></p>
+<code>
+<pre>
+{
+  "databaseUrl" : "db",
+  "collections" : [
+    "users" : {
+      "find" : {
+        "enabled" : true,
+        "default" : {
+          "roles" : [ "admin" ],
+          "filters" : [],
+          "validators" : [
+            {
+              "type" : "range",
+              "fieldToValidate" : "age",
+              "minimumValue" : 13,
+              "maximumValue" : 99,
+              "errorMessage" : "Age is needs to be between 13 and 99."
+            }
+          ],
+          "events": []
+        }
+      }
+    }
+  ]
+}
+</pre>
+</code>
+<h3>Regular Expression</h3>
+<p>This validator requires a field to pass a regularExpression.  Validation will fail if the field does pass the regularExpression.  More on regular expressions can be found here: <a href="http://livepage.apple.com/">http://www.regular-expressions.info/</a></p>
+<p><strong>type</strong>: The type of validator.  For the required validator this must be set to "regularExpression".</p>
+<p><strong>fieldToValidate</strong>: Specifies the field to be validated.</p>
+<p><strong>expression</strong>: The regular expression the value must pass.</p>
+<p><strong>errorMessage</strong>: The message to display the field fails to validate.</p>
+<p><strong>Example Regular Expression Validator</strong></p>
+<code>
+<pre>
+{
+  "databaseUrl" : "db",
+  "collections" : [
+    "users" : {
+      "find" : {
+        "enabled" : true,
+        "default" : {
+          "roles" : [ "admin" ],
+          "filters" : [],
+          "validators" : [
+            {
+              "type" : "regularExpression",
+              "fieldToValidate" : "name",
+              "expression" : "%5Ba-z0-9%21%23%24%25%2....-9%5D%29%3F",
+              "errorMessage" : "Name is required."
+            }
+          ],
+          "events": []
+        }
+      }
+    }
+  ]
+}
+</pre>
+</code>
+<h3>Custom</h3>
+<p>This validator is not yet implemented.</p>
+</body>
+</html>
