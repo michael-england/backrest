@@ -15,6 +15,7 @@ Custom	7
 
 
 Collections
+----------
 Collections are mapped directly to the collections wihtin a MongoDB.  Collections consist of a name, filters, and validators. 
 
 {
