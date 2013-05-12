@@ -131,7 +131,7 @@ __Example Custom Validator__
           "filters" : [],
           "validators" : [
             {
-              "type" : "required",
+              "type" : "compare",
               "fieldToValidate" : "password",
               "fieldToCompare" : "passwordConfirmation",
               "valueToCompare" : null,
