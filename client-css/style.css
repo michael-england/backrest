@@ -1,76 +1,17 @@
-body
-{
-	font: 10pt Arial;
-	padding: 20px;
+@font-face {
+  font-family: 'Rokkitt';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Rokkitt'), url(http://themes.googleusercontent.com/static/fonts/rokkitt/v5/RcB7dRNAX_8JE8zinU47YALUuEpTyoUstqEm5AMlJo4.woff) format('woff');
 }
-h1
-{
-	color: #77A6D2;
-	margin-left: 10px;
-	display: block;
+
+body {
+	background-color: #D1D1D1;
+	background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPwAAADmBAMAAAADyPWpAAAAHlBMVEUAAAAAAAAAAAAAAAD///8AAAAAAAAAAAAAAAAAAAAzn7ZSAAAACnRSTlMEAgEFAAMGBwgJHK6+iAAAAjVJREFUeF7t3TFvEzEYh3EnUQJjoaRzCGS/ChW6UsF+pc0eCSkwVqrUwhcAPjZT38fDKzmKuBvQ858qy/bP9mT57LTcvIu8iHxZP2VVIl8Prrmj0TpyHW1OIf9zXl5eXl5eXl5+uX1Kv41gzuC7rHASnS4bzdOBlk+Rj/AMr2tMFP4lPb2OwhOg24CuWJIheXl5eXl5eXl5ef5cpbtKxoR0ktUs1JyzfYV/xTwLSUdaSfDMfsOSoC9YsgsaMbu3wX8eh5eXl5eXl5eXl+9pn/IU7pD2kfswP1B4l/U5ZfRAR53pXj5GKgl+ly3JOcevLMmQvLy8vLy8vLy8fN/YQNL+d5g/4X+F+Q3+Lv/+HmGe1Ub7LO0U/gEpW5L31JykEx2bl5eXl5eXl5eXr25w7iPsKn/AVxL8njQ+oJNZIdPspBYTqVXzonF9AGg1Di8vLy8vLy8vL89h43wdKUd8VS/byDV8Bj17jBQyZ/gMZNO4KpoUNtfpchxeXl5eXl5eXl5+S7K94pL2VLjJvsqfUpjuP9lqPv8TKckF0vSpU3v7nPGz7KLrm31kQF5eXl5eXl5eXj5/rdMdcVa5OHiruaj4/AIpVQc4/a1qDsnLy8vLy8vLy8t3UNkBZj/Ap/ZFSQPP7vuKwn92+rsEGoOXl5eXl5eXl5fPfywp/133CXzVP3z6fr5rvEo6qx/AR7JO1/D9EYtX6GhIXl5eXl5eXl5eHvM7fPUAvvEviOBn1Jwz5orPav4FxfqDRAI+1ZEAAAAASUVORK5CYII=);
 }
-label
-{
-	display: block;
-	margin: 20px 0 0 0;
-}
-input
-{
-	display: block;
-	clear: both;
-}
-input:focus,
-textarea:focus
-{
-	outline: none;
-}
-input[type=text]
-{
-	width: 250px;
-	border: solid 1px #e9e9e9;
-	border-radius: 5px;
-	padding: 5px;
-}
-textarea
-{
-	width: 250px;
-	height: 200px;
-	border: solid 1px #e9e9e9;
-	border-radius: 5px;
-	padding: 5px;
-}
-input:focus, textarea:focus{
-	background-color: lightyellow;
-}
-.input
-{
-	padding: 20px;
-	margin: 0 20px 0 0;
-	overflow: hidden;
-	background: #ebebeb;
-	width: 270px;
-	border-radius: 10px;
-	float: left;
-}
-.output
-{
-	float: left;
-	overflow: hidden;
-	padding: 20px;
-	width: 810px;
-	border: solid 20px #ebebeb;
-	border-radius: 10px;
-	overflow-y: scroll;
-	height: 356px;
-}
+
 .output div
 {
-	padding: 10px;
-	color: #fff;
-	font-weight: bold;
-	background-color: #77A6D2;
-	border-radius: 5px;
-	margin-bottom: 10px;
 }
 .output div.error
 {
@@ -78,4 +19,449 @@ input:focus, textarea:focus{
 	font-weight: bold;
 	background-color: #990033;
 	border-radius: 5px;
+}
+
+.dropdown-menu-header {
+	font-weight: bold!important;
+	font-size: 12px;
+	color: #999!important;
+	padding: 3px 6px 3px 20px;
+}
+
+.dropdown-menu-header:hover {
+	background: none!important;
+}
+
+.icon {
+	display: inline-block;
+	width: 14px;
+	height: 14px;
+	margin-right: 10px;
+}
+
+.request .CodeMirror{
+	height: 25px;
+}
+
+.response .CodeMirror {
+	height: auto;
+}
+
+.response .CodeMirror-scroll {
+	overflow-y: hidden;
+	overflow-x: auto;
+}
+
+.command-options .CodeMirror {
+	height: 120px;
+}
+
+.CodeMirror {
+	line-height: 1.3em;
+	font-family: monospace;
+
+	/* Necessary so the scrollbar can be absolutely positioned within the wrapper on Lion. */
+	position: relative;
+	/* This prevents unwanted scrollbars from showing up on the body and wrapper in IE. */
+	overflow: hidden;
+	background-color: white;
+
+	/* Copied from Bootstrap's textarea */
+	display: block;
+	margin-bottom: 9px;
+	color: #555555;
+	border: 1px solid #ccc;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	border-radius: 3px;
+	-webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+	-moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+	box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+	-webkit-transition: border linear 0.2s, box-shadow linear 0.2s;
+	-moz-transition: border linear 0.2s, box-shadow linear 0.2s;
+	-ms-transition: border linear 0.2s, box-shadow linear 0.2s;
+	-o-transition: border linear 0.2s, box-shadow linear 0.2s;
+	transition: border linear 0.2s, box-shadow linear 0.2s;
+}
+
+.CodeMirror-focused {
+	/* Copied from Bootstrap's textarea */
+	border-color: rgba(82, 168, 236, 0.8);
+	outline: 0;
+	outline: thin dotted \9;
+	/* IE6-9 */
+
+	-webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(82, 168, 236, 0.6);
+	-moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(82, 168, 236, 0.6);
+	box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(82, 168, 236, 0.6);
+}
+
+.app-section {
+	-webkit-border-image: none;
+	-webkit-box-shadow: rgba(0, 0, 0, 0.0980392) 0px 1px 5px 0px, rgb(255, 255, 255) 0px 1px 0px 0px inset;
+	background-color: rgb(255, 255, 255);
+	border-bottom-color: rgb(170, 170, 170);
+	border-bottom-left-radius: 4px;
+	border-bottom-right-radius: 4px;
+	border-bottom-style: solid;
+	border-bottom-width: 1px;
+	border-left-color: rgb(170, 170, 170);
+	border-left-style: solid;
+	border-left-width: 1px;
+	border-right-color: rgb(170, 170, 170);
+	border-right-style: solid;
+	border-right-width: 1px;
+	border-top-color: rgb(170, 170, 170);
+	border-top-left-radius: 4px;
+	border-top-right-radius: 4px;
+	border-top-style: solid;
+	border-top-width: 1px;
+	box-shadow: rgba(0, 0, 0, 0.0980392) 0px 1px 5px 0px, rgb(255, 255, 255) 0px 1px 0px 0px inset;
+	color: rgb(17, 17, 17);
+	display: block;
+	font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+	font-size: 14px;
+	line-height: 20px;
+	margin-bottom: 20px;
+	margin-left: 0px;
+	margin-right: 0px;
+	margin-top: 0px;
+	padding-bottom: 20px;
+	padding-left: 20px;
+	padding-right: 20px;
+	padding-top: 20px;
+}
+
+.app-section header {
+	-webkit-box-shadow: rgb(255, 255, 255) 0px 1px 0px 0px inset;
+	background-color: rgb(245, 245, 245);
+	border-bottom-color: rgb(221, 221, 221);
+	border-bottom-left-radius: 0px;
+	border-bottom-right-radius: 0px;
+	border-bottom-style: solid;
+	border-bottom-width: 1px;
+	border-top-left-radius: 4px;
+	border-top-right-radius: 4px;
+	box-shadow: rgb(255, 255, 255) 0px 1px 0px 0px inset;
+	color: rgb(17, 17, 17);
+	display: block;
+	font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+	font-size: 14px;
+	height: 30px;
+	line-height: 20px;
+	margin-bottom: 20px;
+	margin-left: -20px;
+	margin-right: -20px;
+	margin-top: -20px;
+	padding-bottom: 9px;
+	padding-left: 20px;
+	padding-right: 20px;
+	padding-top: 9px;
+}
+
+.app-section header h4 {
+	color: rgb(17, 17, 17);
+	display: block;
+	font-family: Rokkitt, serif;
+	font-size: 20px;
+	font-weight: bold;
+	height: 26px;
+	line-height: 30px;
+	margin-bottom: 0px;
+	margin-left: 0px;
+	margin-right: 0px;
+	margin-top: 0px;
+	text-rendering: optimizelegibility;
+}
+
+.app-section-fixed {
+  position: fixed;
+}
+
+#items {
+  overflow-y: scroll;
+}
+
+.tab-content {
+  overflow: visible;
+}
+
+table tr th.buttons,
+table tr td.buttons {
+  text-align: right;
+  width: 120px;
+}
+
+.table {
+  margin: 0;
+}
+
+.table thead tr {
+  border: none;
+}
+
+.table th {
+  background: rgb(245, 245, 245);
+}
+
+.table tr td {
+  border: none;
+}
+
+.subhead th {
+  background: #fff;
+  border: none;
+}
+
+.dropdown-menu .btn {
+  padding: 1px 4px;
+  margin-top: -5px;
+}
+
+.btn i,
+.dropdown-menu i {
+  margin: 0;
+}
+
+.modal-body {
+  overflow: visible;
+}
+
+/* this animation is for progress bars that are not active */
+.progress.auto-progress > .bar {
+  -webkit-animation: progress-bar-auto 2s linear infinite;
+     -moz-animation: progress-bar-auto 2s linear infinite;
+      -ms-animation: progress-bar-auto 2s linear infinite;
+       -o-animation: progress-bar-auto 2s linear infinite;
+          animation: progress-bar-auto 2s linear infinite;  
+}
+ 
+/* this animation is for progress bars that are active */
+.progress.active.auto-progress > .bar {
+  -webkit-animation: progress-bar-auto-active 2s linear infinite;
+     -moz-animation: progress-bar-auto-active 2s linear infinite;
+      -ms-animation: progress-bar-auto-active 2s linear infinite;
+       -o-animation: progress-bar-auto-active 2s linear infinite;
+          animation: progress-bar-auto-active 2s linear infinite;  
+}
+
+.accordion-group,
+.accordion-heading {
+  width: auto;
+  height: auto;
+  display: block;
+  border: 0;
+}
+.accordion-toggle {
+  display: inline-block!important;
+  border: 0!important;
+  width: 20px!important;
+  height: 14px!important;
+  padding: 3px 3px !important;
+}
+
+.accordion-inner {
+  border: 0!important;
+  padding: 0;
+}
+
+.chevron {
+  width: 20px;
+}
+
+.more {
+  padding: 0!important;
+}
+
+.title {
+  display: inline-block;
+  padding: 3px 0;
+}
+
+/*
+  Keyframe definitions below.
+  We have to have browser-specific keyframe definitions, so this gets repetitive.
+  We also need two definitions for each specific browser targeted:
+    * We have to redefine the CSS animation for the `active` progress bars (based on bootstrap.css)
+*/
+
+@-webkit-keyframes progress-bar-auto {
+  0% {
+    width: 50%;
+  }
+  25% {
+    width: 100%;
+  }
+  50% {
+    width: 50%;
+  }
+  75% {
+    width: 0%;
+  }
+  100% {
+    width: 50%;
+  }
+}
+@-webkit-keyframes progress-bar-auto-active {
+  0% {
+    width: 50%;
+    background-position: 40px 0;
+  }
+  25% {
+    width: 100%;
+  }
+  50% {
+    width: 50%;
+  }
+  75% {
+    width: 0%;
+  }
+  100% {
+    width: 50%;
+    background-position: 0 0;
+  }
+}
+@-moz-keyframes progress-bar-auto {
+  0% {
+    width: 50%;
+  }
+  25% {
+    width: 100%;
+  }
+  50% {
+    width: 50%;
+  }
+  75% {
+    width: 0%;
+  }
+  100% {
+    width: 50%;
+  }
+}
+@-moz-keyframes progress-bar-auto-active {
+  0% {
+    width: 50%;
+    background-position: 40px 0;
+  }
+  25% {
+    width: 100%;
+  }
+  50% {
+    width: 50%;
+  }
+  75% {
+    width: 0%;
+  }
+  100% {
+    width: 50%;
+    background-position: 0 0;
+  }
+}
+@-ms-keyframes progress-bar-auto {
+  0% {
+    width: 50%;
+  }
+  25% {
+    width: 100%;
+  }
+  50% {
+    width: 50%;
+  }
+  75% {
+    width: 0%;
+  }
+  100% {
+    width: 50%;
+  }
+}
+@-ms-keyframes progress-bar-auto-active {
+  0% {
+    width: 50%;
+    background-position: 40px 0;
+  }
+  25% {
+    width: 100%;
+  }
+  50% {
+    width: 50%;
+  }
+  75% {
+    width: 0%;
+  }
+  100% {
+    width: 50%;
+    background-position: 0 0;
+  }
+}
+@-o-keyframes progress-bar-auto {
+  0% {
+    width: 50%;
+  }
+  25% {
+    width: 100%;
+  }
+  50% {
+    width: 50%;
+  }
+  75% {
+    width: 0%;
+  }
+  100% {
+    width: 50%;
+  }
+}
+@-o-keyframes progress-bar-auto-active {
+  0% {
+    width: 50%;
+    background-position: 40px 0;
+  }
+  25% {
+    width: 100%;
+  }
+  50% {
+    width: 50%;
+  }
+  75% {
+    width: 0%;
+  }
+  100% {
+    width: 50%;
+    background-position: 0 0;
+  }
+}
+@keyframes progress-bar-auto {
+  0% {
+    width: 50%;
+  }
+  25% {
+    width: 100%;
+  }
+  50% {
+    width: 50%;
+  }
+  75% {
+    width: 0%;
+  }
+  100% {
+    width: 50%;
+  }
+}
+@keyframes progress-bar-auto-active {
+  0% {
+    width: 50%;
+    background-position: 40px 0;
+  }
+  25% {
+    width: 100%;
+  }
+  50% {
+    width: 50%;
+  }
+  75% {
+    width: 0%;
+  }
+  100% {
+    width: 50%;
+    background-position: 0 0;
+  }
 }

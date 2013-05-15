@@ -3,3 +3,7 @@ uploads/
 certificate.pem
 certrequest.csr
 privatekey.pem
+
+*.sublime-project
+
+*.sublime-workspace
