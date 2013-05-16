@@ -9,6 +9,7 @@ MongoRPC is JSON-RPC server for MongoDB written in node.js and can be accessed t
   npm install
   node server.js
 ```
+Depending on your environment you may need to change the http/https port (it's port 80 by default) configuration in settings.json or sudo the last command.  Once running you can browse to http://localhost and start playing with the debug console.  Note: this console is not available once debug mode is turned off.
 
 ##Collections
 Collections are mapped directly to the collections within a MongoDB database.  An example of a users collection is below.  The collection below is named “users”.  This collection includes the find method.  Each method can be enabled or disabled, and can contain variations (or different actions) for controlling data input and output.  
