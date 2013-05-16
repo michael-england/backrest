@@ -2,6 +2,14 @@
 
 MongoRPC is JSON-RPC server for MongoDB written in node.js and can be accessed through HTTP or HTTPS.  The behavior of MongoRPC depends entirely on the settings.json file.  Below are settings and their descriptions.
 
+##Installation
+```
+  git clone http://github.com/michael-england/mongorpc.git
+  cd mongorpc
+  npm install
+  node server.js
+```
+
 ##Collections
 Collections are mapped directly to the collections within a MongoDB database.  An example of a users collection is below.  The collection below is named “users”.  This collection includes the find method.  Each method can be enabled or disabled, and can contain variations (or different actions) for controlling data input and output.  
 
