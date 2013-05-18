@@ -1,11 +1,11 @@
-#mongoConductor
+#MongoConductor
 
-mongoConductor is JSON-RPC server for MongoDB written in node.js and can be accessed through HTTP or HTTPS.  The behavior of mongoConductor depends entirely on the settings.json file.  Below are settings and their descriptions.
+MongoConductor is JSON-RPC server for MongoDB written in node.js and can be accessed through HTTP or HTTPS.  The behavior of MongoConductor depends entirely on the settings.json file.  Below are settings and their descriptions.
 
 ##Installation
 ```
-  git clone http://github.com/michael-england/mongoConductor.git
-  cd mongoConductor
+  git clone http://github.com/michael-england/MongoConductor.git
+  cd MongoConductor
   npm install
   node server.js
 ```
@@ -35,11 +35,11 @@ For instance the default action below can be used to display a list of owners, b
 ```
 
 ##Filters
-Filters are used to allow or disallow a field entering or leaving mongoConductor for a specific function.  
+Filters are used to allow or disallow a field entering or leaving MongoConductor for a specific function.  
 
 __fieldToFilter__: This can be set as any value, however it typically matches a field in a MongoDB.  Additionally, this can be set to a wildcard (“*”).  When set to a wildcard, the filter will be ran across all fields.  For instance if you wanted to block all fields entering, you would set the fieldToFilter to a wildcard, the “direction” to “in”, and “allowed” to “false”.
 
-__direction__: Determines whether the filter is processed on data entering a MongoDB through mongoConductor or data being return from a MongoDB through mongoConductor.  Relevant values are “in” for values entering, and “out” for values leaving.
+__direction__: Determines whether the filter is processed on data entering a MongoDB through MongoConductor or data being return from a MongoDB through MongoConductor.  Relevant values are “in” for values entering, and “out” for values leaving.
 
 __allowed__: Determines if the filter allows the field or disallows the field.  This property is boolean and accepts either a true or false value.
 
@@ -72,7 +72,7 @@ __Example Filter__
 
 ##Validators
 
-An array of validators.  Validators ensure fields entering mongoConductor are allowed to be passed through to MongoDB.  If the fields being validate fail, the command being executed against MongoDB will not be executed.  The following is a list of the different types of validators.
+An array of validators.  Validators ensure fields entering MongoConductor are allowed to be passed through to MongoDB.  If the fields being validate fail, the command being executed against MongoDB will not be executed.  The following is a list of the different types of validators.
 
 ###Required
 This validator requires a field to have a value.  Validation will fail if the field does not have a value.
