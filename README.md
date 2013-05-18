@@ -1,4 +1,5 @@
-#MongoConductor
+![alt text][logo]
+[logo]: https://github.com/michael-england/mongoConductor/raw/master/client/img/logo.png "MongoConductor"
 
 MongoConductor is JSON-RPC server for MongoDB written in node.js and can be accessed through HTTP or HTTPS.  The behavior of MongoConductor depends entirely on the settings.json file.  Below are settings and their descriptions.
 
@@ -12,7 +13,7 @@ MongoConductor is JSON-RPC server for MongoDB written in node.js and can be acce
 Depending on your environment you may need to change the http/https port (it's port 80 by default) configuration in settings.json or sudo the last command.  Once running you can browse to http://localhost and start playing with the debug console.  Note: this console is not available once debug mode is turned off.
 
 ##Collections
-Collections are mapped directly to the collections within a MongoDB database.  An example of a users collection is below.  The collection below is named “users”.  This collection includes the find method.  Each method can be enabled or disabled, and can contain variations (or different actions) for controlling data input and output.  
+Collections are mapped directly to the collections within a MongoDB database.  An example of a users collection is below.  The collection below is named “users”.  This collection includes the find method.  Each method can be enabled or disabled, and can contain variations (or different actions) for controlling data input and output.
 
 For instance the default action below can be used to display a list of owners, but can only be executed by users in the admin role.  Another action could be created to display a list of users related to another user.  Each action contains fields for “roles”, “filters”, “validators”, and “events”.
 ```javascript
@@ -35,7 +36,7 @@ For instance the default action below can be used to display a list of owners, b
 ```
 
 ##Filters
-Filters are used to allow or disallow a field entering or leaving MongoConductor for a specific function.  
+Filters are used to allow or disallow a field entering or leaving MongoConductor for a specific function.
 
 __fieldToFilter__: This can be set as any value, however it typically matches a field in a MongoDB.  Additionally, this can be set to a wildcard (“*”).  When set to a wildcard, the filter will be ran across all fields.  For instance if you wanted to block all fields entering, you would set the fieldToFilter to a wildcard, the “direction” to “in”, and “allowed” to “false”.
 
@@ -110,13 +111,13 @@ __Example Required Validator__
 }
 ```
 ###Compare
-This validator requires a field against a value or a different field.  
+This validator requires a field against a value or a different field.
 
 __type__: The type of validator.  For the compare validator this must be set to “compare”.
 
 __fieldToValidate__: Specifies the field to be validated.
 
-__fieldToCompare__: Specifies the field to be compared when being validated.  If this field is null or left empty, the value assigned to valueToCompare will be used.  
+__fieldToCompare__: Specifies the field to be compared when being validated.  If this field is null or left empty, the value assigned to valueToCompare will be used.
 
 __valueToCompare__: Rather than comparing against a field, a value can be compared.
 
