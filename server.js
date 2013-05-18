@@ -18,7 +18,7 @@ var params = require("./lib/params");
 var email = require("./node_modules/emailjs/email");
 var imagemagick = require('imagemagick');
 
-MongoRpc = function() {
+MongoConductor = function() {
     events.EventEmitter.call(this);
     this.settings = undefined;
     this.settingsFilename = undefined;
@@ -2654,7 +2654,7 @@ MongoRpc = function() {
     };
 };
 
-util.inherits(MongoRpc, events.EventEmitter);
+util.inherits(MongoConductor, events.EventEmitter);
 
-var mongoRpc = new MongoRpc();
-mongoRpc.init();
+var mongoConductor = new MongoConductor();
+mongoConductor.init();

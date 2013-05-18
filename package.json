@@ -1,8 +1,8 @@
 {
-	"name": "mongorpc",
+	"name": "mongoConductor",
 	"version": "0.0.1",
 	"author": "Michael England <michael@element8labs.com>",
-	"description": "MongoRPC is JSON-RPC server for MongoDB written in node.js and can be accessed through HTTP or HTTPS.",
+	"description": "mongoConductor is JSON-RPC server for MongoDB written in node.js and can be accessed through HTTP or HTTPS.",
 	"contributors": [ {
 	 	"name": "Michael England",
 		"email": "michael@element8labs.com"
