@@ -1,22 +1,31 @@
 {
 	"name": "MongoConductor",
-	"version": "0.0.1",
+	"subdomain": "mongo-conductor",
+	"scripts": {
+		"start": "server.js"
+	},
+	"engines": {
+		"node": "0.8.x"
+	},
+	"version": "0.0.1-14",
 	"author": "Michael England <michael@element8labs.com>",
 	"description": "MongoConductor is JSON-RPC server for MongoDB written in node.js and can be accessed through HTTP or HTTPS.",
-	"contributors": [ {
-	 	"name": "Michael England",
-		"email": "michael@element8labs.com"
-	}],
+	"contributors": [
+		{
+			"name": "Michael England",
+			"email": "michael@element8labs.com"
+		}
+	],
 	"private": true,
-	"dependencies" : {
-		"async" : "0.1.x",
-		"emailjs" : "0.2.x",
-		"eyes" : "0.1.x",
-		"formidable" : "1.0.x",
-		"imagemagick" : "0.1.x",
-		"mime" : "1.2.x",
-		"node-fs" : "0.1.x",
-		"password-hash" : "1.1.x",
-		"response" : "0.1.x"
+	"dependencies": {
+		"async": "0.1.x",
+		"emailjs": "0.2.x",
+		"eyes": "0.1.x",
+		"formidable": "1.0.x",
+		"imagemagick": "0.1.x",
+		"mime": "1.2.x",
+		"password-hash": "1.1.x",
+		"response": "0.1.x",
+		"mongojs": "0.7.x"
 	}
 }

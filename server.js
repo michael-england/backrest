@@ -1,4 +1,4 @@
-var mongo = require("mongojs");
+var mongojs = require("mongojs");
 var http = require("http");
 var https = require("https");
 var events = require('events');
@@ -97,7 +97,7 @@ MongoConductor = function() {
                 this.httpStart();
 
                 // connect to the database
-                this.db = mongo.connect(this.settings.databaseUrl, this.collections);
+                this.db = mongojs(this.settings.databaseUrl, this.collections);
             } catch (ex) {
                 // handle error
                 console.log(ex.message);

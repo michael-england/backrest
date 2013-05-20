@@ -11,7 +11,7 @@
         }
     },
     "https": {
-        "enabled": true,
+        "enabled": false,
         "port": "443",
         "privateKey": "privatekey.pem",
         "certificate": "certificate.pem",
