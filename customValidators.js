@@ -2,6 +2,10 @@ exports.userExists = function(server, request, value, json, isValid) {
     var query = {};
     query[(!server.settings.httpAuthUsernameField ? "email" : server.settings.httpAuthUsernameField)] = value;
 
+    if (!server.db[server.settings.httpAuthCollection]) {
+        server.db.collection(server.settings.httpAuthCollection);
+    }
+
     server.db[server.settings.httpAuthCollection].count(query, function(error, result) {
         if (error) {
             isValid(false);
@@ -13,4 +17,4 @@ exports.userExists = function(server, request, value, json, isValid) {
             }
         }
     });
-}
+};
