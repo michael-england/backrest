@@ -70,16 +70,19 @@ define([
 
             if (this.request.collection !== "None" && this.request.collection !== undefined) {
                 if (this.request.method !== "None" && this.request.method !== undefined) {
+
+                    var requestMethod = this.request.method;
                     if (this.request.methodAction !== "None" && this.request.methodAction !== undefined) {
-
-                        // make the request
-                        Api.call(this.request.collection, this.request.method + "/" + this.request.methodAction, $.parseJSON(this.codeMirrorParams.getValue()), function (results) {
-                            this.formatResults(results);
-                        }.bind(this));
-
-                        // display updated request
-                        this.updateRequest();
+                        requestMethod += "/" + this.request.methodAction;
                     }
+
+                    // make the request
+                    Api.call(this.request.collection, requestMethod, $.parseJSON(this.codeMirrorParams.getValue()), function (results) {
+                        this.formatResults(results);
+                    }.bind(this));
+
+                    // display updated request
+                    this.updateRequest();
                 }
             }
         },
@@ -173,16 +176,21 @@ define([
             $("#methodAction ul").append(this.buildItem("None", "None", true));
             this.request.methodAction = undefined;
 
-            var methodActions = Object.keys(Settings.collections[this.request.collection][$(event.currentTarget).attr("data-value")]).sort();
-            if (methodActions.length > 0) {
+            if (this.authenticationMethods.indexOf(this.request.method) > -1) {
+                $("#methodActionField").hide();
+            } else {
+                var methodActions = Object.keys(Settings.collections[this.request.collection][$(event.currentTarget).attr("data-value")]).sort();
+                if (methodActions.length > 0) {
 
-                // add first divider
-                $("#methodAction ul").append(this.buildItemDivider());
-                for (var i = 0; i < methodActions.length; i++) {
-                    if (methodActions[i] !== "enabled") {
-                        $("#methodAction ul").append(this.buildItem(methodActions[i], methodActions[i], false));
+                    // add first divider
+                    $("#methodAction ul").append(this.buildItemDivider());
+                    for (var i = 0; i < methodActions.length; i++) {
+                        if (methodActions[i] !== "enabled") {
+                            $("#methodAction ul").append(this.buildItem(methodActions[i], methodActions[i], false));
+                        }
                     }
                 }
+                $("#methodActionField").show();
             }
         },
         methodAction_Change: function (event) {
@@ -246,32 +254,34 @@ define([
 
             if (this.request.collection !== "None" && this.request.collection !== undefined) {
                 if (this.request.method !== "None" && this.request.method !== undefined) {
-                    if (this.request.methodAction !== "None" && this.request.methodAction !== undefined) {
 
-                        // build the url
-                        var url = window.location.protocol + "//" + window.location.host + "/" + this.request.collection;
-                        this.codeMirrorRequestUrl.setValue(url);
+                    // build the url
+                    var url = window.location.protocol + "//" + window.location.host + "/" + this.request.collection;
+                    this.codeMirrorRequestUrl.setValue(url);
 
-                        var params = this.codeMirrorParams.getValue();
-                        if (params === "") {
-                            params = undefined;
-                        } else {
-                            try {
-                                params = $.parseJSON(params);
-                            } catch (error) {
+                    var params = this.codeMirrorParams.getValue();
+                    if (params === "") {
+                        params = undefined;
+                    } else {
+                        try {
+                            params = $.parseJSON(params);
+                        } catch (error) {
 
-                            }
                         }
-
-                        // build the data
-                        data = {
-                            "jsonrpc": "2.0",
-                            "method": this.request.method,
-                            "params": params,
-                            "id": parseInt(Math.random() * 99999999, 10)
-                        };
-                        this.codeMirrorRequestPost.setValue(JSON.stringify(data));
                     }
+
+                    // build the data
+                    data = {
+                        "jsonrpc": "2.0",
+                        "method": this.request.method,
+                        "params": params,
+                        "id": parseInt(Math.random() * 99999999, 10)
+                    };
+                    if (this.request.methodAction !== "None" && this.request.methodAction !== undefined)  {
+                        data.method += "/" + this.request.methodAction;
+                    }
+
+                    this.codeMirrorRequestPost.setValue(JSON.stringify(data));
                 }
             }
         }
