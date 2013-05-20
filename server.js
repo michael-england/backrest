@@ -399,8 +399,6 @@ MongoConductor = function() {
 
     this.processPasswordResetRequest = function(request, response, json) {
 
-        console.log(this.settings.mail);
-
         var isValid = true;
 
         // filter the params
@@ -2010,57 +2008,57 @@ MongoConductor = function() {
         try {
             var collection = url.parse(request.url, true).pathname.replace("/", "");
             if (collection !== undefined) {
-                if (collection == this.settings.httpAuthCollection && json.method == "login") {
+                if (collection == this.settings.authentication.collection && json.method == "login") {
 
                     // process login request
                     this.processLogin(request, response, json);
 
-                } else if (collection == this.settings.httpAuthCollection && json.method == "logout") {
+                } else if (collection == this.settings.authentication.collection && json.method == "logout") {
 
                     // process logout request
                     this.processLogout(request, response, json);
 
-                } else if (collection == this.settings.httpAuthCollection && json.method == "switchUser") {
+                } else if (collection == this.settings.authentication.collection && json.method == "switchUser") {
 
                     // process switch user request
                     this.processSwitchUser(request, response, json);
 
-                } else if (collection == this.settings.httpAuthCollection && json.method == "getAuthenticatedUser") {
+                } else if (collection == this.settings.authentication.collection && json.method == "getAuthenticatedUser") {
 
                     // process switch user request
                     this.processGetAuthenticatedUser(request, response, json);
 
-                } else if (collection == this.settings.httpAuthCollection && json.method == "isAuthenticated") {
+                } else if (collection == this.settings.authentication.collection && json.method == "isAuthenticated") {
 
                     // process authentication status request
                     this.processIsAuthenticated(request, response, json);
 
-                } else if (collection == this.settings.httpAuthCollection && json.method == "isInRole") {
+                } else if (collection == this.settings.authentication.collection && json.method == "isInRole") {
 
                     // process role verficiation request
                     this.processIsInRole(request, response, json);
 
-                } else if (collection == this.settings.httpAuthCollection && json.method == "changePassword") {
+                } else if (collection == this.settings.authentication.collection && json.method == "changePassword") {
 
                     // process change passwor request
                     this.processChangePassword(request, response, json);
 
-                } else if (collection == this.settings.httpAuthCollection && json.method == "passwordResetRequest") {
+                } else if (collection == this.settings.authentication.collection && json.method == "passwordResetRequest") {
 
                     // process password reset request request
                     this.processPasswordResetRequest(request, response, json);
 
-                } else if (collection == this.settings.httpAuthCollection && json.method == "passwordReset") {
+                } else if (collection == this.settings.authentication.collection && json.method == "passwordReset") {
 
                     // process password reset request
                     this.processPasswordReset(request, response, json);
 
-                } else if (collection == this.settings.httpAuthCollection && json.method == "confirmEmail") {
+                } else if (collection == this.settings.authentication.collection && json.method == "confirmEmail") {
 
                     // process confirm email
                     this.processConfirmEmail(request, response, json);
 
-                } else if (collection == this.settings.httpAuthCollection && json.method == "confirmEmailRequest") {
+                } else if (collection == this.settings.authentication.collection && json.method == "confirmEmailRequest") {
 
                     // process confirm email request
                     this.processConfirmEmailRequest(request, response, json);
@@ -2204,7 +2202,6 @@ MongoConductor = function() {
                                     }
                                 } catch (error) {
 
-                                    console.log(error);
                                     response.writeHead(500, {
                                         "Content-Type": "text/plain"
                                     });
