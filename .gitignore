@@ -8,6 +8,4 @@ privatekey.pem
 
 *.sublime-workspace
 
-/node_modules/*
-/node_modules/*/
-!/node_modules/mongojs/
+/node_modules
