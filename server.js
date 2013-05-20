@@ -31,7 +31,7 @@ MongoConductor = function() {
 
     this.init = function() {
         this.settingsFilename = libpath.join(this.path, "settings.json");
-        libpath.exists(this.settingsFilename, this.libpathExists.bind(this));
+        fs.exists(this.settingsFilename, this.libpathExists.bind(this));
     };
 
     this.libpathExists = function(exists) {
@@ -114,7 +114,7 @@ MongoConductor = function() {
 
     this.loadMail = function(key) {
 
-        libpath.exists(this.settings.mail.messages[key].text, function(exists) {
+        fs.exists(this.settings.mail.messages[key].text, function(exists) {
             if (exists) {
                 fs.readFile(this.settings.mail.messages[key].text, "binary", function(errorMessage, fileMessage) {
                     this.settings.mail.messages[key].text = fileMessage;
@@ -125,7 +125,7 @@ MongoConductor = function() {
         if (this.settings.mail.messages[key].attachment) {
             if (this.settings.mail.messages[key].attachment[0]) {
                 if (this.settings.mail.messages[key].attachment[0].alternative === true) {
-                    libpath.exists(this.settings.mail.messages[key].attachment[0].data, function(exists) {
+                    fs.exists(this.settings.mail.messages[key].attachment[0].data, function(exists) {
                         if (exists) {
                             fs.readFile(this.settings.mail.messages[key].attachment[0].data, "binary", function(errorAttachment, fileAttachment) {
                                 this.settings.mail.messages[key].attachment[0].data = fileAttachment;
@@ -139,38 +139,7 @@ MongoConductor = function() {
 
     this.httpStart = function() {
 
-        if (this.settings.https) {
-            if (this.settings.https.enabled) {
-                if (this.settings.https.privateKey !== undefined && this.settings.https.privateKey !== "" && this.settings.https.certificate !== undefined && this.settings.https.certificate !== "") {
-
-                    var options = {
-                        key: fs.readFileSync(this.settings.https.privateKey).toString(),
-                        cert: fs.readFileSync(this.settings.https.certificate).toString()
-                    };
-
-                    https.createServer(options, function(request, response) {
-                        session(request, response, function(request, response) {
-                            if (request.method == "POST") {
-
-                                // process POST request
-                                this.processPost(request, response);
-
-                            } else {
-
-                                // process with the requested file
-                                this.processGet(request, response);
-                            }
-                        }.bind(this));
-                    }.bind(this)).listen(this.settings.https.port);
-
-                    console.log("HTTPS Server running on port " + this.settings.https.port + ".");
-                } else {
-                    throw new Error("HTTPS credientials are not valid.");
-                }
-            }
-        }
-
-        http.createServer(function(request, response) {
+        var requested = function(request, response) {
             session(request, response, function(request, response) {
                 if (request.method == "POST") {
 
@@ -183,9 +152,31 @@ MongoConductor = function() {
                     this.processGet(request, response);
                 }
             }.bind(this));
-        }.bind(this)).listen(this.settings.http.port);
+        }.bind(this);
 
-        console.log("HTTP Server running on port " + this.settings.http.port + ".");
+        if (this.settings.https) {
+            if (this.settings.https.enabled) {
+                if (this.settings.https.privateKey !== undefined && this.settings.https.privateKey !== "" && this.settings.https.certificate !== undefined && this.settings.https.certificate !== "") {
+
+                    var options = {
+                        key: fs.readFileSync(this.settings.https.privateKey).toString(),
+                        cert: fs.readFileSync(this.settings.https.certificate).toString()
+                    };
+
+                    https.createServer(options, requested).listen(this.settings.https.port);
+                    console.log("HTTPS Server running on port " + this.settings.https.port + ".");
+                } else {
+                    throw new Error("HTTPS credientials are not valid.");
+                }
+            }
+        }
+
+        if (this.settings.http) {
+            if (this.settings.http.enabled) {
+                http.createServer(requested).listen(this.settings.http.port);
+                console.log("HTTP Server running on port " + this.settings.http.port + ".");
+            }
+        }
     };
 
     this.processLogin = function(request, response, json) {
@@ -1031,7 +1022,7 @@ MongoConductor = function() {
                                         var sendResponse = true;
 
                                         // save and clear uploads
-                                        if (result !== undefined) {
+                                        if (result) {
 
                                             // save uploads and update
                                             if (method == "save" && this.hasUploads(collection, "new", request.session.data.uploads)) {
@@ -1725,8 +1716,8 @@ MongoConductor = function() {
                                     });
 
                                     var tempId;
-                                    if (json.params !== undefined) {
-                                        if (json.params._id !== undefined) {
+                                    if (json.params) {
+                                        if (json.params._id) {
                                             tempId = json.params._id;
                                             json.params._id = "###tempId###";
                                         }
@@ -1734,15 +1725,15 @@ MongoConductor = function() {
 
                                     // hash the password
                                     if (collection === this.settings.authentication.collection) {
-                                        if (json.params !== undefined) {
+                                        if (json.params) {
                                             var passwordField = (!this.settings.authentication.passwordField ? "password" : this.settings.authentication.passwordField);
-                                            if (json.params[passwordField] !== undefined) {
+                                            if (json.params[passwordField]) {
                                                 json.params[passwordField] = passwordHash.generate(json.params[passwordField]);
                                             }
                                         }
                                     }
 
-                                    if (tempId !== undefined) {
+                                    if (tempId) {
                                         if (tempId instanceof Object) {
                                             var keys = Object.keys(tempId);
                                             if (keys.length > 0) {
@@ -1866,7 +1857,7 @@ MongoConductor = function() {
                                 // filter the params
                                 files = filters.filter(this.settings, fields.collection, fields.method, fields.action, files, "in");
 
-                                // set id to new if not defined    
+                                // set id to new if not defined
                                 if (fields._id === "" || fields._id === "undefined" || fields._id === undefined) {
                                     fields._id = "new";
                                 }
@@ -1914,7 +1905,7 @@ MongoConductor = function() {
                                     }
 
                                     // make the directory
-                                    libpath.exists(root + directory, function() {
+                                    fs.exists(root + directory, function() {
                                         fs.mkdirSync(root + directory, 0755, true);
 
                                         // rename the file
@@ -2182,9 +2173,9 @@ MongoConductor = function() {
             } else {
 
                 var filename = libpath.join(this.path, uri);
-                libpath.exists(filename, function(exists) {
+                fs.exists(filename, function(exists) {
                     if (!exists) {
-                        libpath.exists("./lib/" + filename + ".js", function(requireExists) {
+                        fs.exists("./lib/" + filename + ".js", function(requireExists) {
                             if (!requireExists) {
                                 if (this.settings.collections[uri.replace("/", "")] || uri.replace("/", "") === "_settings") {
                                     var query = url.parse(request.url, true).query;
@@ -2196,27 +2187,30 @@ MongoConductor = function() {
                                     response.write("404 Not Found\n");
                                     response.end();
                                 }
-                            }
+                            } else {
 
-                            try {
-                                var file = require("./lib/" + filename + ".js");
-                                if (file.render !== undefined) {
-                                    file.render(this, request, response);
-                                    return;
-                                } else {
-                                    response.writeHead(404, {
+                                try {
+                                    var file = require("./lib/" + filename + ".js");
+                                    if (file.render !== undefined) {
+                                        file.render(this, request, response);
+                                        return;
+                                    } else {
+                                        response.writeHead(404, {
+                                            "Content-Type": "text/plain"
+                                        });
+                                        response.write("404 Not Found\n");
+                                        response.end();
+                                        return;
+                                    }
+                                } catch (error) {
+
+                                    console.log(error);
+                                    response.writeHead(500, {
                                         "Content-Type": "text/plain"
                                     });
-                                    response.write("404 Not Found\n");
+                                    response.write("500 Internal Server Error\n");
                                     response.end();
-                                    return;
                                 }
-                            } catch (error) {
-                                response.writeHead(500, {
-                                    "Content-Type": "text/plain"
-                                });
-                                response.write("500 Internal Server Error\n");
-                                response.end();
                             }
                         }.bind(this));
                         return;
@@ -2264,6 +2258,7 @@ MongoConductor = function() {
     this.processResult = function(request, response, result, id) {
 
         var query = url.parse(request.url, true).query;
+
         if (query.callback) {
             response.writeHead(200, {
                 "Content-Type": "text/javascript",
@@ -2619,12 +2614,12 @@ MongoConductor = function() {
                                         var pathSize = directory + keys[i] + "." + options.width + "x" + options.height + "." + (options.format || extension);
 
                                         // delete previous image
-                                        if (libpath.existsSync(this.settings.paths.uploads + pathSize)) {
+                                        if (fs.existsSync(this.settings.paths.uploads + pathSize)) {
                                             fs.unlinkSync(this.settings.paths.uploads + pathSize);
                                         }
 
                                         // move resized image if it exists
-                                        if (libpath.existsSync(tempPathSize)) {
+                                        if (fs.existsSync(tempPathSize)) {
                                             fs.renameSync(tempPathSize, this.settings.paths.uploads + pathSize);
                                         }
                                     }
