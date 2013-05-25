@@ -380,16 +380,25 @@ MongoConductor = function() {
                         }
                     } else {
 
+                        // write to log
+                        console.log(request.session.id + ": Invalid credentials.");
+
                         // user currently not logged in
                         this.processError(request, response, -32000, "Invalid credentials.", json.id, validationSummary);
                     }
                 } else {
+
+                    // write to log
+                    console.log(request.session.id + ": Internal JSON-RPC error.");
 
                     // validation not passed, return with error and validation summary
                     this.processError(request, response, -32603, "Internal JSON-RPC error.", json.id, validationSummary);
                 }
             }.bind(this));
         } else {
+
+            // write to log
+            console.log(request.session.id + ": User not logged in.");
 
             // user currently not logged in
             this.processError(request, response, -32000, "User not logged in.", json.id, validationSummary);
@@ -622,7 +631,7 @@ MongoConductor = function() {
                                     console.log(errorMail);
 
                                     // error sending mail
-                                    this.processError(request, response, -32000, error.message, json.id);
+                                    this.processError(request, response, -32000, errorMail.message, json.id);
                                 } else {
 
                                     // return result
@@ -837,7 +846,7 @@ MongoConductor = function() {
                     roles.check(this, collection, method[index], action, request.session.data.user, json.params[index], function(allowed) {
                         if (allowed) {
 
-                            if (method[index] !== "save" && method[index] !== "findOne" && method[index] !== "update" && method[index] !== "findAndModify" && method[index] !== "group" && method[index] !== "mapReduce") {
+                            if (method[index] !== "save"  && method[index] !== "insert" && method[index] !== "findOne" && method[index] !== "update" && method[index] !== "findAndModify" && method[index] !== "group" && method[index] !== "mapReduce") {
 
                                 // validate
                                 validators.validate(this, request, collection, method[index], action, json, json.params[index], function(validationSummary) {
@@ -997,138 +1006,155 @@ MongoConductor = function() {
                 // check roles
                 roles.check(this, collection, method, action, request.session.data.user, json.params, function(allowed) {
                     if (allowed) {
-                        var execute = function(isValid, validationSummary) {
-                            if (isValid) {
-                                var dbResult = function(error, result) {
 
-                                    // emit executeEnd event
-                                    this.emit(collection + "_" + method + "_" + action + "_executeEnd", {
-                                        "currentTarget": this,
-                                        "params": json.params,
-                                        "error": error,
-                                        "result": result,
-                                        "request": request
-                                    });
+                        var dbResult = function(error, result) {
 
-                                    if (error) {
+                            // emit executeEnd event
+                            this.emit(collection + "_" + method + "_" + action + "_executeEnd", {
+                                "currentTarget": this,
+                                "params": json.params,
+                                "error": error,
+                                "result": result,
+                                "request": request
+                            });
 
-                                        // collection not provided, create procedure not found response
-                                        this.processError(request, response, -32603, "Internal JSON-RPC error.", json.id);
-                                        return;
-                                    } else {
+                            if (error) {
 
-                                        var sendResponse = true;
+                                console.log(error);
 
-                                        // save and clear uploads
-                                        if (result) {
+                                // collection not provided, create procedure not found response
+                                this.processError(request, response, -32603, "Internal JSON-RPC error.", json.id);
+                                return;
+                            } else {
 
-                                            // save uploads and update
-                                            if (method == "save" && this.hasUploads(collection, "new", request.session.data.uploads)) {
+                                var sendResponse = true;
 
-                                                // create update object
-                                                var uploads = this.getUploads(collection, "new", request.session.data.uploads);
-                                                if (uploads !== undefined) {
+                                // save and clear uploads
+                                if (result) {
 
-                                                    // copy keys to update object
-                                                    var keys = Object.keys(uploads);
-                                                    var update = {};
-                                                    for (var i = 0; i < keys.length; i++) {
-                                                        update[keys[i]] = "";
-                                                    }
+                                    // save uploads and update
+                                    if ((method == "save" || method == "insert") && this.hasUploads(collection, "new", request.session.data.uploads)) {
 
-                                                    // hold off sending results
-                                                    sendResult = false;
+                                        // create update object
+                                        var uploads = this.getUploads(collection, "new", request.session.data.uploads);
+                                        if (uploads !== undefined) {
 
-                                                    // save uploads
-                                                    var update = this.saveUploads(collection, result._id, request.session.data.uploads, request, update, true);
-
-                                                    // clear uploads
-                                                    request.session.data.uploads = this.clearUploads(collection, "new", request.session.data.uploads);
-
-                                                    // create command
-                                                    var commandUpdate = "this.db." + collection + ".update({\"_id\":this.db.ObjectId(\"" + result._id + "\")},{\"$set\":" + JSON.stringify(update) + "}, dbResultUpdate);";
-                                                    var dbResultUpdate = function(errorUpdate, resultUpdate) {
-                                                        if (errorUpdate) {
-
-                                                            // collection not provided, create procedure not found response
-                                                            this.processError(request, response, -32603, "Internal JSON-RPC error.", json.id);
-                                                            return;
-                                                        } else {
-                                                            // update keys
-                                                            for (var i = 0; i < keys.length; i++) {
-                                                                resultUpdate[keys[i]] = update[keys[i]];
-                                                            }
-
-                                                            // filter out return values
-                                                            resultUpdate = filters.filter(this.settings, collection, method, action, resultUpdate, "out");
-
-                                                            // return result
-                                                            this.processResult(request, response, resultUpdate, json.id);
-                                                            return;
-                                                        }
-                                                    }.bind(this);
-
-                                                    // write command to log
-                                                    console.log(request.session.id + ": " + commandUpdate);
-
-                                                    // execute command
-                                                    eval(commandUpdate);
-                                                }
+                                            // copy keys to update object
+                                            var keys = Object.keys(uploads);
+                                            var update = {};
+                                            for (var i = 0; i < keys.length; i++) {
+                                                update[keys[i]] = "";
                                             }
 
-                                            // set owner
-                                            if (method === "save") {
+                                            // hold off sending results
+                                            sendResult = false;
 
-                                                // set owner to guest or to user id
-                                                var ownerParams = {
-                                                    "_created": new Date().getTime() / 1000
-                                                };
-                                                if (collection == this.settings.authentication.collection) {
+                                            // save uploads
+                                            var update = this.saveUploads(collection, result._id, request.session.data.uploads, request, update, true);
 
-                                                    // set owner
-                                                    ownerParams._owner = result._id.toString();
+                                            // clear uploads
+                                            request.session.data.uploads = this.clearUploads(collection, "new", request.session.data.uploads);
 
-                                                    // send confirmation email
-                                                    this.sendConfirmEmail(request, response, result, function(errorMail) {
-                                                        if (errorMail) {
+                                            // create command
+                                            var commandUpdate = "this.db." + collection + ".update({\"_id\":this.db.ObjectId(\"" + result._id + "\")},{\"$set\":" + JSON.stringify(update) + "}, dbResultUpdate);";
+                                            var dbResultUpdate = function(errorUpdate, resultUpdate) {
+                                                if (errorUpdate) {
 
-                                                            // error sending mail
-                                                            console.log(errorMail);
-                                                            console.log(request.session.id + ": Failed to send email confirmation email to " + result[(!this.settings.authentication.usernameField ? "email" : this.settings.authentication.usernameField)]);
-                                                        } else {
-
-                                                            // log mail sent
-                                                            console.log(request.session.id + ": Sent email confirmation email to " + result[(!this.settings.authentication.usernameField ? "email" : this.settings.authentication.usernameField)]);
-                                                        }
-                                                    }.bind(this));
-
+                                                    // collection not provided, create procedure not found response
+                                                    this.processError(request, response, -32603, "Internal JSON-RPC error.", json.id);
+                                                    return;
                                                 } else {
-                                                    if (request.session.data.user === "guest" || request.session.data.user === "Guest") {
-                                                        ownerParams._owner = "guest";
-                                                    } else {
-                                                        ownerParams._owner = request.session.data.user._id.toString();
+                                                    // update keys
+                                                    for (var i = 0; i < keys.length; i++) {
+                                                        resultUpdate[keys[i]] = update[keys[i]];
                                                     }
+
+                                                    // filter out return values
+                                                    resultUpdate = filters.filter(this.settings, collection, method, action, resultUpdate, "out");
+
+                                                    // return result
+                                                    this.processResult(request, response, resultUpdate, json.id);
+                                                    return;
                                                 }
+                                            }.bind(this);
 
-                                                this.db[collection].update({
-                                                    "_id": result._id
-                                                }, {
-                                                    "$set": ownerParams
-                                                }, function(errorOwner, resultOwner) {}.bind(this));
-                                            }
-                                        }
+                                            // write command to log
+                                            console.log(request.session.id + ": " + commandUpdate);
 
-                                        if (sendResponse) {
-
-                                            // filter out return values
-                                            result = filters.filter(this.settings, collection, method, action, result, "out");
-
-                                            // return result
-                                            this.processResult(request, response, result, json.id);
-                                            return;
+                                            // execute command
+                                            eval(commandUpdate);
                                         }
                                     }
-                                }.bind(this);
+
+                                    // set owner
+                                    if (method === "save" || method === "insert") {
+
+                                        var setOwner = function (item) {
+
+                                            // set owner to guest or to user id
+                                            var ownerParams = {
+                                                "_created": new Date().getTime() / 1000
+                                            };
+                                            if (collection == this.settings.authentication.collection) {
+
+                                                // set owner
+                                                ownerParams._owner = item._id.toString();
+
+                                                // send confirmation email
+                                                this.sendConfirmEmail(request, response, item, function(errorMail) {
+                                                    if (errorMail) {
+
+                                                        // error sending mail
+                                                        console.log(errorMail);
+                                                        console.log(request.session.id + ": Failed to send email confirmation email to " + item[(!this.settings.authentication.usernameField ? "email" : this.settings.authentication.usernameField)]);
+                                                    } else {
+
+                                                        // log mail sent
+                                                        console.log(request.session.id + ": Sent email confirmation email to " + item[(!this.settings.authentication.usernameField ? "email" : this.settings.authentication.usernameField)]);
+                                                    }
+                                                }.bind(this));
+
+                                            } else {
+                                                if (request.session.data.user === "guest" || request.session.data.user === "Guest") {
+                                                    ownerParams._owner = "guest";
+                                                } else {
+                                                    ownerParams._owner = request.session.data.user._id.toString();
+                                                }
+                                            }
+
+                                            this.db[collection].update({
+                                                "_id": item._id
+                                            }, {
+                                                "$set": ownerParams
+                                            }, function(errorOwner, resultOwner) {}.bind(this));
+                                        }.bind(this);
+
+                                        if (result instanceof Array) {
+                                            for (var r = 0; r < result.length; r++) {
+                                                setOwner(result[r]);
+                                            }
+                                        } else {
+                                            setOwner(result);
+                                        }
+                                    }
+                                }
+
+                                if (sendResponse) {
+
+                                    // filter out return values
+                                    if (result !== null) {
+                                        result = filters.filter(this.settings, collection, method, action, result, "out");
+                                    }
+
+                                    // return result
+                                    this.processResult(request, response, result, json.id);
+                                    return;
+                                }
+                            }
+                        }.bind(this);
+
+                        var execute = function(isValid, validationSummary) {
+                            if (isValid) {
 
                                 // write command to log
                                 console.log(request.session.id + ": " + command);
@@ -1360,20 +1386,23 @@ MongoConductor = function() {
                             var validationComplete = function(validationSummaryFind, validationSummaryFindAndModify) {
                                 if (validationSummaryFind === true && validationSummaryFindAndModify === true) {
                                     var tempId;
-                                    if (json.params !== undefined) {
-                                        if (json.params._id !== undefined) {
-                                            tempId = json.params._id;
-                                            json.params._id = "###tempId###";
+                                    if (json.params) {
+                                        if (json.params.query) {
+                                            if (json.params.query._id) {
+                                                tempId = json.params.query._id;
+                                                json.params.query._id = "###tempId###";
 
-                                            if (tempId.length != 24) {
-                                                this.processError(request, response, -32603, "Invalid ID provided", json.id);
-                                                return;
+                                                if (tempId.length != 24) {
+                                                    this.processError(request, response, -32603, "Invalid ID provided", json.id);
+                                                    return;
+                                                }
                                             }
                                         }
                                     }
 
                                     // hash the password
                                     if (collection === this.settings.authentication.collection) {
+                                        var keys = Object.keys(json.params.update);
                                         if (keys !== undefined) {
                                             var passwordField = (!this.settings.authentication.passwordField ? "password" : this.settings.authentication.passwordField);
                                             if (modifiers.indexOf(keys[0]) > -1) {
@@ -1472,17 +1501,17 @@ MongoConductor = function() {
                                                 });
 
                                                 // save and clear uploads
-                                                if (json.params.query._id !== undefined) {
+                                                if (json.params.query._id) {
 
                                                     var id;
                                                     if (json.params.query._id.indexOf("ObjectId") > -1) {
-                                                        id = eval("this.db." + jjson.params.query._id);
+                                                        id = eval("this.db." + json.params.query._id);
                                                     } else {
                                                         id = json.params.query._id;
                                                     }
 
                                                     // save uploads
-                                                    json.params.update[keys[0]] = this.saveUploads(collection, id, request.session.data.uploads, json.update[keys[0]]);
+                                                    json.params.update[keys[0]] = this.saveUploads(collection, id, request.session.data.uploads, request, json.params.update[keys[0]]);
 
                                                     // clear uploads
                                                     request.session.data.uploads = this.clearUploads(collection, id, request.session.data.uploads);
@@ -1522,7 +1551,7 @@ MongoConductor = function() {
 
                                                     var id;
                                                     if (json.params.query._id.indexOf("ObjectId") > -1) {
-                                                        id = eval("this.db." + jjson.params.query._id);
+                                                        id = eval("this.db." + json.params.query._id);
                                                     } else {
                                                         id = json.params.query._id;
                                                     }
@@ -1547,9 +1576,9 @@ MongoConductor = function() {
                             var validationComplete = function(validationSummary) {
                                 if (validationSummary === true) {
                                     var tempId;
-                                    if (json.params !== undefined) {
-                                        if (json.params.cond !== undefined) {
-                                            if (json.params.cond._id !== undefined) {
+                                    if (json.params) {
+                                        if (json.params.cond) {
+                                            if (json.params.cond._id) {
                                                 tempId = json.params.cond._id;
                                                 json.params.cond._id = "###tempId###";
 
@@ -1581,12 +1610,51 @@ MongoConductor = function() {
                                         // create the command
                                         command = "this.db." + collection + "." + method + "(" + JSON.stringify(json.params) + ", dbResult);";
                                     }
-                                } else {
-                                    isValid = false;
-                                }
 
-                                // execute the response
-                                execute(isValid, validationSummary);
+                                    // write command to log
+                                    console.log(request.session.id + ": " + command);
+
+                                    // emit executeStart event
+                                    this.emit(collection + "_" + method + "_" + action + "_executeStart", {
+                                        "currentTarget": this,
+                                        "request": request
+                                    });
+
+                                    if (json.params) {
+
+                                        if (json.params.reduce) {
+                                            eval("json.params.reduce = " + json.params.reduce);
+                                        }
+
+                                        if (json.params.finalize) {
+                                            eval("json.params.finalize = " + json.params.finalize);
+                                        }
+
+                                        if (json.params.keyf) {
+                                            eval("json.params.keyf = " + json.params.keyf);
+                                        }
+
+                                        if (json.params.cond) {
+                                            if (json.params.cond._id) {
+
+                                                if (tempId.length !== 24) {
+                                                    this.processError(request, response, -32603, "Invalid ID provided", json.id);
+                                                    return;
+                                                } else {
+                                                    json.params.cond._id = this.db.ObjectId(tempId);
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    this.db[collection][method](json.params, dbResult);
+
+                                } else {
+
+                                    // validation not passed, return with error and validation summary
+                                    this.processError(request, response, -32603, "Internal JSON-RPC error.", json.id, validationSummary);
+                                    return;
+                                }
                             }.bind(this);
 
                             // validate the query
@@ -1620,31 +1688,33 @@ MongoConductor = function() {
                             var validationComplete = function(validationSummary) {
                                 if (validationSummary === true) {
                                     var tempId;
-                                    if (json.params !== undefined) {
-                                        if (json.params.query !== undefined) {
-                                            if (json.params.query._id !== undefined) {
-                                                tempId = json.params.query._id;
-                                                json.params.query._id = "###tempId###";
+                                    if (json.params) {
+                                        if (json.params[2]) {
+                                            if (json.params[2].query) {
+                                                if (json.params[2].query._id) {
+                                                    tempId = json.params[2].query._id;
+                                                    json.params[2].query._id = "###tempId###";
 
-                                                if (tempId.length != 24) {
-                                                    this.processError(request, response, -32603, "Invalid ID provided", json.id);
-                                                    return;
+                                                    if (tempId.length != 24) {
+                                                        this.processError(request, response, -32603, "Invalid ID provided", json.id);
+                                                        return;
+                                                    }
+                                                }
+                                            }
+
+                                            // hash the password
+                                            if (collection == this.settings.authentication.collection) {
+                                                var passwordField = (!this.settings.authentication.passwordField ? "password" : this.settings.authentication.passwordField);
+                                                if (json.params[2].query) {
+                                                    if (json.params[2].query[passwordField]) {
+                                                        json.params[2].query[passwordField] = passwordHash.generate(json.params[2].query[passwordField]);
+                                                    }
                                                 }
                                             }
                                         }
                                     }
 
-                                    // hash the password
-                                    if (collection == this.settings.authentication.collection) {
-                                        var passwordField = (!this.settings.authentication.passwordField ? "password" : this.settings.authentication.passwordField);
-                                        if (json.params.query !== undefined) {
-                                            if (json.params.query[passwordField] !== undefined) {
-                                                json.params.query[passwordField] = passwordHash.generate(json.params.query[passwordField]);
-                                            }
-                                        }
-                                    }
-
-                                    if (tempId !== undefined) {
+                                    if (tempId) {
 
                                         // create the command
                                         command = "this.db." + collection + "." + method + "(" + JSON.stringify(json.params) + ", dbResult);";
@@ -1654,12 +1724,61 @@ MongoConductor = function() {
                                         // create the command
                                         command = "this.db." + collection + "." + method + "(" + JSON.stringify(json.params) + ", dbResult);";
                                     }
-                                } else {
-                                    isValid = false;
-                                }
 
-                                // execute the response
-                                execute(isValid, validationSummary);
+                                    // write command to log
+                                    console.log(request.session.id + ": " + command);
+
+                                    // emit executeStart event
+                                    this.emit(collection + "_" + method + "_" + action + "_executeStart", {
+                                        "currentTarget": this,
+                                        "request": request
+                                    });
+
+                                    if (json.params) {
+
+                                        // map function
+                                        if (json.params[0]) {
+                                            eval("json.params[0] = " + json.params[0]);
+                                        }
+
+                                        // reduce function
+                                        if (json.params[1]) {
+                                            eval("json.params[1] = " + json.params[1]);
+                                        }
+
+                                        // finalize function
+                                        if (json.params[2]) {
+                                            if (json.params[2].finalize) {
+                                                eval("json.params.finalize = " + json.params.finalize);
+                                            }
+
+                                            if (json.params[2].query) {
+                                                if (json.params[2].query._id) {
+
+                                                    if (tempId.length !== 24) {
+                                                        this.processError(request, response, -32603, "Invalid ID provided", json.id);
+                                                        return;
+                                                    } else {
+                                                        json.params[2].query._id = this.db.ObjectId(tempId);
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    this.db[collection][method](json.params[0], json.params[1], json.params[2], function (error, result) {
+
+                                        // connect to the database and find the result of the mapReduce
+                                        db = mongojs(this.settings.databaseUrl, [result.collectionName]);
+                                        db[result.collectionName].find(dbResult);
+                                    }.bind(this));
+
+                                } else {
+
+                                    // validation not passed, return with error and validation summary
+                                    this.processError(request, response, -32603, "Internal JSON-RPC error.", json.id, validationSummary);
+                                    return;
+                                }
                             }.bind(this);
 
                             // validate the query
@@ -2088,12 +2207,15 @@ MongoConductor = function() {
 
             if (this.settings.isDebug) {
 
-                // email error
-                this.sendErrorEmail(request, data, error, function() {
+                try {
+
+                    // email error
+                    this.sendErrorEmail(request, data, error);
+                } catch (errorMail) {
 
                     // throw the error if in debug mode
                     throw error;
-                });
+                }
 
             } else {
 
@@ -2547,7 +2669,7 @@ MongoConductor = function() {
 
     this.saveUploads = function(collection, _id, uploads, request, params, isNew) {
         if (uploads !== undefined) {
-            if (uploads[collection] !== undefined) {
+            if (uploads[collection]) {
 
                 // get document reference
                 var document = {};
@@ -2558,12 +2680,12 @@ MongoConductor = function() {
                 }
 
                 // save files in document
-                if (document !== undefined) {
+                if (document) {
                     var keys = Object.keys(document);
                     for (var i = 0; i < keys.length; i++) {
 
                         var file = document[keys[i]];
-                        if (file !== undefined) {
+                        if (file) {
 
                             // get the extension
                             var extension = file.name.split(".").pop();
@@ -2572,8 +2694,8 @@ MongoConductor = function() {
                             var directory = "uploads/" + collection + "/" + _id + "/";
                             var path = directory + keys[i] + "." + extension;
                             var root = "./";
-                            if (this.settings.paths !== undefined) {
-                                if (this.settings.paths.uploads !== undefined) {
+                            if (this.settings.paths) {
+                                if (this.settings.paths.uploads) {
                                     root = this.settings.paths.uploads;
                                 }
                             }

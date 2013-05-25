@@ -321,6 +321,15 @@
                     "events": []
                 }
             },
+            "mapReduce": {
+                "enabled": true,
+                "default": {
+                    "roles": ["admin"],
+                    "filters": [],
+                    "validators": [],
+                    "events": []
+                }
+            },
             "find": {
                 "enabled": true,
                 "default": {
@@ -401,10 +410,9 @@
                 }
             },
             "findAndModify": {
-                "enabled": false,
+                "enabled": true,
                 "default": {
-                    "roles": [
-                        "admin", "owner"],
+                    "roles": ["admin", "owner"],
                     "filters": [{
                         "fieldToFilter": "roles",
                         "direction": "in",
@@ -505,11 +513,89 @@
                     "events": []
                 }
             },
+            "insert": {
+                "enabled": true,
+                "default": {
+                    "roles": [],
+                    "filters": [{
+                        "fieldToFilter": "*",
+                        "direction": "in",
+                        "allowed": false
+                    }, {
+                        "fieldToFilter": "firstName",
+                        "direction": "in",
+                        "allowed": true
+                    }, {
+                        "fieldToFilter": "lastName",
+                        "direction": "in",
+                        "allowed": true
+                    }, {
+                        "fieldToFilter": "email",
+                        "direction": "in",
+                        "allowed": true
+                    }, {
+                        "fieldToFilter": "password",
+                        "direction": "in",
+                        "allowed": true
+                    }, {
+                        "fieldToFilter": "passwordConfirm",
+                        "direction": "in",
+                        "allowed": false
+                    }, {
+                        "fieldToFilter": "password",
+                        "direction": "out",
+                        "allowed": false
+                    }, {
+                        "fieldToFilter": "passwordConfirm",
+                        "direction": "out",
+                        "allowed": false
+                    }, {
+                        "fieldToFilter": "roles",
+                        "direction": "out",
+                        "allowed": false
+                    }],
+                    "validators": [{
+                        "type": "required",
+                        "fieldToValidate": "firstName",
+                        "errorMessage": "First name is required."
+                    }, {
+                        "type": "required",
+                        "fieldToValidate": "lastName",
+                        "errorMessage": "Last name is required."
+                    }, {
+                        "type": "required",
+                        "fieldToValidate": "email",
+                        "errorMessage": "Email is required."
+                    }, {
+                        "type": "required",
+                        "fieldToValidate": "password",
+                        "errorMessage": "Password is required."
+                    }, {
+                        "type": "compare",
+                        "fieldToValidate": "password",
+                        "fieldToCompare": "passwordConfirm",
+                        "valueToCompare": null,
+                        "dataType": "string",
+                        "operator": "==",
+                        "errorMessage": "Passwords do not match."
+                    }, {
+                        "type": "regularExpression",
+                        "fieldToValidate": "email",
+                        "expression": "%5BA-Za-z0-9%21%23%24%25%26%27%2A%2B%2F%3D%3F%5E_%60%7B%7C%7D%7E-%5D%2B%28%3F%3A%5C.%5BA-Za-z0-9%21%23%24%25%26%27%2A%2B%2F%3D%3F%5E_%60%7B%7C%7D%7E-%5D%2B%29%2A%40%28%3F%3A%5BA-Za-z0-9%5D%28%3F%3A%5BA-Za-z0-9-%5D%2A%5BA-Za-z0-9%5D%29%3F%5C.%29%2B%5BA-Za-z0-9%5D%28%3F%3A%5BA-Za-z0-9-%5D%2A%5BA-Za-z0-9%5D%29%3F",
+                        "errorMessage": "Email address is invalid."
+                    }, {
+                        "type": "custom",
+                        "fieldToValidate": "email",
+                        "validationFunction": "userExists",
+                        "errorMessage": "User already exists."
+                    }],
+                    "events": []
+                }
+            },
             "update": {
                 "enabled": true,
                 "default": {
-                    "roles": [
-                        "admin", "owner"],
+                    "roles": ["admin", "owner"],
                     "filters": [{
                         "fieldToFilter": "roles",
                         "direction": "in",
@@ -556,8 +642,7 @@
                     "events": []
                 },
                 "admin": {
-                    "roles": [
-                        "admin"],
+                    "roles": ["admin"],
                     "filters": [{
                         "fieldToFilter": "roles",
                         "direction": "in",
