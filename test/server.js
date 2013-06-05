@@ -1,6 +1,7 @@
 var request = require("superagent");
 var expect = require("expect.js");
 var mongojs = require("mongojs");
+var fs = require("fs");
 
 function createJsonWrapper (method, json) {
 	return {
@@ -30,6 +31,20 @@ function assertLength(response, length) {
 	expect(response.status).to.equal(200);
 	expect(json.result.length).to.be(length);
 }
+
+var rmdir = function(path) {
+  if( fs.existsSync(path) ) {
+    fs.readdirSync(path).forEach(function(file,index){
+      var curPath = path + "/" + file;
+      if(fs.statSync(curPath).isDirectory()) { // recurse
+        rmdir(curPath);
+      } else { // delete file
+        fs.unlinkSync(curPath);
+      }
+    });
+    fs.rmdirSync(path);
+  }
+};
 
 var sessionCookie;
 var userSave = {
@@ -96,6 +111,7 @@ describe("MongoDB Methods:", function () {
 	});
 });
 
+
 describe("Authentication Methods:", function() {
 	it ("Login", function(done){
 		var json = createJsonWrapper("login", {
@@ -121,7 +137,7 @@ describe("Authentication Methods:", function() {
 		});
 	});
 
-	it ("requestEmailConfirmation.", function(done){
+	it ("confirmEmailRequest", function(done){
 		this.timeout(8000);
 		var json = createJsonWrapper("confirmEmailRequest", {
 			"email":userSave.email
@@ -132,7 +148,7 @@ describe("Authentication Methods:", function() {
 		});
 	});
 
-	it ("requestPasswordReset.", function(done){
+	it ("passwordResetRequest", function(done){
 		this.timeout(4000);
 		var json = createJsonWrapper("passwordResetRequest", {
 			"email":userSave.email
@@ -156,7 +172,6 @@ describe("MongoDB Methods:", function () {
 			done();
 		});
 	});
-
 
 	//Performs a query on a collection and returns a cursor object.
 	it ("find", function (done) {
@@ -259,6 +274,23 @@ describe("MongoDB Methods:", function () {
 		});
 	});
 
+	// Upload an image
+	it ("upload", function (done) {
+		request.post("http://localhost:8080/")
+			.set("Cookie", sessionCookie)
+			.field("_id", userSave._id)
+			.field("collection", "users")
+			.field("method", "upload")
+			.attach("avatar", "avatar.png")
+			.redirects(0)
+			.end(function (response) {
+			expect(response).to.exist;
+			expect(response.status).to.equal(302);
+			expect(response.headers.location).to.contain("step=3");
+			done();
+		});
+	});
+
 	// Modifies a document in a collection.
 	it ("update", function (done) {
 		userSave.firstName = "Update";
@@ -271,4 +303,25 @@ describe("MongoDB Methods:", function () {
 			done();
 		});
 	});
+
+	//Performs a query on a collection and returns a cursor object.
+	it ("find, skip, limit", function (done) {
+		var json = createJsonWrapper(["find", "skip", "limit"], [{
+			"_id":userSave._id
+		}, 0, 1]);
+		request.post("http://localhost:8080/users").set("Cookie", sessionCookie).send(json).end(function (response) {
+			assertLength(response, 1);
+			done();
+		});
+	});
+
+	// cleanup
+	after (function (done) {
+		rmdir("../uploads/users/" + userSave._id);
+		done();
+	});
 });
+
+
+
+

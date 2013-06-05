@@ -701,6 +701,56 @@
                     "validators": [],
                     "events": []
                 }
+            },
+            "upload": {
+                "enabled": true,
+                "default": {
+                    "roles": [],
+                    "filters": [
+                        {
+                            "fieldToFilter" : "*",
+                            "direction" : "in",
+                            "allowed" : false
+                        },
+                        {
+                            "fieldToFilter" : "avatar",
+                            "direction" : "in",
+                            "allowed" : true
+                        }],
+                    "validators": [],
+                    "events": [],
+                    "resize" : {
+                        "avatar" : [
+                            {
+                                "width" : 64,
+                                "height" : 64,
+                                "quality" : 0.60,
+                                "format": "png",
+                                "enlarge": false
+                            }
+                        ]
+                    }
+                }
+            },
+            "clearUpload":{
+                "enabled" : true,
+                "default" : {
+                    "roles" : [],
+                    "filters" : [
+                        {
+                            "fieldToFilter" : "*",
+                            "direction" : "in",
+                            "allowed" : false
+                        },
+                        {
+                            "fieldToFilter" : "avatar",
+                            "direction" : "in",
+                            "allowed" : true
+                        }
+                    ],
+                    "validators" : [],
+                    "events" : []
+                }
             }
         }
     }
