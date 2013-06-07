@@ -2,7 +2,6 @@ var mongojs = require("mongojs");
 var http = require("http");
 var https = require("https");
 var events = require('events');
-var session = require('./lib/core').session;
 var libpath = require("path");
 var fs = require("./lib/fs");
 var url = require("url");
@@ -15,6 +14,8 @@ var authentication = require("./lib/authentication");
 var email = require("./node_modules/emailjs/email");
 var uploads = require("./lib/uploads");
 var jsonrpc = require("./lib/jsonrpc");
+var express = require("express");
+var MongoStore = require("connect-mongo")(express);
 
 MongoConductor = function() {
     events.EventEmitter.call(this);
@@ -29,6 +30,7 @@ MongoConductor = function() {
     this.uploads = require("./lib/uploads");
     this.jsonrpc = require("./lib/jsonrpc");
     this.authentication = require("./lib/authentication");
+    this.app = express();
 
     this.init = function() {
         this.settingsFilename = libpath.join(this.path, "settings.json");
@@ -140,21 +142,6 @@ MongoConductor = function() {
 
     this.httpStart = function() {
 
-        var requested = function(request, response) {
-            session(request, response, function(request, response) {
-                if (request.method == "POST") {
-
-                    // process POST request
-                    this.post(request, response);
-
-                } else {
-
-                    // process with the requested file
-                    this.get(request, response);
-                }
-            }.bind(this));
-        }.bind(this);
-
         if (this.settings.https) {
             if (this.settings.https.enabled) {
                 if (this.settings.https.privateKey !== undefined && this.settings.https.privateKey !== "" && this.settings.https.certificate !== undefined && this.settings.https.certificate !== "") {
@@ -164,8 +151,8 @@ MongoConductor = function() {
                         cert: fs.readFileSync(this.settings.https.certificate).toString()
                     };
 
-                    https.createServer(options, requested).listen(this.settings.https.port);
-                    console.log("HTTPS Server running on port " + this.settings.https.port + ".");
+                    https.createServer(options, this.app).listen(this.settings.https.port || 443);
+                    console.log("HTTPS Server running on port " + (this.settings.https.port || 443) + ".");
                 } else {
                     throw new Error("HTTPS credientials are not valid.");
                 }
@@ -174,10 +161,33 @@ MongoConductor = function() {
 
         if (this.settings.http) {
             if (this.settings.http.enabled) {
-                http.createServer(requested).listen(this.settings.http.port);
-                console.log("HTTP Server running on port " + this.settings.http.port + ".");
+                http.createServer(this.app).listen(this.settings.http.port || 80, undefined, function () {
+                    console.log("HTTP Server running on port " + (this.settings.http.port || 80) + ".");
+                }.bind(this));
             }
         }
+
+        // define the session
+        var session = {};
+        if (this.settings.session) {
+            session = this.settings.session;
+            if (session.store) {
+
+                if (!session.store.url) {
+                    session.store.url = this.settings.databaseUrl;
+                }
+
+                session.store = new MongoStore(session.store);
+            }
+        }
+
+        // initialize the session state
+        this.app.use(express.cookieParser());
+        this.app.use(express.session(session));
+
+        // request callbacks
+        this.app.get('*', this.get.bind(this));
+        this.app.post('*', this.post.bind(this));
     };
 
     this.post = function(request, response) {
@@ -436,6 +446,8 @@ MongoConductor = function() {
                 return;
             }
         } catch (error) {
+
+            throw error;
 
             // throw error to console
             console.log(error);

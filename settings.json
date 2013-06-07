@@ -1,5 +1,5 @@
 {
-    "databaseUrl": "db",
+    "databaseUrl": "mongodb://localhost:27017/db",
     "isDebug": true,
     "http": {
         "enabled": true,
@@ -85,6 +85,13 @@
         "uploads": "./",
         "events": "./events.js",
         "customValidators": "./customValidators.js"
+    },
+    "session": {
+        "store": {
+            "url": "mongodb://localhost:27017/db",
+            "maxAge": 300000
+        },
+        "secret": "$3cr3t"
     },
     "collections": {
         "users": {

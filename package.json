@@ -25,7 +25,10 @@
 		"imagemagick": "0.1.x",
 		"mime": "1.2.x",
 		"password-hash": "1.1.x",
-		"response": "0.1.x",
-		"mongojs": "0.7.x"
+		"mongojs": "0.7.x",
+    	"express": "3.x",
+    	"connect-mongo": "0.3.x",
+    	"superagent": "0.14.x",
+    	"expect.js": "0.2.x"
 	}
 }
