@@ -170,7 +170,7 @@ MongoConductor = function() {
         // define the session
         var session = {};
         if (this.settings.session) {
-            session = this.settings.session;
+            session = JSON.parse(JSON.stringify(this.settings.session));
             if (session.store) {
 
                 if (!session.store.url) {
