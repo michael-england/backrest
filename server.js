@@ -7,7 +7,6 @@ var fs = require("./lib/fs");
 var url = require("url");
 var mime = require("mime");
 var util = require("util");
-var formidable = require("formidable");
 var validators = require("./lib/validators");
 var jsonrpc = require("./lib/jsonrpc");
 var authentication = require("./lib/authentication");
@@ -142,6 +141,30 @@ MongoConductor = function() {
 
     this.httpStart = function() {
 
+        // define the session
+        var session = {};
+        if (this.settings.session) {
+            session = JSON.parse(JSON.stringify(this.settings.session));
+            if (session.store) {
+
+                if (!session.store.url) {
+                    session.store.url = this.settings.databaseUrl;
+                }
+
+                session.store = new MongoStore(session.store);
+            }
+        }
+
+        // initialize the session state
+        this.app.use(express.errorHandler());
+        this.app.use(express.bodyParser());
+        this.app.use(express.cookieParser());
+        this.app.use(express.session(session));
+
+        // request callbacks
+        this.app.get('*', this.get.bind(this));
+        this.app.post('*', this.post.bind(this));
+
         if (this.settings.https) {
             if (this.settings.https.enabled) {
                 if (this.settings.https.privateKey !== undefined && this.settings.https.privateKey !== "" && this.settings.https.certificate !== undefined && this.settings.https.certificate !== "") {
@@ -167,107 +190,62 @@ MongoConductor = function() {
             }
         }
 
-        // define the session
-        var session = {};
-        if (this.settings.session) {
-            session = JSON.parse(JSON.stringify(this.settings.session));
-            if (session.store) {
-
-                if (!session.store.url) {
-                    session.store.url = this.settings.databaseUrl;
-                }
-
-                session.store = new MongoStore(session.store);
-            }
-        }
-
-        // initialize the session state
-        this.app.use(express.cookieParser());
-        this.app.use(express.session(session));
-
-        // request callbacks
-        this.app.get('*', this.get.bind(this));
-        this.app.post('*', this.post.bind(this));
     };
 
     this.post = function(request, response) {
-
         if (request.headers["content-type"].indexOf("multipart/form-data") > -1) {
-            var form = new formidable.IncomingForm();
-            form.parse(request, function(error, fields, files) {
-                try {
-                    if (error) {
-                        // show error in log
-                        console.error(error.message);
+            try {
 
-                        // respond to request with error
-                        this.uploads.render(this, request, response, fields.collection, field, "error");
-                        return;
-                    }
-
-                    // set default action if not set
-                    if (fields.action === undefined) {
-                        fields.action = "default";
-                    }
-
-                    // get field from key
-                    var field = "";
-                    var keys = Object.keys(files);
-                    if (keys.length > 0) {
-                        field = keys[0];
-                    }
-
-                    if (fields.method === "upload") {
-
-                        // upload the files
-                        this.uploads.upload(this, request, response, fields, files);
-                        return;
-
-                    } else {
-
-                        // respond to request with error
-                        this.uploads.render(this, request, response, fields.collection, field, "error");
-                        return;
-                    }
-                } catch (e) {
-
-                    // throw error to console
-                    console.log(e);
-
-                    if (this.settings.isDebug) {
-
-                        // email error
-                        this.sendErrorEmail(request, undefined, e, function() {
-
-                            // throw the error if in debug mode
-                            throw e;
-                        });
-
-                    } else {
-
-                        // respond to request with error
-                        this.uploads.render(this, request, response, fields.collection, field, "error");
-
-                        // email error
-                        this.sendErrorEmail(request, data, e);
-                        return;
-                    }
+                // set default action if not set
+                if (request.body.action === undefined) {
+                    request.body.action = "default";
                 }
-            }.bind(this));
+
+                // get field from key
+                var field = "";
+                var keys = Object.keys(request.files);
+                if (keys.length > 0) {
+                    field = keys[0];
+                }
+
+                if (request.body.method === "upload") {
+
+                    // upload the files
+                    this.uploads.upload(this, request, response, request.body, request.files);
+                    return;
+
+                } else {
+
+                    // respond to request with error
+                    this.uploads.render(this, request, response, request.body.collection, field, "error");
+                    return;
+                }
+            } catch (e) {
+
+                // throw error to console
+                console.log(e);
+
+                if (this.settings.isDebug) {
+
+                    // email error
+                    this.sendErrorEmail(request, undefined, e, function() {
+
+                        // throw the error if in debug mode
+                        throw e;
+                    });
+
+                } else {
+
+                    // respond to request with error
+                    this.uploads.render(this, request, response, fields.collection, field, "error");
+
+                    // email error
+                    this.sendErrorEmail(request, data, e);
+                    return;
+                }
+            }
         } else {
-
-            // load chunks into data
-            var data = "";
-            request.on("data", function(chunk) {
-                data += chunk;
-            }.bind(this));
-
-            // chucks have loaded, continue the request
-            request.on("end", function() {
-
-                this.method(request, response, data);
-
-            }.bind(this));
+            this.method(request, response, request.body);
         }
     };
 
@@ -296,7 +274,20 @@ MongoConductor = function() {
 
                                     // execute api call
                                     var query = url.parse(request.url, true).query;
-                                    this.method(request, response, query.data);
+                                    var data;
+                                    try {
+
+                                        // parse data to json
+                                        data = JSON.parse(query.data);
+
+                                    } catch (error) {
+
+                                        // Internal error occurred, create internal error response
+                                        this.error(request, response, -32700, "Parse error.", undefined);
+                                        return;
+                                    }
+
+                                    this.method(request, response, data);
                                 } else {
 
                                     // respond with a 404
@@ -398,19 +389,7 @@ MongoConductor = function() {
         }
     };
 
-    this.method = function(request, response, data) {
-        var json;
-        try {
-
-            // parse data to json
-            json = JSON.parse(data);
-
-        } catch (error) {
-
-            // Internal error occurred, create internal error response
-            this.error(request, response, -32700, "Parse error.", undefined);
-            return;
-        }
+    this.method = function(request, response, json) {
 
         try {
             var collection = url.parse(request.url, true).pathname.replace("/", "");
