@@ -3,7 +3,7 @@ define([
     "underscore",
     "backbone",
     "api",
-    "text!/client/templates/console.html",
+    "text!/templates/console.html",
     "codemirror",
     "codemirrorJavascript"
 ], function ($, _, Backbone, Api, template) {

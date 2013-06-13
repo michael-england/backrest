@@ -13,6 +13,8 @@ var authentication = require("./lib/authentication");
 var email = require("./node_modules/emailjs/email");
 var uploads = require("./lib/uploads");
 var jsonrpc = require("./lib/jsonrpc");
+var error = require("./lib/error");
+var render = require("./lib/error");
 var express = require("express");
 var MongoStore = require("connect-mongo")(express);
 
@@ -156,10 +158,13 @@ MongoConductor = function() {
         }
 
         // initialize the session state
-        this.app.use(express.errorHandler());
         this.app.use(express.bodyParser());
         this.app.use(express.cookieParser());
         this.app.use(express.session(session));
+        this.app.use("/", express.static("./public"));
+        this.app.use("/uploads", "./uploads");
+        this.app.use(error(this));
+        this.app.use(render(this));
 
         // request callbacks
         this.app.get('*', this.get.bind(this));
@@ -189,61 +194,33 @@ MongoConductor = function() {
                 }.bind(this));
             }
         }
-
     };
 
     this.post = function(request, response) {
         if (request.headers["content-type"].indexOf("multipart/form-data") > -1) {
-            try {
 
-                // set default action if not set
-                if (request.body.action === undefined) {
-                    request.body.action = "default";
-                }
-
-                // get field from key
-                var field = "";
-                var keys = Object.keys(request.files);
-                if (keys.length > 0) {
-                    field = keys[0];
-                }
-
-                if (request.body.method === "upload") {
-
-                    // upload the files
-                    this.uploads.upload(this, request, response, request.body, request.files);
-                    return;
-
-                } else {
-
-                    // respond to request with error
-                    this.uploads.render(this, request, response, request.body.collection, field, "error");
-                    return;
-                }
-            } catch (e) {
-
-                // throw error to console
-                console.log(e);
-
-                if (this.settings.isDebug) {
-
-                    // email error
-                    this.sendErrorEmail(request, undefined, e, function() {
-
-                        // throw the error if in debug mode
-                        throw e;
-                    });
-
-                } else {
-
-                    // respond to request with error
-                    this.uploads.render(this, request, response, fields.collection, field, "error");
-
-                    // email error
-                    this.sendErrorEmail(request, data, e);
-                    return;
-                }
+            // set default action if not set
+            if (request.body.action === undefined) {
+                request.body.action = "default";
             }
+
+            // get field from key
+            var field = "";
+            var keys = Object.keys(request.files);
+            if (keys.length > 0) {
+                field = keys[0];
+            }
+
+            if (request.body.method === "upload") {
+
+                // upload the files
+                this.uploads.upload(this, request, response, request.body, request.files);
+            } else {
+
+                // respond to request with error
+                throw new Error("No method provided");
+            }
+
         } else {
             this.method(request, response, request.body);
         }
@@ -251,133 +228,16 @@ MongoConductor = function() {
 
     this.get = function(request, response) {
 
-        var uri = url.parse(request.url).pathname;
-        if (uri.indexOf("settings.json", 0) < 0 && uri.indexOf("server.js", 0) < 0 && uri.indexOf("lib/", 0) < 0 && uri.indexOf("node_modules/", 0) < 0 && uri.indexOf(this.settings.privateKey, 0) < 0 && uri.indexOf(this.settings.certificate, 0) < 0) {
+        if (this.settings.collections[uri.replace("/", "")] || uri.replace("/", "") === "_settings") {
 
-            if ((uri.indexOf("index.html") === 1 && !this.settings.isDebug) || (uri === "/" && !this.settings.isDebug)) {
-                response.writeHead(404, {
-                    "Content-Type": "text/plain"
-                });
-                response.write("404 Not Found\n");
-                response.end();
-            } else {
+            // execute api call
+            var query = url.parse(request.url, true).query;
 
-                var filename = libpath.join(this.path, uri);
-                fs.exists(filename, function(exists) {
-                    if (!exists) {
+            // parse data to json
+            var data = JSON.parse(query.data);
 
-                        // see if file exists
-                        fs.exists("./lib/" + filename + ".js", function(requireExists) {
-                            if (!requireExists) {
-
-                                if (this.settings.collections[uri.replace("/", "")] || uri.replace("/", "") === "_settings") {
-
-                                    // execute api call
-                                    var query = url.parse(request.url, true).query;
-                                    var data;
-                                    try {
-
-                                        // parse data to json
-                                        data = JSON.parse(query.data);
-
-                                    } catch (error) {
-
-                                        // Internal error occurred, create internal error response
-                                        this.error(request, response, -32700, "Parse error.", undefined);
-                                        return;
-                                    }
-
-                                    this.method(request, response, data);
-                                } else {
-
-                                    // respond with a 404
-                                    response.writeHead(404, {
-                                        "Content-Type": "text/plain"
-                                    });
-                                    response.write("404 Not Found\n");
-                                    response.end();
-                                }
-                            } else {
-
-                                try {
-                                    var file = require("./lib/" + filename + ".js");
-                                    if (file.render !== undefined) {
-
-                                        // respond with a rendered page
-                                        file.render(this, request, response);
-                                        return;
-                                    } else {
-
-                                        // respond with a 404
-                                        response.writeHead(404, {
-                                            "Content-Type": "text/plain"
-                                        });
-                                        response.write("404 Not Found\n");
-                                        response.end();
-                                        return;
-                                    }
-                                } catch (error) {
-
-                                    // respond with an error
-                                    response.writeHead(500, {
-                                        "Content-Type": "text/plain"
-                                    });
-                                    response.write("500 Internal Server Error\n");
-                                    response.end();
-                                }
-                            }
-                        }.bind(this));
-                        return;
-                    }
-
-                    // add the default document to the filename
-                    if (fs.statSync(filename).isDirectory()) {
-                        filename += "/index.html";
-                    }
-
-                    // read teh filename
-                    fs.readFile(filename, "binary", function(error, file) {
-                        if (error) {
-
-                            // respond with an error
-                            response.writeHead(500, {
-                                "Content-Type": "text/plain"
-                            });
-                            response.write(error + "\n");
-                            response.end();
-                            return;
-                        } else {
-
-                            try {
-
-                                // lookup the mime type
-                                var type = mime.lookup(filename);
-
-                                // add headers based on protocol
-                                var headers = {};
-                                if (request.connection.encrypted) {
-                                    headers = this.settings.https.static.headers;
-                                } else {
-                                    headers = this.settings.http.static.headers;
-                                }
-                                headers["Content-Type"] = type;
-
-                                // respond with the file
-                                response.writeHead(200, headers);
-                                response.end(file, "binary");
-                            } catch (error) {
-
-                                // respond with an error
-                                response.writeHead(500, {
-                                    "Content-Type": "text/plain"
-                                });
-                                response.write("500 Internal Server Error\n");
-                                response.end();
-                            }
-                        }
-                    }.bind(this));
-                }.bind(this));
-            }
+            // execute the request
+            this.method(request, response, data);
         } else {
 
             // respond with a 404
@@ -391,59 +251,36 @@ MongoConductor = function() {
 
     this.method = function(request, response, json) {
 
-        try {
-            var collection = url.parse(request.url, true).pathname.replace("/", "");
-            if (collection !== undefined) {
+        var collection = url.parse(request.url, true).pathname.replace("/", "");
+        if (collection !== undefined) {
 
-                var authenticationMethods = ["login", "logout", "switchUser", "getAuthenticatedUser", "isAuthenticated", "isInRole",
-                                             "changePassword", "passwordResetRequest", "passwordReset", "confirmEmail", "confirmEmailRequest"];
+            var authenticationMethods = ["login", "logout", "switchUser", "getAuthenticatedUser", "isAuthenticated", "isInRole",
+                                         "changePassword", "passwordResetRequest", "passwordReset", "confirmEmail", "confirmEmailRequest"];
 
-                if (collection == this.settings.authentication.collection && authenticationMethods.indexOf(json.method) > -1) {
+            if (collection == this.settings.authentication.collection && authenticationMethods.indexOf(json.method) > -1) {
 
-                    // process the authenciation method
-                    this.authentication[json.method](this, request, response, json);
+                // process the authenciation method
+                this.authentication[json.method](this, request, response, json);
 
-                } else if (json.method == "clearUpload") {
+            } else if (json.method == "clearUpload") {
 
-                    // process the clear uploads request
-                    this.uploads.clear(request, response, json, collection);
+                // process the clear uploads request
+                this.uploads.clear(request, response, json, collection);
 
-                } else if (collection === "_settings" && this.settings.isDebug && json.method === "get") {
+            } else if (collection === "_settings" && this.settings.isDebug && json.method === "get") {
 
-                    // response with settings only if server is in debug mode
-                    this.result(request, response, this.settings, json.id);
+                // response with settings only if server is in debug mode
+                this.result(request, response, this.settings, json.id);
 
-                } else {
-
-                    // process jsonrpc request
-                    this.jsonrpc.process(this, request, response, json, collection);
-                }
             } else {
 
-                // collection not provided, create procedure not found response
-                this.error(request, response, -32601, "Procedure not found.", json.id);
-                return;
+                // process jsonrpc request
+                this.jsonrpc.process(this, request, response, json, collection);
             }
-        } catch (error) {
+        } else {
 
-            throw error;
-
-            // throw error to console
-            console.log(error);
-
-            try {
-
-                // Internal error occurred, create internal error response
-                this.error(request, response, -32603, "Internal JSON-RPC error.", json.id);
-
-                // email error
-                this.sendErrorEmail(request, data, error);
-
-            } catch (errorMail) {
-
-                // throw the error if in debug mode
-                throw error;
-            }
+            // collection not provided, create procedure not found response
+            throw new Error("Procedure not found.");
         }
     };
 
@@ -470,104 +307,6 @@ MongoConductor = function() {
                 "Access-Control-Allow-Origin": "*"
             });
             response.end(JSON.stringify(json));
-        }
-    };
-
-    this.error = function(request, response, errorCode, errorMessage, id, validationSummary) {
-
-        var json;
-        var query = url.parse(request.url, true).query;
-        if (query.error) {
-            // Internal error occurred, create internal error response
-            json = {
-                "code": errorCode,
-                "message": errorMessage
-            };
-
-            if (validationSummary !== undefined) {
-                json.result = validationSummary;
-            }
-
-            response.writeHead(200, {
-                "Content-Type": "text/javascript",
-                "Access-Control-Allow-Origin": "*"
-            });
-            response.end(query.error + "(" + JSON.stringify(json) + ")");
-        } else if (query.callback) {
-            // Internal error occurred, create internal error response
-            json = {
-                "error": {
-                    "code": errorCode,
-                    "message": errorMessage
-                }
-            };
-
-            if (validationSummary !== undefined) {
-                json.result = validationSummary;
-            }
-
-            response.writeHead(200, {
-                "Content-Type": "text/javascript",
-                "Access-Control-Allow-Origin": "*"
-            });
-            response.end(query.callback + "(" + JSON.stringify(json) + ")");
-        } else {
-
-            // Internal error occurred, create internal error response
-            json = {
-                "jsonrpc": "2.0",
-                "error": {
-                    "code": errorCode,
-                    "message": errorMessage
-                },
-                "id": id
-            };
-
-            if (validationSummary !== undefined) {
-                json.result = validationSummary;
-            }
-
-            response.writeHead(200, {
-                "Content-Type": "application/json",
-                "Access-Control-Allow-Origin": "*"
-            });
-            response.end(JSON.stringify(json));
-        }
-    };
-
-    this.sendErrorEmail = function(request, data, error, callback) {
-
-        if (this.settings.mail.messages.errorEmail) {
-            if (this.settings.mail.messages.errorEmail.enabled) {
-
-                // format the email message - textevents.js
-                var mailMessage = JSON.parse(JSON.stringify(this.settings.mail.messages.errorEmail));
-                mailMessage.text = mailMessage.text.replace(/{timestamp}/g, new Date().toString());
-                mailMessage.text = mailMessage.text.replace(/{error}/g, error.stack);
-                mailMessage.text = mailMessage.text.replace(/{url}/g, request.url);
-                mailMessage.text = mailMessage.text.replace(/{method}/g, request.method);
-                mailMessage.text = mailMessage.text.replace(/{headers}/g, JSON.stringify(request.headers, null, 4));
-                mailMessage.text = mailMessage.text.replace(/{session}/g, JSON.stringify(request.session, null, 4));
-                mailMessage.text = mailMessage.text.replace(/{data}/g, data);
-
-                // format the email message - html
-                if (mailMessage.attachment) {
-                    for (var a = 0; a < mailMessage.attachment.length; a++) {
-                        if (mailMessage.attachment[a].alternative === true) {
-                            mailMessage.attachment[a].data = mailMessage.attachment[a].data.replace(/{timestamp}/g, new Date().toString());
-                            mailMessage.attachment[a].data = mailMessage.attachment[a].data.replace(/{error}/g, error.stack);
-                            mailMessage.attachment[a].data = mailMessage.attachment[a].data.replace(/{url}/g, request.url);
-                            mailMessage.attachment[a].data = mailMessage.attachment[a].data.replace(/{method}/g, request.method);
-                            mailMessage.attachment[a].data = mailMessage.attachment[a].data.replace(/{headers}/g, JSON.stringify(request.headers, null, 4));
-                            mailMessage.attachment[a].data = mailMessage.attachment[a].data.replace(/{session}/g, JSON.stringify(request.session, null, 4));
-                            mailMessage.attachment[a].data = mailMessage.attachment[a].data.replace(/{data}/g, data);
-                        }
-                    }
-                }
-
-                // send the email
-                this.mail.send(mailMessage, callback);
-            }
         }
     };
 };
