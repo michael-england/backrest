@@ -1,5 +1,5 @@
 ![alt text][logo]
-[logo]: https://github.com/michael-england/mongoConductor/raw/master/client/img/logo.png "MongoConductor"
+[logo]: https://github.com/michael-england/mongoConductor/raw/master/public/img/logo.png "MongoConductor"
 
 MongoConductor is JSON-RPC server for MongoDB written in node.js and can be accessed through HTTP or HTTPS.  The behavior of MongoConductor depends entirely on the settings.json file.  Below are settings and their descriptions.
 
