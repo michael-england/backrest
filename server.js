@@ -309,6 +309,67 @@ MongoConductor = function() {
             response.end(JSON.stringify(json));
         }
     };
+    this.error = function(request, response, errorCode, errorMessage, id, validationSummary) {
+
+        var json;
+        var query = url.parse(request.url, true).query;
+        if (query.error) {
+            // Internal error occurred, create internal error response
+            json = {
+                "code": errorCode,
+                "message": errorMessage
+            };
+
+            if (validationSummary !== undefined) {
+                json.result = validationSummary;
+            }
+
+            response.writeHead(200, {
+                "Content-Type": "text/javascript",
+                "Access-Control-Allow-Origin": "*"
+            });
+            response.end(query.error + "(" + JSON.stringify(json) + ")");
+        } else if (query.callback) {
+            // Internal error occurred, create internal error response
+            json = {
+                "error": {
+                    "code": errorCode,
+                    "message": errorMessage
+                }
+            };
+
+            if (validationSummary !== undefined) {
+                json.result = validationSummary;
+            }
+
+            response.writeHead(200, {
+                "Content-Type": "text/javascript",
+                "Access-Control-Allow-Origin": "*"
+            });
+            response.end(query.callback + "(" + JSON.stringify(json) + ")");
+        } else {
+
+            // Internal error occurred, create internal error response
+            json = {
+                "jsonrpc": "2.0",
+                "error": {
+                    "code": errorCode,
+                    "message": errorMessage
+                },
+                "id": id
+            };
+
+            if (validationSummary !== undefined) {
+                json.result = validationSummary;
+            }
+
+            response.writeHead(200, {
+                "Content-Type": "application/json",
+                "Access-Control-Allow-Origin": "*"
+            });
+            response.end(JSON.stringify(json));
+        }
+    };
 };
 
 util.inherits(MongoConductor, events.EventEmitter);
