@@ -165,10 +165,9 @@ MongoConductor = function() {
         this.app.use("/uploads", "./uploads");
         this.app.use(error(this));
         this.app.use(render(this));
-
-        // request callbacks
-        this.app.get('*', this.get.bind(this));
-        this.app.post('*', this.post.bind(this));
+        this.app.use(authentication(this));
+        this.app.use(uploads(this));
+        this.app.use(jsonrpc(this));
 
         if (this.settings.https) {
             if (this.settings.https.enabled) {
@@ -193,94 +192,6 @@ MongoConductor = function() {
                     console.log("HTTP Server running on port " + (this.settings.http.port || 80) + ".");
                 }.bind(this));
             }
-        }
-    };
-
-    this.post = function(request, response) {
-        if (request.headers["content-type"].indexOf("multipart/form-data") > -1) {
-
-            // set default action if not set
-            if (request.body.action === undefined) {
-                request.body.action = "default";
-            }
-
-            // get field from key
-            var field = "";
-            var keys = Object.keys(request.files);
-            if (keys.length > 0) {
-                field = keys[0];
-            }
-
-            if (request.body.method === "upload") {
-
-                // upload the files
-                this.uploads.upload(this, request, response, request.body, request.files);
-            } else {
-
-                // respond to request with error
-                throw new Error("No method provided");
-            }
-
-        } else {
-            this.method(request, response, request.body);
-        }
-    };
-
-    this.get = function(request, response) {
-
-        if (this.settings.collections[uri.replace("/", "")] || uri.replace("/", "") === "_settings") {
-
-            // execute api call
-            var query = url.parse(request.url, true).query;
-
-            // parse data to json
-            var data = JSON.parse(query.data);
-
-            // execute the request
-            this.method(request, response, data);
-        } else {
-
-            // respond with a 404
-            response.writeHead(404, {
-                "Content-Type": "text/plain"
-            });
-            response.write("404 Not Found\n");
-            response.end();
-        }
-    };
-
-    this.method = function(request, response, json) {
-
-        var collection = url.parse(request.url, true).pathname.replace("/", "");
-        if (collection !== undefined) {
-
-            var authenticationMethods = ["login", "logout", "switchUser", "getAuthenticatedUser", "isAuthenticated", "isInRole",
-                                         "changePassword", "passwordResetRequest", "passwordReset", "confirmEmail", "confirmEmailRequest"];
-
-            if (collection == this.settings.authentication.collection && authenticationMethods.indexOf(json.method) > -1) {
-
-                // process the authenciation method
-                this.authentication[json.method](this, request, response, json);
-
-            } else if (json.method == "clearUpload") {
-
-                // process the clear uploads request
-                this.uploads.clear(request, response, json, collection);
-
-            } else if (collection === "_settings" && this.settings.isDebug && json.method === "get") {
-
-                // response with settings only if server is in debug mode
-                this.result(request, response, this.settings, json.id);
-
-            } else {
-
-                // process jsonrpc request
-                this.jsonrpc.process(this, request, response, json, collection);
-            }
-        } else {
-
-            // collection not provided, create procedure not found response
-            throw new Error("Procedure not found.");
         }
     };
 
