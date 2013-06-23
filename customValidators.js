@@ -1,4 +1,4 @@
-exports.userExists = function(server, request, value, json, isValid) {
+exports.userExists = function(server, request, value, isValid) {
     var query = {};
     query[(!server.settings.httpAuthUsernameField ? "email" : server.settings.authentication.usernameField)] = value;
     server.db[server.settings.authentication.collection].count(query, function(error, result) {

@@ -195,10 +195,9 @@ MongoConductor = function() {
         }
     };
 
-    this.result = function(request, response, result, id) {
+    this.result = function(request, response, result) {
 
         var query = url.parse(request.url, true).query;
-
         if (query.callback) {
             response.writeHead(200, {
                 "Content-Type": "text/javascript",
@@ -207,11 +206,31 @@ MongoConductor = function() {
             response.end(query.callback + "(" + JSON.stringify(result) + ")");
         } else {
 
-            var json = {
-                "jsonrpc": "2.0",
-                "result": result,
-                "id": id
-            };
+
+            // parse data to json
+            var requestJson;
+            if (request.method === "POST") {
+                requestJson = request.body;
+            } else {
+                requestJson = JSON.parse(uri.query.data);
+            }
+
+            // determine request type
+            var json;
+            if (requestJson.jsonrpc === "2.0") {
+
+                // package error as JSON-RPC
+                json = {
+                    "jsonrpc": "2.0",
+                    "result": result,
+                    "id": requestJson.id
+                };
+
+            } else {
+
+                // pacakge error
+                json = result
+            }
 
             response.writeHead(200, {
                 "Content-Type": "application/json",
@@ -220,7 +239,8 @@ MongoConductor = function() {
             response.end(JSON.stringify(json));
         }
     };
-    this.error = function(request, response, errorCode, errorMessage, id, validationSummary) {
+
+    this.error = function(request, response, errorCode, errorMessage, validationSummary) {
 
         var json;
         var query = url.parse(request.url, true).query;
@@ -260,19 +280,42 @@ MongoConductor = function() {
             response.end(query.callback + "(" + JSON.stringify(json) + ")");
         } else {
 
-            // Internal error occurred, create internal error response
-            json = {
-                "jsonrpc": "2.0",
-                "error": {
-                    "code": errorCode,
-                    "message": errorMessage
-                },
-                "id": id
-            };
+            // parse data to json
+            var requestJson;
+            if (request.method === "POST") {
+                requestJson = request.body;
+            } else {
+                requestJson = JSON.parse(uri.query.data);
+            }
+
+            // determine request type
+            if (requestJson.jsonrpc === "2.0") {
+
+                // package error as JSON-RPC
+                json = {
+                    "jsonrpc": "2.0",
+                    "error": {
+                        "code": errorCode,
+                        "message": errorMessage
+                    },
+                    "id": requestJson.id
+                };
+
+            } else {
+
+                // pacakge error
+                json = {
+                    "error": {
+                        "code": errorCode,
+                        "message": errorMessage
+                    }
+                };
+            }
 
             if (validationSummary !== undefined) {
                 json.result = validationSummary;
             }
+
 
             response.writeHead(200, {
                 "Content-Type": "application/json",
