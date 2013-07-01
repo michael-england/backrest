@@ -28,6 +28,7 @@
     	"express": "3.x",
     	"connect-mongo": "0.3.x",
     	"superagent": "0.14.x",
-    	"expect.js": "0.2.x"
+    	"expect.js": "0.2.x",
+    	"mongoose": "3.6"
 	}
 }

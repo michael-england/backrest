@@ -93,6 +93,13 @@
         },
         "secret": "$3cr3t"
     },
+    "schemas": {
+        "users": {
+            "firstName": "String",
+            "lastName": "String",
+            "email": "String"
+        }
+    },
     "collections": {
         "users": {
             "login": {

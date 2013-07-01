@@ -12,7 +12,8 @@ var jsonrpc = require("./lib/jsonrpc");
 var authentication = require("./lib/authentication");
 var email = require("./node_modules/emailjs/email");
 var uploads = require("./lib/uploads");
-var jsonrpc = require("./lib/jsonrpc");
+var jsonrpc = require("./lib/rest");
+var rest = require("./lib/jsonrpc");
 var error = require("./lib/error");
 var render = require("./lib/error");
 var express = require("express");
@@ -168,6 +169,7 @@ MongoConductor = function() {
         this.app.use(authentication(this));
         this.app.use(uploads(this));
         this.app.use(jsonrpc(this));
+        //this.app.use(rest(this));
 
         if (this.settings.https) {
             if (this.settings.https.enabled) {
@@ -197,27 +199,26 @@ MongoConductor = function() {
 
     this.result = function(request, response, result) {
 
-        var query = url.parse(request.url, true).query;
-        if (query.callback) {
+        var uri = url.parse(request.url, true);
+        if (uri.query.callback) {
             response.writeHead(200, {
                 "Content-Type": "text/javascript",
                 "Access-Control-Allow-Origin": "*"
             });
-            response.end(query.callback + "(" + JSON.stringify(result) + ")");
+            response.end(uri.query.callback + "(" + JSON.stringify(result) + ")");
         } else {
-
 
             // parse data to json
             var requestJson;
             if (request.method === "POST") {
                 requestJson = request.body;
-            } else {
+            } else if (uri.query && uri.query.data) {
                 requestJson = JSON.parse(uri.query.data);
             }
 
             // determine request type
             var json;
-            if (requestJson.jsonrpc === "2.0") {
+            if (requestJson && requestJson.jsonrpc === "2.0") {
 
                 // package error as JSON-RPC
                 json = {
