@@ -3,7 +3,7 @@
     "isDebug": true,
     "http": {
         "enabled": true,
-        "port": "80",
+        "port": "8080",
         "static": {
             "headers": {
                 "Cache-Control": "max-age=1200"
@@ -93,679 +93,78 @@
         },
         "secret": "$3cr3t"
     },
-    "schemas": {
-        "users": {
-            "firstName": "String",
-            "lastName": "String",
-            "email": "String"
+    "collections": [{
+        "name": "collections",
+        "definition": {
+            "name": {
+                "type": "String"
+            },
+            "definition": {
+                "type": "Mixed"
+            },
+            "filter": {
+                "type": "Mixed"
+            },
+            "_acl": {
+                "type": "Mixed"
+            },
+            "_created": "Date",
+            "_modified": "Date"
+        },
+        "filter": {
+            "readFilter": {
+                "admin": ["name", "definition", "filter", "_created", "_modified"],
+                "public": []
+            },
+            "writeFilter": {
+                "admin": ["name", "definition", "filter", "_created", "_modified"],
+                "public": []
+            },
+            "sanitize": true
         }
-    },
-    "collections": {
-        "users": {
-            "login": {
-                "enabled": true,
-                "default": {
-                    "filters": [{
-                        "fieldToFilter": "*",
-                        "direction": "in",
-                        "allowed": false
-                    }, {
-                        "fieldToFilter": "email",
-                        "direction": "in",
-                        "allowed": true
-                    }, {
-                        "fieldToFilter": "password",
-                        "direction": "in",
-                        "allowed": true
-                    }, {
-                        "fieldToFilter": "password",
-                        "direction": "out",
-                        "allowed": false
-                    }, {
-                        "fieldToFilter": "passwordConfirm",
-                        "direction": "out",
-                        "allowed": false
-                    }, {
-                        "fieldToFilter": "roles",
-                        "direction": "out",
-                        "allowed": false
-                    }],
-                    "validators": [{
-                        "type": "required",
-                        "fieldToValidate": "email",
-                        "errorMessage": "Email is required."
-                    }, {
-                        "type": "required",
-                        "fieldToValidate": "password",
-                        "errorMessage": "Password is required."
-                    }],
-                    "events": []
-                }
-            },
-            "changePassword": {
-                "enabled": true,
-                "default": {
-                    "filters": [{
-                        "fieldToFilter": "*",
-                        "direction": "in",
-                        "allowed": false
-                    }, {
-                        "fieldToFilter": "password",
-                        "direction": "in",
-                        "allowed": true
-                    }, {
-                        "fieldToFilter": "newPassword",
-                        "direction": "in",
-                        "allowed": true
-                    }, {
-                        "fieldToFilter": "confirmPassword",
-                        "direction": "in",
-                        "allowed": true
-                    }],
-                    "validators": [{
-                        "type": "required",
-                        "fieldToValidate": "password",
-                        "errorMessage": "Password is required."
-                    }, {
-                        "type": "required",
-                        "fieldToValidate": "newPassword",
-                        "errorMessage": "New password is required."
-                    }, {
-                        "type": "required",
-                        "fieldToValidate": "confirmPassword",
-                        "errorMessage": "Confirm password is required."
-                    }, {
-                        "type": "compare",
-                        "fieldToValidate": "newPassword",
-                        "fieldToCompare": "confirmPassword",
-                        "valueToCompare": null,
-                        "dataType": "string",
-                        "operator": "==",
-                        "errorMessage": "Passwords do not match."
-                    }],
-                    "events": []
-                }
-            },
-            "passwordReset": {
-                "enabled": true,
-                "default": {
-                    "filters": [{
-                        "fieldToFilter": "*",
-                        "direction": "in",
-                        "allowed": false
-                    }, {
-                        "fieldToFilter": "token",
-                        "direction": "in",
-                        "allowed": true
-                    }, {
-                        "fieldToFilter": "newPassword",
-                        "direction": "in",
-                        "allowed": true
-                    }, {
-                        "fieldToFilter": "confirmPassword",
-                        "direction": "in",
-                        "allowed": true
-                    }],
-                    "validators": [{
-                        "type": "required",
-                        "fieldToValidate": "token",
-                        "errorMessage": "Token is required."
-                    }, {
-                        "type": "required",
-                        "fieldToValidate": "newPassword",
-                        "errorMessage": "New password is required."
-                    }, {
-                        "type": "required",
-                        "fieldToValidate": "confirmPassword",
-                        "errorMessage": "Confirm password is required."
-                    }, {
-                        "type": "compare",
-                        "fieldToValidate": "newPassword",
-                        "fieldToCompare": "confirmPassword",
-                        "valueToCompare": null,
-                        "dataType": "string",
-                        "operator": "==",
-                        "errorMessage": "Passwords do not match."
-                    }],
-                    "events": []
-                }
-            },
-            "passwordResetRequest": {
-                "enabled": true,
-                "default": {
-                    "filters": [{
-                        "fieldToFilter": "*",
-                        "direction": "in",
-                        "allowed": false
-                    }, {
-                        "fieldToFilter": "email",
-                        "direction": "in",
-                        "allowed": true
-                    }],
-                    "validators": [{
-                        "type": "required",
-                        "fieldToValidate": "email",
-                        "errorMessage": "Email is required."
-                    }],
-                    "events": []
-                }
-            },
-            "confirmEmail": {
-                "enabled": true,
-                "default": {
-                    "filters": [{
-                        "fieldToFilter": "*",
-                        "direction": "in",
-                        "allowed": false
-                    }, {
-                        "fieldToFilter": "token",
-                        "direction": "in",
-                        "allowed": true
-                    }],
-                    "validators": [{
-                        "type": "required",
-                        "fieldToValidate": "token",
-                        "errorMessage": "Token is required."
-                    }],
-                    "events": []
-                }
-            },
-            "confirmEmailRequest": {
-                "enabled": true,
-                "default": {
-                    "filters": [{
-                        "fieldToFilter": "*",
-                        "direction": "in",
-                        "allowed": false
-                    }, {
-                        "fieldToFilter": "email",
-                        "direction": "in",
-                        "allowed": true
-                    }],
-                    "validators": [{
-                        "type": "required",
-                        "fieldToValidate": "email",
-                        "errorMessage": "Email is required."
-                    }],
-                    "events": []
-                }
-            },
-            "count": {
-                "enabled": true,
-                "default": {
-                    "roles": ["admin"],
-                    "filters": [],
-                    "validators": [],
-                    "events": []
-                }
-            },
-            "sort": {
-                "enabled": true,
-                "default": {
-                    "roles": [],
-                    "filters": [],
-                    "validators": [],
-                    "events": []
-                }
-            },
-            "limit": {
-                "enabled": true,
-                "default": {
-                    "roles": [],
-                    "filters": [],
-                    "validators": [],
-                    "events": []
-                }
-            },
-            "skip": {
-                "enabled": true,
-                "default": {
-                    "roles": [],
-                    "filters": [],
-                    "validators": [],
-                    "events": []
-                }
-            },
-            "group": {
-                "enabled": true,
-                "default": {
-                    "roles": ["admin"],
-                    "filters": [],
-                    "validators": [],
-                    "events": []
-                }
-            },
-            "mapReduce": {
-                "enabled": true,
-                "default": {
-                    "roles": ["admin"],
-                    "filters": [],
-                    "validators": [],
-                    "events": []
-                }
-            },
-            "find": {
-                "enabled": true,
-                "default": {
-                    "roles": ["admin"],
-                    "filters": [{
-                        "fieldToFilter": "password",
-                        "direction": "out",
-                        "allowed": false
-                    }, {
-                        "fieldToFilter": "passwordConfirm",
-                        "direction": "out",
-                        "allowed": false
-                    }, {
-                        "fieldToFilter": "roles",
-                        "direction": "out",
-                        "allowed": false
-                    }],
-                    "validators": [],
-                    "events": []
-                },
-                "admin": {
-                    "roles": ["admin"],
-                    "filters": [{
-                        "fieldToFilter": "password",
-                        "direction": "out",
-                        "allowed": false
-                    }, {
-                        "fieldToFilter": "passwordConfirm",
-                        "direction": "out",
-                        "allowed": false
-                    }, {
-                        "fieldToFilter": "roles",
-                        "direction": "out",
-                        "allowed": false
-                    }],
-                    "validators": [],
-                    "events": []
-                }
-            },
-            "findOne": {
-                "enabled": true,
-                "default": {
-                    "roles": [
-                        "admin", "owner"],
-                    "filters": [{
-                        "fieldToFilter": "password",
-                        "direction": "out",
-                        "allowed": false
-                    }, {
-                        "fieldToFilter": "passwordConfirm",
-                        "direction": "out",
-                        "allowed": false
-                    }, {
-                        "fieldToFilter": "roles",
-                        "direction": "out",
-                        "allowed": false
-                    }],
-                    "validators": [
 
-                    ],
-                    "events": [
-
-                    ]
-                },
-                "admin": {
-                    "roles": ["admin"],
-                    "filters": [{
-                        "fieldToFilter": "password",
-                        "direction": "out",
-                        "allowed": false
-                    }, {
-                        "fieldToFilter": "passwordConfirm",
-                        "direction": "out",
-                        "allowed": false
-                    }],
-                    "validators": [],
-                    "events": []
-                }
+    }, {
+        "name": "users",
+        "definition": {
+            "firstName": {
+                "type": "String"
             },
-            "findAndModify": {
-                "enabled": true,
-                "default": {
-                    "roles": ["admin", "owner"],
-                    "filters": [{
-                        "fieldToFilter": "roles",
-                        "direction": "in",
-                        "allowed": false
-                    }, {
-                        "fieldToFilter": "password",
-                        "direction": "out",
-                        "allowed": false
-                    }, {
-                        "fieldToFilter": "passwordConfirm",
-                        "direction": "out",
-                        "allowed": false
-                    }, {
-                        "fieldToFilter": "roles",
-                        "direction": "out",
-                        "allowed": false
-                    }],
-                    "validators": [],
-                    "events": []
-                }
+            "lastName": {
+                "type": "String"
             },
-            "save": {
-                "enabled": true,
-                "default": {
-                    "roles": [],
-                    "filters": [{
-                        "fieldToFilter": "*",
-                        "direction": "in",
-                        "allowed": false
-                    }, {
-                        "fieldToFilter": "firstName",
-                        "direction": "in",
-                        "allowed": true
-                    }, {
-                        "fieldToFilter": "lastName",
-                        "direction": "in",
-                        "allowed": true
-                    }, {
-                        "fieldToFilter": "email",
-                        "direction": "in",
-                        "allowed": true
-                    }, {
-                        "fieldToFilter": "password",
-                        "direction": "in",
-                        "allowed": true
-                    }, {
-                        "fieldToFilter": "passwordConfirm",
-                        "direction": "in",
-                        "allowed": false
-                    }, {
-                        "fieldToFilter": "password",
-                        "direction": "out",
-                        "allowed": false
-                    }, {
-                        "fieldToFilter": "passwordConfirm",
-                        "direction": "out",
-                        "allowed": false
-                    }, {
-                        "fieldToFilter": "roles",
-                        "direction": "out",
-                        "allowed": false
-                    }],
-                    "validators": [{
-                        "type": "required",
-                        "fieldToValidate": "firstName",
-                        "errorMessage": "First name is required."
-                    }, {
-                        "type": "required",
-                        "fieldToValidate": "lastName",
-                        "errorMessage": "Last name is required."
-                    }, {
-                        "type": "required",
-                        "fieldToValidate": "email",
-                        "errorMessage": "Email is required."
-                    }, {
-                        "type": "required",
-                        "fieldToValidate": "password",
-                        "errorMessage": "Password is required."
-                    }, {
-                        "type": "compare",
-                        "fieldToValidate": "password",
-                        "fieldToCompare": "passwordConfirm",
-                        "valueToCompare": null,
-                        "dataType": "string",
-                        "operator": "==",
-                        "errorMessage": "Passwords do not match."
-                    }, {
-                        "type": "regularExpression",
-                        "fieldToValidate": "email",
-                        "expression": "%5BA-Za-z0-9%21%23%24%25%26%27%2A%2B%2F%3D%3F%5E_%60%7B%7C%7D%7E-%5D%2B%28%3F%3A%5C.%5BA-Za-z0-9%21%23%24%25%26%27%2A%2B%2F%3D%3F%5E_%60%7B%7C%7D%7E-%5D%2B%29%2A%40%28%3F%3A%5BA-Za-z0-9%5D%28%3F%3A%5BA-Za-z0-9-%5D%2A%5BA-Za-z0-9%5D%29%3F%5C.%29%2B%5BA-Za-z0-9%5D%28%3F%3A%5BA-Za-z0-9-%5D%2A%5BA-Za-z0-9%5D%29%3F",
-                        "errorMessage": "Email address is invalid."
-                    }, {
-                        "type": "custom",
-                        "fieldToValidate": "email",
-                        "validationFunction": "userExists",
-                        "errorMessage": "User already exists."
-                    }],
-                    "events": []
-                }
+            "email": {
+                "type": "String"
             },
-            "insert": {
-                "enabled": true,
-                "default": {
-                    "roles": [],
-                    "filters": [{
-                        "fieldToFilter": "*",
-                        "direction": "in",
-                        "allowed": false
-                    }, {
-                        "fieldToFilter": "firstName",
-                        "direction": "in",
-                        "allowed": true
-                    }, {
-                        "fieldToFilter": "lastName",
-                        "direction": "in",
-                        "allowed": true
-                    }, {
-                        "fieldToFilter": "email",
-                        "direction": "in",
-                        "allowed": true
-                    }, {
-                        "fieldToFilter": "password",
-                        "direction": "in",
-                        "allowed": true
-                    }, {
-                        "fieldToFilter": "passwordConfirm",
-                        "direction": "in",
-                        "allowed": false
-                    }, {
-                        "fieldToFilter": "password",
-                        "direction": "out",
-                        "allowed": false
-                    }, {
-                        "fieldToFilter": "passwordConfirm",
-                        "direction": "out",
-                        "allowed": false
-                    }, {
-                        "fieldToFilter": "roles",
-                        "direction": "out",
-                        "allowed": false
-                    }],
-                    "validators": [{
-                        "type": "required",
-                        "fieldToValidate": "firstName",
-                        "errorMessage": "First name is required."
-                    }, {
-                        "type": "required",
-                        "fieldToValidate": "lastName",
-                        "errorMessage": "Last name is required."
-                    }, {
-                        "type": "required",
-                        "fieldToValidate": "email",
-                        "errorMessage": "Email is required."
-                    }, {
-                        "type": "required",
-                        "fieldToValidate": "password",
-                        "errorMessage": "Password is required."
-                    }, {
-                        "type": "compare",
-                        "fieldToValidate": "password",
-                        "fieldToCompare": "passwordConfirm",
-                        "valueToCompare": null,
-                        "dataType": "string",
-                        "operator": "==",
-                        "errorMessage": "Passwords do not match."
-                    }, {
-                        "type": "regularExpression",
-                        "fieldToValidate": "email",
-                        "expression": "%5BA-Za-z0-9%21%23%24%25%26%27%2A%2B%2F%3D%3F%5E_%60%7B%7C%7D%7E-%5D%2B%28%3F%3A%5C.%5BA-Za-z0-9%21%23%24%25%26%27%2A%2B%2F%3D%3F%5E_%60%7B%7C%7D%7E-%5D%2B%29%2A%40%28%3F%3A%5BA-Za-z0-9%5D%28%3F%3A%5BA-Za-z0-9-%5D%2A%5BA-Za-z0-9%5D%29%3F%5C.%29%2B%5BA-Za-z0-9%5D%28%3F%3A%5BA-Za-z0-9-%5D%2A%5BA-Za-z0-9%5D%29%3F",
-                        "errorMessage": "Email address is invalid."
-                    }, {
-                        "type": "custom",
-                        "fieldToValidate": "email",
-                        "validationFunction": "userExists",
-                        "errorMessage": "User already exists."
-                    }],
-                    "events": []
-                }
+            "password": {
+                "type": "String"
             },
-            "update": {
-                "enabled": true,
-                "default": {
-                    "roles": ["admin", "owner"],
-                    "filters": [{
-                        "fieldToFilter": "roles",
-                        "direction": "in",
-                        "allowed": false
-                    }, {
-                        "fieldToFilter": "*",
-                        "direction": "in",
-                        "allowed": false
-                    }, {
-                        "fieldToFilter": "firstName",
-                        "direction": "in",
-                        "allowed": true
-                    }, {
-                        "fieldToFilter": "lastName",
-                        "direction": "in",
-                        "allowed": true
-                    }, {
-                        "fieldToFilter": "companyName",
-                        "direction": "in",
-                        "allowed": true
-                    }, {
-                        "fieldToFilter": "email",
-                        "direction": "in",
-                        "allowed": true
-                    }],
-                    "validators": [{
-                        "type": "required",
-                        "fieldToValidate": "firstName",
-                        "errorMessage": "First name is required."
-                    }, {
-                        "type": "required",
-                        "fieldToValidate": "lastName",
-                        "errorMessage": "Last name is required."
-                    }, {
-                        "type": "required",
-                        "fieldToValidate": "email",
-                        "errorMessage": "Email is required."
-                    }, {
-                        "type": "regularExpression",
-                        "fieldToValidate": "email",
-                        "expression": "%5BA-Za-z0-9%21%23%24%25%26%27%2A%2B%2F%3D%3F%5E_%60%7B%7C%7D%7E-%5D%2B%28%3F%3A%5C.%5BA-Za-z0-9%21%23%24%25%26%27%2A%2B%2F%3D%3F%5E_%60%7B%7C%7D%7E-%5D%2B%29%2A%40%28%3F%3A%5BA-Za-z0-9%5D%28%3F%3A%5BA-Za-z0-9-%5D%2A%5BA-Za-z0-9%5D%29%3F%5C.%29%2B%5BA-Za-z0-9%5D%28%3F%3A%5BA-Za-z0-9-%5D%2A%5BA-Za-z0-9%5D%29%3F",
-                        "errorMessage": "Email address is invalid."
-                    }],
-                    "events": []
-                },
-                "admin": {
-                    "roles": ["admin"],
-                    "filters": [{
-                        "fieldToFilter": "roles",
-                        "direction": "in",
-                        "allowed": false
-                    }, {
-                        "fieldToFilter": "*",
-                        "direction": "in",
-                        "allowed": false
-                    }, {
-                        "fieldToFilter": "firstName",
-                        "direction": "in",
-                        "allowed": true
-                    }, {
-                        "fieldToFilter": "lastName",
-                        "direction": "in",
-                        "allowed": true
-                    }, {
-                        "fieldToFilter": "email",
-                        "direction": "in",
-                        "allowed": true
-                    }, {
-                        "fieldToFilter": "companyName",
-                        "direction": "in",
-                        "allowed": true
-                    }, {
-                        "fieldToFilter": "roles",
-                        "direction": "in",
-                        "allowed": true
-                    }],
-                    "validators": [{
-                        "type": "required",
-                        "fieldToValidate": "firstName",
-                        "errorMessage": "First name is required."
-                    }, {
-                        "type": "required",
-                        "fieldToValidate": "lastName",
-                        "errorMessage": "Last name is required."
-                    }, {
-                        "type": "required",
-                        "fieldToValidate": "email",
-                        "errorMessage": "Email is required."
-                    }, {
-                        "type": "regularExpression",
-                        "fieldToValidate": "email",
-                        "expression": "%5BA-Za-z0-9%21%23%24%25%26%27%2A%2B%2F%3D%3F%5E_%60%7B%7C%7D%7E-%5D%2B%28%3F%3A%5C.%5BA-Za-z0-9%21%23%24%25%26%27%2A%2B%2F%3D%3F%5E_%60%7B%7C%7D%7E-%5D%2B%29%2A%40%28%3F%3A%5BA-Za-z0-9%5D%28%3F%3A%5BA-Za-z0-9-%5D%2A%5BA-Za-z0-9%5D%29%3F%5C.%29%2B%5BA-Za-z0-9%5D%28%3F%3A%5BA-Za-z0-9-%5D%2A%5BA-Za-z0-9%5D%29%3F",
-                        "errorMessage": "Email address is invalid."
-                    }],
-                    "events": []
-                }
+            "_acl": {
+                "type": "Mixed"
             },
-            "remove": {
-                "enabled": true,
-                "default": {
-                    "roles": ["admin"],
-                    "filters": [],
-                    "validators": [],
-                    "events": []
-                }
+            "hash": {
+                "type": "String"
             },
-            "upload": {
-                "enabled": true,
-                "default": {
-                    "roles": [],
-                    "filters": [
-                        {
-                            "fieldToFilter" : "*",
-                            "direction" : "in",
-                            "allowed" : false
-                        },
-                        {
-                            "fieldToFilter" : "avatar",
-                            "direction" : "in",
-                            "allowed" : true
-                        }],
-                    "validators": [],
-                    "events": [],
-                    "resize" : {
-                        "avatar" : [
-                            {
-                                "width" : 64,
-                                "height" : 64,
-                                "quality" : 0.60,
-                                "format": "png",
-                                "enlarge": false
-                            }
-                        ]
-                    }
-                }
+            "salt": {
+                "type": "String"
             },
-            "clearUpload":{
-                "enabled" : true,
-                "default" : {
-                    "roles" : [],
-                    "filters" : [
-                        {
-                            "fieldToFilter" : "*",
-                            "direction" : "in",
-                            "allowed" : false
-                        },
-                        {
-                            "fieldToFilter" : "avatar",
-                            "direction" : "in",
-                            "allowed" : true
-                        }
-                    ],
-                    "validators" : [],
-                    "events" : []
-                }
-            }
+            "roles": [],
+            "_created": "Date",
+            "_modified": "Date",
+            "_lastLogin": "Date"
+        },
+        "filter": {
+            "readFilter": {
+                "owner": ["firstName", "lastName", "email", "_created", "_modified"],
+                "admin": ["firstName", "lastName", "email", "_created", "_modified", "_lastLogin", "roles"],
+                "public": ["firstName", "lastName", "_created", "_modified"]
+            },
+            "writeFilter": {
+                "owner": ["firstName", "lastName", "email", "_created", "_modified"],
+                "admin": ["firstName", "lastName", "email", "_created", "_modified", "roles"],
+                "public": []
+            },
+            "sanitize": true
         }
-    }
+
+    }]
 }

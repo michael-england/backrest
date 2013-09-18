@@ -1,0 +1,11 @@
+<div class="page-header">
+    <h5>General</h5>
+</div>
+<div class="well">
+    <form role="form" name="formCollection">
+        <div class="form-group" ng-class="{'has-error': formCollection.collectionName.$invalid}">
+            <label class="control-label">Name</label>
+            <input type="text" id="collectionName" name="collectionName" class="form-control" placeholder="Enter name" ng-model="collection.name" required />
+        </div>
+    </form>
+</div>
