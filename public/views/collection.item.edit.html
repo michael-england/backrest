@@ -1,0 +1,52 @@
+<div class="modal fade" id="itemModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">{{modalTitle}}</h4>
+            </div>
+            <div class="modal-body">
+                <form role="form" name="formItem">
+                    <script type="text/ng-template" id="templateFieldItemEdit">
+                        <div ng-switch="field.type" ng-hide="field.name == '_created' || field.name == '_modified'">
+                          <div ng-switch-when="Mixed">
+                              <label class="control-label">{{field.name}}</label>
+                              <div class="form-group form-group-indent" ng-repeat="(key, field) in field.children" ng-class="{'has-error': !isFieldValid(field.name) && isItemChanged()}" ng-include="'templateFieldItemEdit'">
+                              </div>
+                          </div>
+                          <div ng-switch-when="String">
+                              <label class="control-label">{{ field.label || field.name }}</label>
+                              <input type="text" name="{{field.name}}" id="{{field.name}}" class="form-control" placeholder="{{ 'Enter ' + (field.label || field.name) }}" ng-model-fn="getModel(field)" ng-required="field.required" />
+                          </div>
+                          <div ng-switch-when="Date">
+                              <label class="control-label">{{ field.label || field.name }}</label>
+                              <input type="date" name="{{field.name}}" id="{{field.name}}" class="form-control" placeholder="{{ 'Enter ' + (field.label || field.name) }}" ng-model-fn="getModel(field)" ng-required="field.required" />
+                          </div>
+                          <div ng-switch-when="Number">
+                              <label class="control-label">{{ field.label || field.name }}</label>
+                              <input type="number" name="{{field.name}}" id="{{field.name}}" class="form-control" placeholder="{{ 'Enter ' + (field.label || field.name) }}" ng-model-fn="getModel(field)" ng-required="field.required" />
+                          </div>
+                          <div ng-switch-when="Boolean">
+                              <div class="checkbox">
+                                  <label class="control-label">{{ field.label || field.name }}
+                                      <input type="checkbox" name="{{field.name}}" id="{{field.name}}" ng-model-fn="getModel(field)" ng-required="field.required" />
+                                  </label>
+                              </div>
+                          </div>
+                        </div>
+                    </script>
+
+
+
+                    <div class="form-group" ng-repeat="(key, field) in collection.definition" ng-class="{'has-error': !isFieldValid(field.name) && isItemChanged()}" ng-include="'templateFieldItemEdit'">
+    
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal" ng-click="cancelItem()">Cancel</button>
+                <button type="button" class="btn btn-primary" data-dismiss="modal" ng-click="saveItem()">Save</button>
+            </div>
+        </div>
+    </div>
+</div>

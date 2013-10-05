@@ -9,4 +9,4 @@ privatekey.pem
 *.sublime-workspace
 
 /node_modules
-/public/components
+/public/bower_components

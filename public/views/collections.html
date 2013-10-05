@@ -1,150 +1,90 @@
 <div id="collectionFlipPanel" class="flip-container" ontouchstart="this.classList.toggle('hover');">
-    <div class="flipper">
-        <div class="front container-padded">
-            <div class="page-header">
-                <h3>
-                    {{ collection.name }}
-                    <small>Collection</small>
-                    <small class="pull-right">
-                        <a data-toggle="modal" href="#itemModal" class="btn btn-small btn-primary" ng-click="add()">Add</a>
-                        <button class="btn btn-small btn-default" ng-class="{hide: !collection._id}" ng-click="editCollection(collection)">Edit</button>
-                    </small>
-                </h3>
-            </div>
-            <div infinite-scroll='list.page()' infinite-scroll-disabled='list.busy' infinite-scroll-distance='1'>
-                <table class="table table-condensed table-striped responsive-table">
-                    <thead>
-                        <tr>
-                            <th ng-repeat="field in definitionKeys(collection.definition)">{{ collection.definition[field].label || field }}</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr ng-repeat="item in items">
-                            <td ng-repeat="field in definitionKeys(collection.definition)" data-title="{{field}}">{{ item[field] }}</th>
-                            <td>
-                                <a data-toggle="modal" href="#itemModal" class="btn btn-default btn-small" ng-click="edit(item)">Edit</a>
-                                <a data-toggle="modal" href="#itemModalDelete" class="btn btn-danger btn-small" ng-click="delete(item)">Delete</a>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-                <div ng-show='list.busy'>Loading users...</div>
-            </div>
-        </div>
-
-        <div class="back container-padded">
-            <div class="page-header">
-                <h3>
-                    {{ collection.name }}
-                    <small>Collection</small>
-                    <small class="pull-right">
-                        <button class="btn btn-small btn-primary" ng-click="saveCollection(collection)">Save</button>
-                        <button class="btn btn-small btn-default" ng-click="cancelCollection(collection)" ng-class="{hide: !collection._id}">Cancel</button>
-                        <a data-toggle="modal" href="#collectionModalDelete" class="btn btn-small btn-default" ng-class="{hide: !collection._id}">Delete</a>
-
-                    </small>
-                </h3>
-            </div>
-            <div class="row">
-                <div class="col-lg-3">
-                    <div class="page-header">
-                        <h5>Settings</h5>
-                    </div>
-                    <ul class="nav nav-pills nav-stacked">
-                        <li class="active"><a href="#general" data-toggle="tab">General
-                            <i class="icon icon-chevron-right pull-right"></i></a>
-                        </li>
-                        <li><a href="#fields" data-toggle="tab">Fields
-                            <i class="icon icon-chevron-right pull-right"></i></a>
-                        </li>
-                        <li><a href="#filters" data-toggle="tab">Filters
-                            <i class="icon icon-chevron-right pull-right"></i></a>
-                        </li>
-                    </ul>
-
-                </div>
-                <div class="tab-content">
-
-                    <!-- Begin General -->
-                    <div class="tab-pane col-lg-9 active" id="general" ng-include="'/views/collections.edit.general.html'">
-                    </div>
-                    <!-- End General -->
-
-                    <!-- Begin Schema -->
-                    <div class="tab-pane" id="fields" ng-include="'/views/collections.edit.fields.html'">
-                    </div>
-                    <!-- End Schema -->
-
-                    <!-- Begin Filters -->
-                    <div class="tab-pane col-lg-9" id="filters" ng-include="'/views/collections.edit.filters.html'">
-                    </div>
-                    <!-- End Filters -->
-                </div>
-            </div>
-        </div>
+  <div class="flipper">
+    <div class="front container-padded">
+      <div class="page-header">
+        <h3>
+          {{ collection.name }}
+          <small>Collection</small>
+          <small class="pull-right">
+            <a data-toggle="modal" href="#itemModal" class="btn btn-primary" ng-click="addItem()">Add</a>
+            <button class="btn btn-default" ng-class="{hide: !collection._id}" ng-click="editCollection(collection)">Edit</button>
+          </small>
+        </h3>
+      </div>
+      <div infinite-scroll='list.page()' infinite-scroll-disabled='list.busy' infinite-scroll-distance='1'>
+        <table class="table table-condensed table-striped responsive-table">
+          <thead>
+            <tr>
+              <th ng-repeat="field in fieldKeys(collection.definition)">{{ collection.definition[field].label || field }}</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr ng-repeat="item in items">
+              <td ng-repeat="field in fieldKeys(collection.definition)" data-title="{{field}}">{{ item[field] }}</th>
+              <td>
+                <a data-toggle="modal" href="#itemModal" class="btn btn-default" ng-click="editItem(item)">Edit</a>
+                <a data-toggle="modal" href="#itemModalDelete" class="btn btn-danger" ng-click="deleteItem(item)">Delete</a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div ng-show='list.busy'>Loading users...</div>
+      </div>
     </div>
+
+    <div class="back container-padded">
+      <div class="page-header">
+        <h3>
+          {{ collection.name }}
+          <small>Collection</small>
+          <small class="pull-right">
+            <button class="btn btn-primary" ng-click="saveCollection(collection)">Save</button>
+            <button class="btn btn-default" ng-click="cancelCollection(collection)" ng-class="{hide: !collection._id}">Cancel</button>
+            <a data-toggle="modal" href="#collectionModalDelete" class="btn btn-danger" ng-class="{hide: !collection._id}">Delete</a>
+          </small>
+        </h3>
+      </div>
+      <div class="row">
+        <div class="col-lg-3">
+          <div class="page-header">
+            <h5>Settings</h5>
+          </div>
+          <ul class="nav nav-pills nav-stacked">
+            <li class="active"><a href="#general" data-toggle="tab">General
+              <i class="icon icon-chevron-right pull-right"></i></a>
+            </li>
+            <li><a href="#fields" data-toggle="tab">Fields
+              <i class="icon icon-chevron-right pull-right"></i></a>
+            </li>
+            <li><a href="#filters" data-toggle="tab">Filters
+              <i class="icon icon-chevron-right pull-right"></i></a>
+            </li>
+          </ul>
+
+        </div>
+        <div class="tab-content">
+
+          <!-- Begin General -->
+          <div class="tab-pane col-lg-9 active" id="general" ng-include="'/views/collections.edit.general.html'">
+          </div>
+          <!-- End General -->
+
+          <!-- Begin Schema -->
+          <div class="tab-pane" id="fields" ng-include="'/views/collections.edit.fields.html'">
+          </div>
+          <!-- End Schema -->
+
+          <!-- Begin Filters -->
+          <div class="tab-pane col-lg-9" id="filters" ng-include="'/views/collections.edit.filters.html'">
+          </div>
+          <!-- End Filters -->
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
-<div class="modal fade" id="itemModal">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h4 class="modal-title">{{modalTitle}}</h4>
-            </div>
-            <div class="modal-body">
-                <form role="form" name="formItem">
-                    <div class="form-group" ng-repeat="field in definitionKeys(collection.definition, true)" ng-class="{'has-error': !isFieldValid(field)}">
-                        <label class="control-label">{{ collection.definition[field].label || field }}</label>
-                        <input type="text" name="{{field}}" id="{{field}}" class="form-control" placeholder="{{ 'Enter ' + (collection.definition[field].label || field) }}" ng-model="item[field]" ng-required="collection.definition[field].required" />
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" data-dismiss="modal" ng-click="save()">Save</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="itemModalDelete">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h4 class="modal-title">Delete {{ collection.name }}</h4>
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    Are you sure you want to delete this {{ collection.name }}. This cannot be undone.
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-danger" data-dismiss="modal" ng-click="deleteConfirm()">Delete</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="collectionModalDelete">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h4 class="modal-title">Delete Collection</h4>
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    Are you sure you want to delete this collection. This cannot be undone.
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-danger" data-dismiss="modal" ng-click="deleteCollection()">Delete</button>
-            </div>
-        </div>
-    </div>
-</div>
+<ng-include src="'/views/collection.item.edit.html'"></ng-include>
+<ng-include src="'/views/collection.item.delete.html'"></ng-include>
+<ng-include src="'/views/collection.delete.html'"></ng-include>

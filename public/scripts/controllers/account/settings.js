@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('publicApp').controller('AccountSettingsCtrl', function($scope, $rootScope, api) {
+angular.module('mongoConductor').controller('AccountSettingsCtrl', function($scope, $rootScope, api) {
   $scope.save = function() {
     api.update({
       user: $rootScope.user,

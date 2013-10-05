@@ -1,14 +1,17 @@
 'use strict';
 
-angular.module('publicApp').controller('AccountLoginCtrl', function($scope, $rootScope, $location, api) {
+angular.module('mongoConductor').controller('AccountLoginCtrl', function($scope, $location, api) {
   $scope.login = function() {
     api.login({
       email: $scope.email,
       password: $scope.password,
       success: function(data) {
 
+        // reload collection list
+        $scope.$root.list();
+        
         // store user profile
-        $rootScope.user = data;
+        $scope.$root.user = data;
 
         // re-route to home
         $location.path('/');

@@ -4,8 +4,11 @@
 }
 .navbar img {
     height:30px;
-    margin: -10px 0;
+    margin: -10px 7px -10px 3px;
     display: inline-block;
+}
+.navbar-brand img {
+    margin: -10px 20px -10px 10px;
 }
 .login {
     margin-top: 10%;
@@ -14,11 +17,19 @@
     width: 50%;
     margin: 10px auto;
 }
+
+.form-group-indent {
+    margin-left: 20px !important;
+}
+
 .container-padded {
     padding: 10px 20px;
 }
 .navbar .container-padded {
     padding: 0 20px;
+}
+.nav-stacked ul {
+    margin-left: 20px !important;
 }
 .width-full {
     width: 100%;

@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('publicApp', ['$strap.directives', 'ui', 'ui.keypress', 'ui.event', 'ui.gravatar', 'infinite-scroll']).config(function($routeProvider) {
+angular.module('mongoConductor', ['$strap.directives', 'ui', 'ui.keypress', 'ui.event', 'ui.gravatar', 'infinite-scroll']).config(function($routeProvider) {
 
   $routeProvider
     .when('/', {
@@ -53,7 +53,12 @@ angular.module('publicApp', ['$strap.directives', 'ui', 'ui.keypress', 'ui.event
     api.logout({
       success: function(data) {
         if (data === 'true') {
+
+          // clear user and collections
           $rootScope.user = undefined;
+          $rootScope.collections = undefined;
+
+          // redirect to login
           $location.path('/account/login');
         }
       }
@@ -80,7 +85,13 @@ angular.module('publicApp', ['$strap.directives', 'ui', 'ui.keypress', 'ui.event
 
   api.current({
     success: function(data) {
+
+      if (data === "") {
+          data = undefined;
+      }
+
       if (!data) {
+        $rootScope.user = undefined;
         $location.path('/account/login');
       } else {
         $rootScope.user = data;

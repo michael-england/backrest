@@ -3,7 +3,7 @@
 describe('Controller: AccountSettingsCtrl', function () {
 
   // load the controller's module
-  beforeEach(module('publicApp'));
+  beforeEach(module('mongoConductor'));
 
   var AccountSettingsCtrl,
     scope;

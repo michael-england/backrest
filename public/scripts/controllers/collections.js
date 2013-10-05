@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('publicApp').controller('CollectionsCtrl', function($scope, $routeParams, api) {
+angular.module('mongoConductor').controller('CollectionsCtrl', function($scope, $routeParams, $parse, api) {
 
   Array.prototype.naturalSort = function() {
     var a, b, a1, b1, rx = /(\d+)|(\D+)/g,
@@ -29,48 +29,146 @@ angular.module('publicApp').controller('CollectionsCtrl', function($scope, $rout
     });
   };
 
-  $scope.definitionKeys = function(definition, excludeModelDefinition) {
-    if (definition) {
-      var fields = Object.keys(definition).sort();
-
-      if (excludeModelDefinition) {
-        var modelFields = Object.keys($scope.collectionModel.definition);
+  $scope.fieldKeys = function(fields, excludeModelFields) {
+    if (fields) {
+      var keys = Object.keys(fields).sort();
+      if (excludeModelFields) {
+        var modelFields = $scope.modelFields();
         angular.forEach(modelFields, function(modelField) {
-          fields.splice(fields.indexOf(modelField), 1);
+          var index = keys.indexOf(modelField);
+          if (index > -1) {
+            keys.splice(index, 1);
+          }
         });
       }
 
-      return fields;
+      return keys;
     } else {
       return [];
     }
   };
 
-  $scope.modelDefinitionField = function() {
+  $scope.fieldNamespace = function(field) {
+    if (field.parent) {
+      var parent = $scope.fieldNamespace(field.parent);
+      if (parent) {
+        return parent + '.' + field.name;
+      } else {
+        return field.name;
+      }
+    } else {
+      return field.name;
+    }
+  };
+
+  $scope.getModel = function (field) {
+    return 'item.' + $scope.fieldNamespace(field);
+  };
+
+  $scope.modelFields = function() {
     return Object.keys($scope.collectionModel.definition);
   };
 
-  $scope.isModelDefinitionField = function(field) {
-    return Object.keys($scope.collectionModel.definition).indexOf(field) > -1;
+  $scope.isModelField = function(field) {
+    return $scope.modelFields().indexOf(field) > -1;
   };
 
-  var firstField = function() {
-
-    if ($scope.collection.definition) {
+  var firstField = function(fields) {
+    if (fields) {
 
       // list all keys
-      var keys = $scope.definitionKeys($scope.collection.definition, true);
+      var keys = $scope.fieldKeys(fields, true);
 
       // sort the keys
       keys.sort();
 
       // select the first key
-      return $scope.collection.definition[keys[0]] || {};
+      return fields[keys[0]] || {};
 
     } else {
 
       return {};
     }
+  };
+
+  $scope.fromOdm = function(fields, parent) {
+
+    if (fields) {
+      var keys = Object.keys(fields);
+      angular.forEach(keys, function(key) {
+        if (fields[key]) {
+          if (!fields[key].type) {
+            if (['children', 'parent', 'name', 'type'].indexOf(key) < 0) {
+
+              // convert objects
+              if (Object.prototype.toString.call(fields[key]) === '[object Object]') {
+                var field = {
+                  'id': Math.random(),
+                  'type': 'Mixed',
+                  'name': key,
+                  'children': {},
+                  'parent': parent
+                };
+
+                field.children = (Object.keys(fields[key]).length > 0 ? $scope.fromOdm(fields[key], field) : {});
+                fields[key] = field;
+              }
+
+              // convert arrays
+              if (Object.prototype.toString.call(fields[key]) === '[object Array]') {
+                var field = {
+                  'id': Math.random(),
+                  'type': 'Array',
+                  'name': key,
+                  'children': {},
+                  'parent': parent
+                };
+
+                field.children = (fields[key].length > 0 ? $scope.fromOdm(fields[key][0], field) : {})
+                fields[key] = field;
+              }
+            }
+          } else {
+
+            // add name from key
+            fields[key].id = Math.random();
+            fields[key].name = key;
+            fields[key].parent = parent;
+            fields[key].children = {};
+          }
+        }
+      });
+    }
+
+    return fields;
+  };
+
+  $scope.toOdm = function(fields) {
+
+    if (fields) {
+      var keys = Object.keys(fields);
+      angular.forEach(keys, function(key) {
+
+        // remove name
+        delete fields[key].id;
+        delete fields[key].name;
+        delete fields[key].parent;
+
+        // change array type to array
+        if (fields[key].type === 'Array') {
+          fields[key] = [JSON.parse(JSON.stringify($scope.toOdm(fields[key].children)))];
+          delete fields[key].children;
+        }
+
+        // change mixed type to object
+        if (fields[key].type === 'Mixed') {
+          fields[key] = JSON.parse(JSON.stringify($scope.toOdm(fields[key].children)));
+          delete fields[key].children;
+        }
+      });
+    }
+
+    return fields;
   };
 
   $scope.collectionModel = {
@@ -112,12 +210,12 @@ angular.module('publicApp').controller('CollectionsCtrl', function($scope, $rout
     'Buffer',
     'Boolean',
     'Mixed',
-    'Objectid',
+    'ObjectId',
     'Array'
   ];
 
   $scope.collection = {};
-  $scope.fieldNameFocus = false;
+  $scope.fieldNameFocused = false;
   $scope.items = [];
   $scope.list = {};
   $scope.list.end = false;
@@ -167,19 +265,17 @@ angular.module('publicApp').controller('CollectionsCtrl', function($scope, $rout
       'collection': 'collections',
       '_id': $routeParams._id,
       'success': function(result) {
-        $scope.collection = result;
 
+        $scope.collection = result;
         if (!$scope.collection.definition) {
           $scope.collection.definition = {};
         }
 
-        var keys = Object.keys($scope.collection.definition);
-        angular.forEach(keys, function(key) {
-          $scope.collection.definition[key].name = key;
-        });
+        // change odm to definition
+        $scope.collection.definition = $scope.fromOdm($scope.collection.definition, $scope.collection.definition);
 
         // select first field
-        $scope.field = firstField();
+        $scope.field = firstField($scope.collection.definition);
 
         // list items from the collection
         $scope.list.page();
@@ -193,89 +289,102 @@ angular.module('publicApp').controller('CollectionsCtrl', function($scope, $rout
     // show the edit pane
     angular.element('#collectionFlipPanel').toggleClass('flip');
 
-    // move key to name in scope
-    var keys = Object.keys($scope.collection.definition);
-    angular.forEach(keys, function(key) {
-      $scope.collection.definition[key].name = key;
-    });
+    // change odm to definition
+    $scope.collection.definition = $scope.fromOdm($scope.collection.definition);
 
     // select first field
-    $scope.field = firstField();
+    $scope.field = firstField($scope.collection.definition);
   }
 
-  $scope.save = function() {
-    if ($scope.item._id) {
-      api.update({
-        'collection': $scope.collection.name,
-        'document': $scope.item,
-        'success': function() {
-          $scope.list.refresh();
-        }
-      });
+  $scope.isItemChanged = function() {
+    return !angular.equals($scope.item, $scope.itemOriginal);
+  };
+
+  $scope.saveItem = function() {
+    if (angular.element(formItem).hasClass("ng-valid")) {
+      if ($scope.item._id) {
+        api.update({
+          'collection': $scope.collection.name,
+          'document': $scope.item,
+          'success': function() {
+            $scope.list.refresh();
+          }
+        });
+      } else {
+        api.create({
+          'collection': $scope.collection.name,
+          'document': $scope.item,
+          'success': function() {
+            $scope.list.refresh();
+          }
+        });
+      }
     } else {
-      api.create({
-        'collection': $scope.collection.name,
-        'document': $scope.item,
-        'success': function() {
-          $scope.list.refresh();
-        }
-      });
+      return false;
     }
   };
 
-  $scope.edit = function(item) {
+  $scope.editItem = function(item) {
     $scope.modalTitle = 'Edit ' + $scope.collection.name;
     $scope.modalMode = 'EDIT';
     $scope.item = item;
+    $scope.itemOriginal = angular.copy($scope.item);
   };
 
-  $scope.add = function() {
+  $scope.cancelItem = function() {
+    angular.copy($scope.itemOriginal, $scope.item);
+  };
+
+  $scope.addItem = function() {
     $scope.modalTitle = 'Add ' + $scope.collection.name;
     $scope.modalMode = 'ADD';
     $scope.item = {};
+    $scope.itemOriginal = angular.copy($scope.item);
   };
 
-  $scope.delete = function(item) {
+  $scope.deleteItem = function(item) {
     $scope.item = item;
   };
 
-  $scope.deleteConfirm = function() {
+  $scope.deleteItemConfirm = function() {
     api.delete({
       'collection': $scope.collection.name,
       '_id': $scope.item._id,
       'success': function() {
         $scope.items.splice($scope.items.indexOf($scope.item), 1);
         $scope.item = {};
+        $scope.itemOriginal = angular.copy($scope.item);
       }
     });
   };
 
   $scope.saveCollection = function() {
 
-    Object.keys($scope.collection.definition);
-    angular.forEach(keys, function(key) {
-      delete $scope.collection.definition[key].name;
-    });
+    // change definition to odm
+    $scope.collection.definition = $scope.toOdm($scope.collection.definition);
+
+    var success = function() {
+      angular.element('#collectionFlipPanel').toggleClass('flip');
+      $scope.$root.$broadcast('collections.list');
+    };
 
     if ($scope.collection._id) {
       api.update({
         'collection': 'collections',
         'document': $scope.collection,
-        'success': function() {
-          angular.element('#collectionFlipPanel').toggleClass('flip');
-          $scope.$root.$broadcast('collections.list');
-        }
+        'success': success
       });
     } else {
       api.create({
         'collection': 'collections',
         'document': $scope.collection,
-        'success': function() {
-          angular.element('#collectionFlipPanel').toggleClass('flip');
-          $scope.$root.$broadcast('collections.list');
-        }
+        'success': success
       });
     }
+
+    // change odm to definition and re-select first field
+    $scope.collection.definition = $scope.fromOdm($scope.collection.definition);
+    $scope.field = firstField($scope.collection.definition);
   };
 
   $scope.editCollection = function() {
@@ -310,9 +419,16 @@ angular.module('publicApp').controller('CollectionsCtrl', function($scope, $rout
     $scope.field = value;
   };
 
-  $scope.addField = function() {
+  $scope.addField = function(parent) {
 
-    var keys = Object.keys($scope.collection.definition);
+    var fields;
+    if (parent) {
+      fields = parent.children;
+    } else {
+      fields = $scope.field.parent;
+    }
+
+    var keys = Object.keys(fields);
     var pattern = new RegExp(/NewField[0-9]+$/);
     var newFieldKeys = [];
 
@@ -337,14 +453,17 @@ angular.module('publicApp').controller('CollectionsCtrl', function($scope, $rout
     // build the new name
     var newFieldKey = 'NewField' + (newFieldKeyIndex || 1);
 
-    //  add the new field to the defition
-    $scope.collection.definition[newFieldKey] = {
-      type: String,
-      name: newFieldKey
+    // add the new field to the defition
+    fields[newFieldKey] = {
+      'id': Math.random(),
+      'type': 'String',
+      'name': newFieldKey,
+      'children': {},
+      'parent': parent || $scope.field.parent
     };
 
     // select new field
-    $scope.field = $scope.collection.definition[newFieldKey];
+    $scope.field = fields[newFieldKey];
 
     // add the field to the filter
     var roles = ['owner', 'admin', 'public'];
@@ -377,23 +496,30 @@ angular.module('publicApp').controller('CollectionsCtrl', function($scope, $rout
       }
     });
 
-    // delete the field from the definition
-    delete $scope.collection.definition[$scope.field.name];
+    var parent = $scope.field.parent.children || $scope.field.parent;
+
+    // delete the field from the parent
+    delete parent[$scope.field.name];
 
     // select first field
-    $scope.field = firstField();
+    var field = firstField(parent);
+    if (!field || !field.id) {
+      field = firstField($scope.collection.definition);
+    }
+
+    $scope.field = field;
   };
 
   $scope.fieldNameFocus = function() {
-    $scope.fieldNameFocus = true;
+    $scope.fieldNameFocused = true;
   };
 
   $scope.fieldNameBlur = function() {
-    $scope.fieldNameFocus = false;
+    $scope.fieldNameFocused = false;
   };
 
   $scope.$watch('field.name', function(newValue, oldValue) {
-    if (newValue !== oldValue && $scope.fieldNameFocus) {
+    if (newValue !== oldValue && $scope.fieldNameFocused) {
 
       // ensure filters are maintained
       var roles = ['owner', 'admin', 'public'];
@@ -418,9 +544,12 @@ angular.module('publicApp').controller('CollectionsCtrl', function($scope, $rout
         }
       });
 
-      $scope.collection.definition[newValue] = JSON.parse(JSON.stringify($scope.collection.definition[oldValue]));
-      $scope.field = $scope.collection.definition[newValue];
-      delete $scope.collection.definition[oldValue];
+      var parent = $scope.field.parent.children || $scope.field.parent;
+      if (parent[oldValue]) {
+        parent[newValue] = parent[oldValue];
+        $scope.field = parent[newValue];
+        delete parent[oldValue];
+      }
     }
   });
 });
