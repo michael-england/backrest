@@ -1,191 +1,194 @@
 <div class="col-lg-3">
-    <div class="page-header">
-        <h5>Fields
-            <small class="pull-right">
-                <button class="btn btn-default" ng-click="addField()"><i class="icon icon-plus"></i> Add Field</button>
-            </small>
-        </h5>
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">Fields</h3>
+        </div>
+        <div class="panel-body">
+            <div class="margin-bottom">
+                <button class="btn btn-default btn-block" ng-click="addField(collection.definition)"><i class="icon icon-plus"></i> Add Field</button>
+            </div>
+            <script type="text/ng-template" id="templateField">
+                <a href="#" data-toggle="tab" ng-click="editField(key, value)">
+                    {{key}}
+                    <i class="icon icon-chevron-right pull-right"></i>  
+                </a>
+                <ul class="nav nav-pills nav-stacked">
+                    <li ng-repeat="(key, value) in value.children" ng-class="{active: value.id == field.id, hide: isModelField(key)}" ng-include="'templateField'">
+                    </li>
+                </ul>
+            </script>
+
+            <ul class="nav nav-pills nav-stacked">
+                <li ng-repeat="(key, value) in collection.definition" ng-class="{active: value.id == field.id, hide: isModelField(key)}" ng-include="'templateField'">
+                </li>
+            </ul>
+        </div>
     </div>
-
-    <script type="text/ng-template" id="templateField">
-        <a href="#" data-toggle="tab" ng-click="editField(key, value)">
-            {{key}}
-            <i class="icon icon-chevron-right pull-right"></i>  
-        </a>
-        <ul class="nav nav-pills nav-stacked">
-            <li ng-repeat="(key, value) in value.children" ng-class="{active: value.id == field.id, hide: isModelField(key)}" ng-include="'templateField'">
-            </li>
-        </ul>
-    </script>
-
-    <ul class="nav nav-pills nav-stacked">
-        <li ng-repeat="(key, value) in collection.definition" ng-class="{active: value.id == field.id, hide: isModelField(key)}" ng-include="'templateField'">
-        </li>
-    </ul>
 </div>
 
 <div class="col-lg-6">
-    <div class="page-header">
-        <h5>Field
-            <small class="pull-right">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">Field</h3>
+        </div>
+        <div class="panel-body">
+            <div class="margin-bottom text-right">
                 <button class="btn btn-default" ng-click="addField(field)" ng-show="field.type == 'Array' || field.type == 'Mixed'"><i class="icon icon-plus"></i> Add Sub Field</i></button>
                 <button class="btn btn-danger" ng-click="deleteField()">Delete Field</button>
-            </small>
-        </h5>
-    </div>
-    <div class="well">
-        <form role="form" name="formField">
-            <div class="form-group">
-                <label class="control-label">Type</label>
-                <select class="form-control" ng-model="field.type">
-                    <option ng-repeat="type in schema.types">{{type}}</option>
-                </select>
             </div>
-            <div class="form-group" ng-class="{'has-error': formField.fieldName.$invalid}">
-                <label class="control-label">Name</label>
-                <input type="text" id="fieldName" name="fieldName" class="form-control" placeholder="Enter name" ng-model="field.name" required ui-event="{ focus: 'fieldNameFocus($event)', blur: 'fieldNameBlur($event)' }">
-            </div>
-            <div ng-switch="field.type">
-                <div ng-switch-when="Number">
-                    <div class="form-group">
-                        <label class="control-label">Label</label>
-                        <input type="text" class="form-control" placeholder="Enter label" ng-model="field.label">
+            <form role="form" name="formField">
+                <div class="form-group">
+                    <label class="control-label">Type</label>
+                    <select class="form-control" ng-model="field.type">
+                        <option ng-repeat="type in schema.types">{{type}}</option>
+                    </select>
+                </div>
+                <div class="form-group" ng-class="{'has-error': formField.fieldName.$invalid}">
+                    <label class="control-label">Name</label>
+                    <input type="text" id="fieldName" name="fieldName" class="form-control" placeholder="Enter name" ng-model="field.name" required ui-event="{ focus: 'fieldNameFocus($event)', blur: 'fieldNameBlur($event)' }">
+                </div>
+                <div ng-switch="field.type">
+                    <div ng-switch-when="Number">
+                        <div class="form-group">
+                            <label class="control-label">Label</label>
+                            <input type="text" class="form-control" placeholder="Enter label" ng-model="field.label">
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Default</label>
+                            <input type="text" class="form-control" placeholder="Enter default" ng-model="field.default">
+                            <span class="help-block">Enter the default value of the field.</span>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Minimum</label>
+                            <input type="number" class="form-control" placeholder="Enter minimum" ng-model="field.min" max="{{field.max}}">
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Maximum</label>
+                            <input type="number" class="form-control" placeholder="Enter maximum" ng-model="field.max" min="{{field.min}}">
+                        </div>
+                        <div class="form-group">
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox" ng-model="field.required">Required
+                                </label>
+                            </div>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label class="control-label">Default</label>
-                        <input type="text" class="form-control" placeholder="Enter default" ng-model="field.default">
-                        <span class="help-block">Enter the default value of the field.</span>
+                    <div ng-switch-when="String">
+                        <div class="form-group">
+                            <label class="control-label">Label</label>
+                            <input type="text" class="form-control" placeholder="Enter label" ng-model="field.label">
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Default</label>
+                            <input type="text" class="form-control" placeholder="Enter default" ng-model="field.default">
+                            <span class="help-block">Enter the default value of the field.</span>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Match</label>
+                            <input type="text" class="form-control" placeholder="Enter match" ng-model="field.match">
+                            <span class="help-block">Enter a regular expression the field is required to match.</span>
+                        </div>
+                        <div class="form-group">
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox" ng-model="field.required">Required
+                                </label>
+                            </div>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label class="control-label">Minimum</label>
-                        <input type="number" class="form-control" placeholder="Enter minimum" ng-model="field.min" max="{{field.max}}">
+                    <div ng-switch-when="Date">
+                        <div class="form-group">
+                            <label class="control-label">Label</label>
+                            <input type="text" class="form-control" placeholder="Enter label" ng-model="field.label">
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Default</label>
+                            <input type="text" class="form-control" placeholder="Enter default" ng-model="field.default">
+                            <span class="help-block">Enter the default value of the field.</span>
+                        </div>
+                        <div class="form-group">
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox" ng-model="field.required">Required
+                                </label>
+                            </div>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label class="control-label">Maximum</label>
-                        <input type="number" class="form-control" placeholder="Enter maximum" ng-model="field.max" min="{{field.min}}">
+                    <div ng-switch-when="Date">
+                        <div class="form-group">
+                            <label class="control-label">Label</label>
+                            <input type="text" class="form-control" placeholder="Enter label" ng-model="field.label">
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Default</label>
+                            <input type="text" class="form-control" placeholder="Enter default" ng-model="field.default">
+                            <span class="help-block">Enter the default value of the field.</span>
+                        </div>
+                        <div class="form-group">
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox" ng-model="field.required">Required
+                                </label>
+                            </div>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <div class="checkbox">
-                            <label>
-                                <input type="checkbox" ng-model="field.required">Required
-                            </label>
+                    <div ng-switch-when="Buffer">
+                        <div class="form-group">
+                            <label class="control-label">Label</label>
+                            <input type="text" class="form-control" placeholder="Enter label" ng-model="field.label">
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Default</label>
+                            <input type="text" class="form-control" placeholder="Enter default" ng-model="field.default">
+                            <span class="help-block">Enter the default value of the field.</span>
+                        </div>
+                        <div class="form-group">
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox" ng-model="field.required">Required
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div ng-switch-when="Boolean">
+                        <div class="form-group">
+                            <label class="control-label">Label</label>
+                            <input type="text" class="form-control" placeholder="Enter label" ng-model="field.label">
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Default</label>
+                            <input type="text" class="form-control" placeholder="Enter default" ng-model="field.default">
+                            <span class="help-block">Enter the default value of the field.</span>
+                        </div>
+                        <div class="form-group">
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox" ng-model="field.required">Required
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div ng-switch-when="Objectid">
+                        <div class="form-group">
+                            <label class="control-label">Label</label>
+                            <input type="text" class="form-control" placeholder="Enter label" ng-model="field.label">
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Default</label>
+                            <input type="text" class="form-control" placeholder="Enter default" ng-model="field.default">
+                            <span class="help-block">Enter the default value of the field.</span>
+                        </div>
+                        <div class="form-group">
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox" ng-model="field.required">Required
+                                </label>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div ng-switch-when="String">
-                    <div class="form-group">
-                        <label class="control-label">Label</label>
-                        <input type="text" class="form-control" placeholder="Enter label" ng-model="field.label">
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">Default</label>
-                        <input type="text" class="form-control" placeholder="Enter default" ng-model="field.default">
-                        <span class="help-block">Enter the default value of the field.</span>
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">Match</label>
-                        <input type="text" class="form-control" placeholder="Enter match" ng-model="field.match">
-                        <span class="help-block">Enter a regular expression the field is required to match.</span>
-                    </div>
-                    <div class="form-group">
-                        <div class="checkbox">
-                            <label>
-                                <input type="checkbox" ng-model="field.required">Required
-                            </label>
-                        </div>
-                    </div>
-                </div>
-                <div ng-switch-when="Date">
-                    <div class="form-group">
-                        <label class="control-label">Label</label>
-                        <input type="text" class="form-control" placeholder="Enter label" ng-model="field.label">
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">Default</label>
-                        <input type="text" class="form-control" placeholder="Enter default" ng-model="field.default">
-                        <span class="help-block">Enter the default value of the field.</span>
-                    </div>
-                    <div class="form-group">
-                        <div class="checkbox">
-                            <label>
-                                <input type="checkbox" ng-model="field.required">Required
-                            </label>
-                        </div>
-                    </div>
-                </div>
-                <div ng-switch-when="Date">
-                    <div class="form-group">
-                        <label class="control-label">Label</label>
-                        <input type="text" class="form-control" placeholder="Enter label" ng-model="field.label">
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">Default</label>
-                        <input type="text" class="form-control" placeholder="Enter default" ng-model="field.default">
-                        <span class="help-block">Enter the default value of the field.</span>
-                    </div>
-                    <div class="form-group">
-                        <div class="checkbox">
-                            <label>
-                                <input type="checkbox" ng-model="field.required">Required
-                            </label>
-                        </div>
-                    </div>
-                </div>
-                <div ng-switch-when="Buffer">
-                    <div class="form-group">
-                        <label class="control-label">Label</label>
-                        <input type="text" class="form-control" placeholder="Enter label" ng-model="field.label">
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">Default</label>
-                        <input type="text" class="form-control" placeholder="Enter default" ng-model="field.default">
-                        <span class="help-block">Enter the default value of the field.</span>
-                    </div>
-                    <div class="form-group">
-                        <div class="checkbox">
-                            <label>
-                                <input type="checkbox" ng-model="field.required">Required
-                            </label>
-                        </div>
-                    </div>
-                </div>
-                <div ng-switch-when="Boolean">
-                    <div class="form-group">
-                        <label class="control-label">Label</label>
-                        <input type="text" class="form-control" placeholder="Enter label" ng-model="field.label">
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">Default</label>
-                        <input type="text" class="form-control" placeholder="Enter default" ng-model="field.default">
-                        <span class="help-block">Enter the default value of the field.</span>
-                    </div>
-                    <div class="form-group">
-                        <div class="checkbox">
-                            <label>
-                                <input type="checkbox" ng-model="field.required">Required
-                            </label>
-                        </div>
-                    </div>
-                </div>
-                <div ng-switch-when="Objectid">
-                    <div class="form-group">
-                        <label class="control-label">Label</label>
-                        <input type="text" class="form-control" placeholder="Enter label" ng-model="field.label">
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label">Default</label>
-                        <input type="text" class="form-control" placeholder="Enter default" ng-model="field.default">
-                        <span class="help-block">Enter the default value of the field.</span>
-                    </div>
-                    <div class="form-group">
-                        <div class="checkbox">
-                            <label>
-                                <input type="checkbox" ng-model="field.required">Required
-                            </label>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
 </div>

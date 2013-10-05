@@ -48,16 +48,21 @@ angular.module('mongoConductor').controller('CollectionsCtrl', function($scope, 
     }
   };
 
-  $scope.fieldNamespace = function(field) {
+  $scope.fieldNamespace = function(field, name) {
+
+    if (!name) {
+      name = field.name;
+    }
+
     if (field.parent) {
       var parent = $scope.fieldNamespace(field.parent);
       if (parent) {
-        return parent + '.' + field.name;
+        return parent + '.' + name;
       } else {
-        return field.name;
+        return name;
       }
     } else {
-      return field.name;
+      return name;
     }
   };
 
@@ -478,16 +483,19 @@ angular.module('mongoConductor').controller('CollectionsCtrl', function($scope, 
     // select new field
     $scope.field = fields[newFieldKey];
 
+    // namespace of new field
+    var fieldNamespace = $scope.fieldNamespace($scope.field);
+
     // add the field to the filter
     var roles = ['owner', 'admin', 'public'];
     angular.forEach(roles, function(role) {
 
-      if ($scope.collection.filter.readFilter[role].indexOf(newFieldKey) === -1) {
-        $scope.collection.filter.readFilter[role].push(newFieldKey);
+      if ($scope.collection.filter.readFilter[role].indexOf(fieldNamespace) === -1) {
+        $scope.collection.filter.readFilter[role].push(fieldNamespace);
       }
 
-      if ($scope.collection.filter.writeFilter[role].indexOf(newFieldKey) === -1) {
-        $scope.collection.filter.writeFilter[role].push(newFieldKey);
+      if ($scope.collection.filter.writeFilter[role].indexOf(fieldNamespace) === -1) {
+        $scope.collection.filter.writeFilter[role].push(fieldNamespace);
       }
     });
   };
@@ -498,12 +506,12 @@ angular.module('mongoConductor').controller('CollectionsCtrl', function($scope, 
     var roles = ['owner', 'admin', 'public'];
     angular.forEach(roles, function(role) {
 
-      var indexRead = $scope.collection.filter.readFilter[role].indexOf($scope.field.name);
+      var indexRead = $scope.collection.filter.readFilter[role].indexOf($scope.fieldNamespace($scope.field.name));
       if (indexRead > -1) {
         $scope.collection.filter.readFilter[role] = $scope.collection.filter.readFilter[role].splice(indexRead, 1);
       }
 
-      var indexWrite = $scope.collection.filter.writeFilter[role].indexOf($scope.field.name);
+      var indexWrite = $scope.collection.filter.writeFilter[role].indexOf($scope.fieldNamespace($scope.field.name));
       if (indexWrite > -1) {
         $scope.collection.filter.writeFilter[role] = $scope.collection.filter.writeFilter[role].splice(indexWrite, 1);
       }
@@ -534,25 +542,29 @@ angular.module('mongoConductor').controller('CollectionsCtrl', function($scope, 
   $scope.$watch('field.name', function(newValue, oldValue) {
     if (newValue !== oldValue && $scope.fieldNameFocused) {
 
+      // namespace of new field
+      var oldFieldNamespace = $scope.fieldNamespace($scope.field, oldValue);
+      var newFieldNamespace = $scope.fieldNamespace($scope.field, newValue);
+
       // ensure filters are maintained
       var roles = ['owner', 'admin', 'public'];
       angular.forEach(roles, function(role) {
 
         // update read index
-        var indexRead = $scope.collection.filter.readFilter[role].indexOf(oldValue);
+        var indexRead = $scope.collection.filter.readFilter[role].indexOf(oldFieldNamespace);
         if (indexRead > -1) {
           $scope.collection.filter.readFilter[role].splice(indexRead, 1);
-          if ($scope.collection.filter.readFilter[role].indexOf(newValue) === -1) {
-            $scope.collection.filter.readFilter[role].push(newValue);
+          if ($scope.collection.filter.readFilter[role].indexOf(newFieldNamespace) === -1) {
+            $scope.collection.filter.readFilter[role].push(newFieldNamespace);
           }
         }
 
         // update write index
-        var indexWrite = $scope.collection.filter.writeFilter[role].indexOf($scope.field.name);
+        var indexWrite = $scope.collection.filter.writeFilter[role].indexOf(oldFieldNamespace);
         if (indexWrite > -1) {
           $scope.collection.filter.writeFilter[role].splice(indexWrite, 1);
-          if ($scope.collection.filter.writeFilter[role].indexOf(newValue) === -1) {
-            $scope.collection.filter.writeFilter[role].push(newValue);
+          if ($scope.collection.filter.writeFilter[role].indexOf(newFieldNamespace) === -1) {
+            $scope.collection.filter.writeFilter[role].push(newFieldNamespace);
           }
         }
       });

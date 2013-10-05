@@ -2,6 +2,23 @@
  body {
     padding-top: 50px;
 }
+
+.margin-top {
+    margin-bottom: 10px;
+}
+
+.margin-left {
+    margin-bottom: 10px;
+}
+
+.margin-bottom {
+    margin-bottom: 10px;
+}
+
+.margin-right {
+    margin-bottom: 10px;
+}
+
 .navbar img {
     height:30px;
     margin: -10px 7px -10px 3px;
