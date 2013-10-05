@@ -87,7 +87,7 @@ angular.module('mongoConductor', ['$strap.directives', 'ui', 'ui.keypress', 'ui.
     success: function(data) {
 
       if (data === "") {
-          data = undefined;
+        data = undefined;
       }
 
       if (!data) {

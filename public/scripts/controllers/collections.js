@@ -61,7 +61,7 @@ angular.module('mongoConductor').controller('CollectionsCtrl', function($scope, 
     }
   };
 
-  $scope.getModel = function (field) {
+  $scope.getModel = function(field) {
     return 'item.' + $scope.fieldNamespace(field);
   };
 
@@ -73,7 +73,7 @@ angular.module('mongoConductor').controller('CollectionsCtrl', function($scope, 
     return $scope.modelFields().indexOf(field) > -1;
   };
 
-  var firstField = function(fields) {
+  $scope.firstField = function(fields) {
     if (fields) {
 
       // list all keys
@@ -83,11 +83,20 @@ angular.module('mongoConductor').controller('CollectionsCtrl', function($scope, 
       keys.sort();
 
       // select the first key
-      return fields[keys[0]] || {};
+      return fields[keys[0]] || {
+        'id': Math.random(),
+        'type': 'Mixed',
+        'children': {},
+        'parent': fields
+      };
 
     } else {
-
-      return {};
+      return {
+        'id': Math.random(),
+        'type': 'Mixed',
+        'children': {},
+        'parent': fields
+      };
     }
   };
 
@@ -275,7 +284,7 @@ angular.module('mongoConductor').controller('CollectionsCtrl', function($scope, 
         $scope.collection.definition = $scope.fromOdm($scope.collection.definition, $scope.collection.definition);
 
         // select first field
-        $scope.field = firstField($scope.collection.definition) || {};
+        $scope.field = $scope.firstField($scope.collection.definition);
 
         // list items from the collection
         $scope.list.page();
@@ -290,10 +299,10 @@ angular.module('mongoConductor').controller('CollectionsCtrl', function($scope, 
     angular.element('#collectionFlipPanel').toggleClass('flip');
 
     // change odm to definition
-    $scope.collection.definition = $scope.fromOdm($scope.collection.definition);
+    $scope.collection.definition = $scope.fromOdm($scope.collection.definition, $scope.collection.definition);
 
     // select first field
-    $scope.field = firstField($scope.collection.definition);
+    $scope.field = $scope.firstField($scope.collection.definition);
   }
 
   $scope.isItemChanged = function() {
@@ -384,7 +393,7 @@ angular.module('mongoConductor').controller('CollectionsCtrl', function($scope, 
 
     // change odm to definition and re-select first field
     $scope.collection.definition = $scope.fromOdm($scope.collection.definition);
-    $scope.field = firstField($scope.collection.definition);
+    $scope.field = $scope.firstField($scope.collection.definition);
   };
 
   $scope.editCollection = function() {
@@ -506,9 +515,9 @@ angular.module('mongoConductor').controller('CollectionsCtrl', function($scope, 
     delete parent[$scope.field.name];
 
     // select first field
-    var field = firstField(parent);
+    var field = $scope.firstField(parent);
     if (!field || !field.id) {
-      field = firstField($scope.collection.definition);
+      field = $scope.firstField($scope.collection.definition);
     }
 
     $scope.field = field;

@@ -35,11 +35,7 @@
                           </div>
                         </div>
                     </script>
-
-
-
                     <div class="form-group" ng-repeat="(key, field) in collection.definition" ng-class="{'has-error': !isFieldValid(field.name) && isItemChanged()}" ng-include="'templateFieldItemEdit'">
-    
                     </div>
                 </form>
             </div>
