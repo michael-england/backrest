@@ -275,7 +275,7 @@ angular.module('mongoConductor').controller('CollectionsCtrl', function($scope, 
         $scope.collection.definition = $scope.fromOdm($scope.collection.definition, $scope.collection.definition);
 
         // select first field
-        $scope.field = firstField($scope.collection.definition);
+        $scope.field = firstField($scope.collection.definition) || {};
 
         // list items from the collection
         $scope.list.page();
@@ -426,6 +426,10 @@ angular.module('mongoConductor').controller('CollectionsCtrl', function($scope, 
       fields = parent.children;
     } else {
       fields = $scope.field.parent;
+    }
+
+    if (!fields) {
+      fields = $scope.collection.definition;
     }
 
     var keys = Object.keys(fields);
