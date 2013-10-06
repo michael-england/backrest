@@ -1,7 +1,68 @@
-<div class="panel panel-default">
-    <div class="panel-heading">
-        <h3 class="panel-title">Filters</h3>
+
+<div class="col-lg-3">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">Roles</h3>
+        </div>
+        <div class="panel-body">
+            <ul class="nav nav-pills nav-stacked">
+                <li ng-repeat="r in roles" ng-class="{active: role == r}">
+                  <a href="#" data-toggle="tab" ng-click="editRole(r)">{{r}}</a>
+                </li>
+            </ul>
+        </div>
     </div>
-    <div class="panel-body">
+</div>
+
+<div class="col-lg-6">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">Filters for Role</h3>
+        </div>
+        <div class="panel-body">
+
+            <script type="text/ng-template" id="templateFieldFilter">
+                {{key}}
+                <ul class="list-group">
+                    <li class="list-item" ng-repeat="(key, value) in value.children" ng-include="'templateFieldFilter'">
+                    </li>
+                </ul>
+            </script>
+
+            <form role="form" name="formFilter">
+                <script type="text/ng-template" id="templateFieldFilter">
+                    <div ng-switch="field.type" ng-hide="field.name == '_created' || field.name == '_modified'">
+                      <div ng-switch-when="Array">
+                      </div>
+                      <div ng-switch-when="Mixed">
+                          <input type="checkbox" name="{{field.name}}" id="{{field.name}}" ng-checked="hasFilter(field, filter)" ng-checkbox-changed="updateFilter(field, filter)" />
+                          {{field.name}}
+                          <div class="form-group form-group-indent" ng-repeat="(key, field) in field.children" ng-include="'templateFieldFilter'">
+                          </div>
+                      </div>
+                      <div ng-switch-when-default>
+                          <div class="checkbox">
+                              <label class="control-label">
+                                  <input type="checkbox" name="{{field.name}}" id="{{field.name}}" ng-checked="hasFilter(field, filter)" ng-checkbox-changed="updateFilter(field, filter)" />
+                                  {{ field.label || field.name }}
+                              </label>
+                          </div>
+                      </div>
+                    </div>
+                </script>
+
+                <div class="col-lg-6">
+                    <h4>Read Filters</h4>
+                    <div class="form-group" ng-repeat="(key, field) in collection.definition" ng-include="'templateFieldFilter'" ng-init="filter='readFilter'">
+                    </div>
+                </div>
+
+                <div class="col-lg-6">
+                    <h4>Write Filters</h4>
+                    <div class="form-group" ng-repeat="(key, field) in collection.definition" ng-include="'templateFieldFilter'" ng-init="filter='writeFilter'">
+                    </div>
+                </div>
+            </form>
+        </div>
     </div>
 </div>

@@ -228,6 +228,10 @@ angular.module('mongoConductor').controller('CollectionsCtrl', function($scope, 
     'Array'
   ];
 
+
+  $scope.roles = ['owner', 'admin', 'public'];
+  $scope.role = $scope.roles[0];
+
   $scope.collection = {};
   $scope.fieldNameFocused = false;
   $scope.items = [];
@@ -309,6 +313,9 @@ angular.module('mongoConductor').controller('CollectionsCtrl', function($scope, 
     // select first field
     $scope.field = $scope.firstField($scope.collection.definition);
   }
+
+  $scope.role = $scope.roles[0];
+
 
   $scope.isItemChanged = function() {
     return !angular.equals($scope.item, $scope.itemOriginal);
@@ -414,7 +421,12 @@ angular.module('mongoConductor').controller('CollectionsCtrl', function($scope, 
   };
 
   $scope.isFieldValid = function(name) {
-    return angular.element('#' + name).hasClass('ng-valid');
+    var element = angular.element('#' + name);
+    if (element.attr('ng-required')) {
+      return angular.element('#' + name).hasClass('ng-valid');
+    } else {
+      return true;
+    }
   };
 
   $scope.deleteCollection = function() {
@@ -487,8 +499,7 @@ angular.module('mongoConductor').controller('CollectionsCtrl', function($scope, 
     var fieldNamespace = $scope.fieldNamespace($scope.field);
 
     // add the field to the filter
-    var roles = ['owner', 'admin', 'public'];
-    angular.forEach(roles, function(role) {
+    angular.forEach($scope.roles, function(role) {
 
       if ($scope.collection.filter.readFilter[role].indexOf(fieldNamespace) === -1) {
         $scope.collection.filter.readFilter[role].push(fieldNamespace);
@@ -503,8 +514,7 @@ angular.module('mongoConductor').controller('CollectionsCtrl', function($scope, 
   $scope.deleteField = function() {
 
     // add the field to the filter
-    var roles = ['owner', 'admin', 'public'];
-    angular.forEach(roles, function(role) {
+    angular.forEach($scope.roles, function(role) {
 
       var indexRead = $scope.collection.filter.readFilter[role].indexOf($scope.fieldNamespace($scope.field.name));
       if (indexRead > -1) {
@@ -547,8 +557,7 @@ angular.module('mongoConductor').controller('CollectionsCtrl', function($scope, 
       var newFieldNamespace = $scope.fieldNamespace($scope.field, newValue);
 
       // ensure filters are maintained
-      var roles = ['owner', 'admin', 'public'];
-      angular.forEach(roles, function(role) {
+      angular.forEach($scope.roles, function(role) {
 
         // update read index
         var indexRead = $scope.collection.filter.readFilter[role].indexOf(oldFieldNamespace);
@@ -577,4 +586,24 @@ angular.module('mongoConductor').controller('CollectionsCtrl', function($scope, 
       }
     }
   });
+
+  $scope.editRole = function(role) {
+    $scope.role = role;
+  };
+
+  $scope.hasFilter = function(field, filter) {
+    var fieldNamespace = $scope.fieldNamespace(field);
+    var index = $scope.collection.filter[filter][$scope.role].indexOf(fieldNamespace);
+    return index > -1;
+  };
+
+  $scope.updateFilter = function(field, filter) {
+    var fieldNamespace = $scope.fieldNamespace(field);
+    var index = $scope.collection.filter[filter][$scope.role].indexOf(fieldNamespace);
+    if (index > -1) {
+      $scope.collection.filter[filter][$scope.role].splice(index, 1);
+    } else {
+      $scope.collection.filter[filter][$scope.role].push(fieldNamespace);
+    }
+  };
 });

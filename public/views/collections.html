@@ -21,11 +21,11 @@
                     </thead>
                     <tbody>
                         <tr ng-repeat="item in items">
-                            <td ng-repeat="field in fieldKeys(collection.definition)" data-title="{{field}}">{{ item[field] }}</th>
-                                <td>
-                                    <a data-toggle="modal" href="#itemModal" class="btn btn-default" ng-click="editItem(item)">Edit</a>
-                                    <a data-toggle="modal" href="#itemModalDelete" class="btn btn-danger" ng-click="deleteItem(item)">Delete</a>
-                                </td>
+                            <td ng-repeat="field in fieldKeys(collection.definition)" data-title="{{field}}">{{ item[field] }}</td>
+                            <td>
+                                <a data-toggle="modal" href="#itemModal" class="btn btn-default" ng-click="editItem(item)">Edit</a>
+                                <a data-toggle="modal" href="#itemModalDelete" class="btn btn-danger" ng-click="deleteItem(item)">Delete</a>
+                            </td>
                         </tr>
                     </tbody>
                 </table>
@@ -79,7 +79,7 @@
                     <!-- End Schema -->
 
                     <!-- Begin Filters -->
-                    <div class="tab-pane col-lg-9" id="filters" ng-include="'/views/collections.edit.filters.html'">
+                    <div class="tab-pane" id="filters" ng-include="'/views/collections.edit.filters.html'">
                     </div>
                     <!-- End Filters -->
                 </div>
