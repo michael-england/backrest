@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('mongoConductor').directive('ngCheckboxChanged', function() {
+angular.module('mongoConductorApp').directive('ngCheckboxChanged', function() {
   return {
     restrict: 'A',
     transclude: true,

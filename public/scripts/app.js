@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('mongoConductor', ['$strap.directives', 'ui', 'ui.keypress', 'ui.event', 'ui.gravatar', 'infinite-scroll']).config(function($routeProvider) {
+angular.module('mongoConductorApp', ['$strap.directives', 'ui', 'ui.keypress', 'ui.event', 'ui.gravatar', 'infinite-scroll']).config(function($routeProvider) {
 
   $routeProvider
     .when('/', {
@@ -43,6 +43,10 @@ angular.module('mongoConductor', ['$strap.directives', 'ui', 'ui.keypress', 'ui.
       templateUrl: 'views/account/settings.html',
       controller: 'AccountSettingsCtrl'
     })
+    .when('/roles', {
+      templateUrl: 'views/roles.html',
+      controller: 'RolesCtrl'
+    })
     .otherwise({
       redirectTo: '/'
     });
@@ -75,6 +79,18 @@ angular.module('mongoConductor', ['$strap.directives', 'ui', 'ui.keypress', 'ui.
       },
       'success': function(result) {
         $rootScope.collections = result.data;
+      }
+    });
+
+    api.read({
+      'collection': 'roles',
+      'conditions': {},
+      'limit': 30,
+      'sort': {
+        'name': 1
+      },
+      'success': function(result) {
+        $rootScope.roles = result.data;
       }
     });
   };

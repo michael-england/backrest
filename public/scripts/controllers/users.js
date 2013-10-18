@@ -1,5 +1,5 @@
 'use strict';
-angular.module('mongoConductor').controller('UsersCtrl', function($scope, api) {
+angular.module('mongoConductorApp').controller('UsersCtrl', function($scope, api) {
 
   $scope.users = [];
 

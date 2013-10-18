@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('mongoConductor').directive('ngModelFn', function($compile) {
+angular.module('mongoConductorApp').directive('ngModelFn', function($compile) {
 	return {
 		restrict: 'A',
 		transclude: true,

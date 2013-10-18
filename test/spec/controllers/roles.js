@@ -1,17 +1,17 @@
 'use strict';
 
-describe('Controller: AccountSettingsCtrl', function () {
+describe('Controller: RolesCtrl', function () {
 
   // load the controller's module
   beforeEach(module('mongoConductorApp'));
 
-  var AccountSettingsCtrl,
+  var RolesCtrl,
     scope;
 
   // Initialize the controller and a mock scope
   beforeEach(inject(function ($controller, $rootScope) {
     scope = $rootScope.$new();
-    AccountSettingsCtrl = $controller('AccountSettingsCtrl', {
+    RolesCtrl = $controller('RolesCtrl', {
       $scope: scope
     });
   }));

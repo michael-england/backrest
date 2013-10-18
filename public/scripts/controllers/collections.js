@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('mongoConductor').controller('CollectionsCtrl', function($scope, $routeParams, $parse, api) {
+angular.module('mongoConductorApp').controller('CollectionsCtrl', function($scope, $routeParams, $parse, api) {
 
   Array.prototype.naturalSort = function() {
     var a, b, a1, b1, rx = /(\d+)|(\D+)/g,
@@ -185,6 +185,54 @@ angular.module('mongoConductor').controller('CollectionsCtrl', function($scope, 
     return fields;
   };
 
+  $scope.toOdmCopy = function(fields) {
+
+    var newFields = {};
+    var ignore = ['id', 'name', 'parent', '$$hashKey', 'children'];
+
+    if (fields && typeof fields === 'object') {
+      var keys = Object.keys(fields);
+      angular.forEach(keys, function(key) {
+
+        if (ignore.indexOf(key) === -1) {
+
+          // change array type to array
+          if (fields[key].type === 'Array') {
+            newFields[key] = [JSON.parse(JSON.stringify($scope.toOdmCopy(fields[key].children)))];
+          }
+
+          // change mixed type to object
+          else if (fields[key].type === 'Mixed') {
+            newFields[key] = JSON.parse(JSON.stringify($scope.toOdmCopy(fields[key].children)));
+          }
+
+          else {
+            newFields[key] = JSON.parse(JSON.stringify($scope.toOdmCopy(fields[key])));
+          }
+        }
+
+      });
+      return newFields;
+    } else {
+      return JSON.parse(JSON.stringify(fields));
+    }
+  };
+
+  $scope.toJson = function (isArray) {
+
+    var json = $scope.toOdmCopy($scope.collection.definition);
+    if (isArray) {
+      json = {
+        'data': [json],
+        'total': {
+          'type': 'Number'
+        }
+      }
+    }
+
+    return JSON.stringify(json, null, '\t');
+  };
+
   $scope.collectionModel = {
     'name': 'NewCollection',
     'definition': {
@@ -229,7 +277,6 @@ angular.module('mongoConductor').controller('CollectionsCtrl', function($scope, 
   ];
 
 
-  $scope.roles = ['owner', 'admin', 'public'];
   $scope.role = $scope.roles[0];
 
   $scope.collection = {};
@@ -313,9 +360,6 @@ angular.module('mongoConductor').controller('CollectionsCtrl', function($scope, 
     // select first field
     $scope.field = $scope.firstField($scope.collection.definition);
   }
-
-  $scope.role = $scope.roles[0];
-
 
   $scope.isItemChanged = function() {
     return !angular.equals($scope.item, $scope.itemOriginal);
@@ -501,12 +545,12 @@ angular.module('mongoConductor').controller('CollectionsCtrl', function($scope, 
     // add the field to the filter
     angular.forEach($scope.roles, function(role) {
 
-      if ($scope.collection.filter.readFilter[role].indexOf(fieldNamespace) === -1) {
-        $scope.collection.filter.readFilter[role].push(fieldNamespace);
+      if ($scope.collection.filter.readFilter[role.name].indexOf(fieldNamespace) === -1) {
+        $scope.collection.filter.readFilter[role.name].push(fieldNamespace);
       }
 
-      if ($scope.collection.filter.writeFilter[role].indexOf(fieldNamespace) === -1) {
-        $scope.collection.filter.writeFilter[role].push(fieldNamespace);
+      if ($scope.collection.filter.writeFilter[role.name].indexOf(fieldNamespace) === -1) {
+        $scope.collection.filter.writeFilter[role.name].push(fieldNamespace);
       }
     });
   };
@@ -516,14 +560,14 @@ angular.module('mongoConductor').controller('CollectionsCtrl', function($scope, 
     // add the field to the filter
     angular.forEach($scope.roles, function(role) {
 
-      var indexRead = $scope.collection.filter.readFilter[role].indexOf($scope.fieldNamespace($scope.field.name));
+      var indexRead = $scope.collection.filter.readFilter[role.name].indexOf($scope.fieldNamespace($scope.field.name));
       if (indexRead > -1) {
-        $scope.collection.filter.readFilter[role] = $scope.collection.filter.readFilter[role].splice(indexRead, 1);
+        $scope.collection.filter.readFilter[role.name] = $scope.collection.filter.readFilter[role.name].splice(indexRead, 1);
       }
 
-      var indexWrite = $scope.collection.filter.writeFilter[role].indexOf($scope.fieldNamespace($scope.field.name));
+      var indexWrite = $scope.collection.filter.writeFilter[role.name].indexOf($scope.fieldNamespace($scope.field.name));
       if (indexWrite > -1) {
-        $scope.collection.filter.writeFilter[role] = $scope.collection.filter.writeFilter[role].splice(indexWrite, 1);
+        $scope.collection.filter.writeFilter[role.name] = $scope.collection.filter.writeFilter[role.name].splice(indexWrite, 1);
       }
     });
 
@@ -560,20 +604,20 @@ angular.module('mongoConductor').controller('CollectionsCtrl', function($scope, 
       angular.forEach($scope.roles, function(role) {
 
         // update read index
-        var indexRead = $scope.collection.filter.readFilter[role].indexOf(oldFieldNamespace);
+        var indexRead = $scope.collection.filter.readFilter[role.name].indexOf(oldFieldNamespace);
         if (indexRead > -1) {
-          $scope.collection.filter.readFilter[role].splice(indexRead, 1);
-          if ($scope.collection.filter.readFilter[role].indexOf(newFieldNamespace) === -1) {
-            $scope.collection.filter.readFilter[role].push(newFieldNamespace);
+          $scope.collection.filter.readFilter[role.name].splice(indexRead, 1);
+          if ($scope.collection.filter.readFilter[role.name].indexOf(newFieldNamespace) === -1) {
+            $scope.collection.filter.readFilter[role.name].push(newFieldNamespace);
           }
         }
 
         // update write index
-        var indexWrite = $scope.collection.filter.writeFilter[role].indexOf(oldFieldNamespace);
+        var indexWrite = $scope.collection.filter.writeFilter[role.name].indexOf(oldFieldNamespace);
         if (indexWrite > -1) {
-          $scope.collection.filter.writeFilter[role].splice(indexWrite, 1);
-          if ($scope.collection.filter.writeFilter[role].indexOf(newFieldNamespace) === -1) {
-            $scope.collection.filter.writeFilter[role].push(newFieldNamespace);
+          $scope.collection.filter.writeFilter[role.name].splice(indexWrite, 1);
+          if ($scope.collection.filter.writeFilter[role.name].indexOf(newFieldNamespace) === -1) {
+            $scope.collection.filter.writeFilter[role.name].push(newFieldNamespace);
           }
         }
       });
@@ -591,19 +635,23 @@ angular.module('mongoConductor').controller('CollectionsCtrl', function($scope, 
     $scope.role = role;
   };
 
-  $scope.hasFilter = function(field, filter) {
+  $scope.hasFilter = function(role, field, filter) {
     var fieldNamespace = $scope.fieldNamespace(field);
-    var index = $scope.collection.filter[filter][$scope.role].indexOf(fieldNamespace);
+    var index = $scope.collection.filter[filter][role.name].indexOf(fieldNamespace);
     return index > -1;
   };
 
-  $scope.updateFilter = function(field, filter) {
+  $scope.updateFilter = function(role, field, filter) {
     var fieldNamespace = $scope.fieldNamespace(field);
-    var index = $scope.collection.filter[filter][$scope.role].indexOf(fieldNamespace);
+    var index = $scope.collection.filter[filter][role.name].indexOf(fieldNamespace);
     if (index > -1) {
-      $scope.collection.filter[filter][$scope.role].splice(index, 1);
+      $scope.collection.filter[filter][role.name].splice(index, 1);
     } else {
-      $scope.collection.filter[filter][$scope.role].push(fieldNamespace);
+      $scope.collection.filter[filter][role.name].push(fieldNamespace);
     }
   };
+
+  $scope.datepicker = function (name) {
+    angular.element('#' + name).datetimepicker();
+  }
 });

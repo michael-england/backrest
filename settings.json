@@ -165,6 +165,28 @@
             },
             "sanitize": true
         }
-
+    }, {
+        "name": "roles",
+        "definition": {
+            "name": {
+                "type": "String"
+            },
+            "_created": "Date",
+            "_modified": "Date",
+            "_lastLogin": "Date"
+        },
+        "filter": {
+            "readFilter": {
+                "owner": ["name", "_created", "_modified"],
+                "admin": ["name", "_created", "_modified"],
+                "public": []
+            },
+            "writeFilter": {
+                "owner": ["name", "_created", "_modified"],
+                "admin": ["name", "_created", "_modified"],
+                "public": []
+            },
+            "sanitize": true
+        }
     }]
 }

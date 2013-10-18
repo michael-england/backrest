@@ -3,7 +3,7 @@
 describe('Controller: UsersCtrl', function () {
 
   // load the controller's module
-  beforeEach(module('mongoConductor'));
+  beforeEach(module('mongoConductorApp'));
 
   var UsersCtrl,
     scope;

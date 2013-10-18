@@ -7,7 +7,8 @@
                     <small>Collection</small>
                     <small class="pull-right">
                         <a data-toggle="modal" href="#itemModal" class="btn btn-primary" ng-click="addItem()">Add</a>
-                        <button class="btn btn-default" ng-class="{hide: !collection._id}" ng-click="editCollection(collection)">Edit</button>
+                        <button class="btn btn-default" ng-class="{hide: !collection._id}" ng-click="editCollection(collection)">Edit Collection</button>
+                        <a data-toggle="modal" href="#documentationModal" class="btn btn-default">API Documentation</a>
                     </small>
                 </h3>
             </div>
@@ -88,6 +89,7 @@
     </div>
 </div>
 
-<ng-include src="'/views/collection.item.edit.html'"></ng-include>
-<ng-include src="'/views/collection.item.delete.html'"></ng-include>
-<ng-include src="'/views/collection.delete.html'"></ng-include>
+<ng-include src="'/views/collections.item.edit.html'"></ng-include>
+<ng-include src="'/views/collections.item.delete.html'"></ng-include>
+<ng-include src="'/views/collections.delete.html'"></ng-include>
+<ng-include src="'/views/collections.documentation.html'"></ng-include>

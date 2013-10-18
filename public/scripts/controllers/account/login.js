@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('mongoConductor').controller('AccountLoginCtrl', function($scope, $location, api) {
+angular.module('mongoConductorApp').controller('AccountLoginCtrl', function($scope, $location, api) {
   $scope.login = function() {
     api.login({
       email: $scope.email,
