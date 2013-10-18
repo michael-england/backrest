@@ -1,0 +1,333 @@
+<div class="modal fade" id="documentationModal">
+    <div class="modal-dialog modal-dialog-documentation">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">{{ collection.name }} API Documentation</h4>
+            </div>
+            <div class="modal-body">
+                <div class="panel-group" id="accordion">
+                    <div class="panel panel-warning">
+                        <div class="panel-heading">
+                            <a class="accordion-toggle text-warning" data-toggle="collapse" data-parent="#accordion" href="#collapseUpdate">
+                                <span class="label label-warning panel-label">PUT</span>
+                                <span>/api/collections/{{ collection.name }}/{_id}</span>
+                                <span class="pull-right">Updates a {{ collection.name }} item.</span>
+                            </a>
+                        </div>
+                        <div id="collapseUpdate" class="panel-collapse collapse">
+                            <div class="panel-body">
+
+                                <h4 class="page-header text-warning">Implementation Notes</h4>
+                                <p>Updates a {{ collection.name }} item.</p>
+
+                                <h4 class="page-header text-warning">Request and Response Model</h4>
+                                <p>The model of the {{ collection.name }} item to be updated.  The updated object is returned.</p>
+                                <pre class="pre-scrollable">{{ toJson() }}</pre>
+
+                                <h4 class="page-header text-warning">Parameters</h4>
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Parameter</th>
+                                            <th>Description</th>
+                                            <th>Parameter Type</th>
+                                            <th>Data Type</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="code required">_id</td>
+                                            <td>
+                                                <strong>_id of the {{collection.name}} item that needs to be updated</strong>
+                                            </td>
+                                            <td>path</td>
+                                            <td>
+                                                <span class="model-signature">string</span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+
+                                <h4 class="page-header text-warning">Error Status Codes</h4>
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>HTTP Status Code</th>
+                                            <th>Reason</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td width="15%">400</td>
+                                            <td>Invalid _id supplied.</td>
+                                        </tr>
+                                        <tr>
+                                            <td width="15%">404</td>
+                                            <td>{{ collection.name }} item not found.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel panel-danger">
+                        <div class="panel-heading">
+                            <a class="accordion-toggle text-danger" data-toggle="collapse" data-parent="#accordion" href="#collapseDelete">
+                                <span class="label label-danger panel-label">DELETE</span>
+                                <span>/api/collections/{{ collection.name }}/{_id}</span>
+                                <span class="pull-right">Deletes a {{ collection.name }} item.</span>
+                            </a>
+                        </div>
+                        <div id="collapseDelete" class="panel-collapse collapse">
+                            <div class="panel-body">
+                            
+                                <h4 class="page-header text-danger">Implementation Notes</h4>
+                                <p>Deletes a {{ collection.name }} item.</p>
+
+                                <h4 class="page-header text-danger">Response Class</h4>
+                                <p>The model of the {{ collection.name }} item that was deleted.</p>
+                                <pre class="pre-scrollable">{{ toJson() }}</pre>
+
+                                <h4 class="page-header text-danger">Parameters</h4>
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Parameter</th>
+                                            <th>Description</th>
+                                            <th>Parameter Type</th>
+                                            <th>Data Type</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="code required">_id</td>
+                                            <td>
+                                                <strong>_id of the {{collection.name}} item that needs to be deleted</strong>
+                                            </td>
+                                            <td>path</td>
+                                            <td>
+                                                <span class="model-signature">string</span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+
+                                <h4 class="page-header text-danger">Error Status Codes</h4>
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>HTTP Status Code</th>
+                                            <th>Reason</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td width="15%">400</td>
+                                            <td>Invalid _id supplied.</td>
+                                        </tr>
+                                        <tr>
+                                            <td width="15%">404</td>
+                                            <td>{{ collection.name }} item not found.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel panel-info">
+                        <div class="panel-heading">
+                            <a class="accordion-toggle text-info" data-toggle="collapse" data-parent="#accordion" href="#collapseList">
+                                <span class="label label-info panel-label">GET</span>
+                                <span>/api/collections/{{ collection.name }}</span>
+                                <span class="pull-right">Gets a list of {{ collection.name }} items.</span>
+                            </a>
+                        </div>
+                        <div id="collapseList" class="panel-collapse collapse">
+                            <div class="panel-body">
+                                
+                                <h4 class="page-header text-info">Implementation Notes</h4>
+                                <p>Gets a list of {{ collection.name }} items.</p>
+                            
+                                <h4 class="page-header text-info">Response Class</h4>
+                                <p>The model of the {{ collection.name }} items being fetched.</p>
+                                <pre class="pre-scrollable">{{ toJson(true) }}</pre>
+                                
+                                <h4 class="page-header text-info">Parameters</h4>
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Parameter</th>
+                                            <th>Description</th>
+                                            <th>Parameter Type</th>
+                                            <th>Data Type</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="code required">conditions</td>
+                                            <td>
+                                                <strong>The conditions the {{collection.name}} items must match to be returned.</strong>
+                                            </td>
+                                            <td>querystring</td>
+                                            <td>
+                                                <span class="model-signature">object</span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="code required">limit</td>
+                                            <td>
+                                                <strong>The number of {{collection.name}} items to return.</strong>
+                                            </td>
+                                            <td>querystring</td>
+                                            <td>
+                                                <span class="model-signature">number</span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="code required">skip</td>
+                                            <td>
+                                                <strong>The number of {{collection.name}} items to skip.</strong>
+                                            </td>
+                                            <td>querystring</td>
+                                            <td>
+                                                <span class="model-signature">number</span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="code required">sort</td>
+                                            <td>
+                                                <strong>The sort for the {{collection.name}} items being returned.</strong>
+                                            </td>
+                                            <td>querystring</td>
+                                            <td>
+                                                <span class="model-signature">object</span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+
+                            
+                                <h4 class="page-header text-info">Error Status Codes</h4>
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>HTTP Status Code</th>
+                                            <th>Reason</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td width="15%">404</td>
+                                            <td>{{ collection.name }} item not found.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel panel-info">
+                        <div class="panel-heading">
+                            <a class="accordion-toggle text-info" data-toggle="collapse" data-parent="#accordion" href="#collapseGet">
+                                <span class="label label-info panel-label">GET</span>
+                                <span>/api/collections/{{ collection.name }}/{_id}</span>
+                                <span class="pull-right">Gets an individual {{ collection.name }} item.</span>
+                            </a>
+                        </div>
+                        <div id="collapseGet" class="panel-collapse collapse">
+                            <div class="panel-body">
+                            
+                                <h4 class="page-header text-info">Implementation Notes</h4>
+                                <p>Gets an individual {{ collection.name }} item.</p>
+
+                                <h4 class="page-header text-info">Response Class</h4>
+                                <p>The model of the {{ collection.name }} item to be fetched.</p>
+                                <pre class="pre-scrollable">{{ toJson() }}</pre>
+
+                                <h4 class="page-header text-info">Parameters</h4>
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Parameter</th>
+                                            <th>Description</th>
+                                            <th>Parameter Type</th>
+                                            <th>Data Type</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="code required">_id</td>
+                                            <td>
+                                                <strong>_id of the {{collection.name}} item that needs to be fetched</strong>
+                                            </td>
+                                            <td>path</td>
+                                            <td>
+                                                <span class="model-signature">string</span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+
+                                <h4 class="page-header text-info">Error Status Codes</h4>
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>HTTP Status Code</th>
+                                            <th>Reason</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td width="15%">400</td>
+                                            <td>Invalid _id supplied.</td>
+                                        </tr>
+                                        <tr>
+                                            <td width="15%">404</td>
+                                            <td>{{ collection.name }} item not found.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel panel-success">
+                        <div class="panel-heading">
+                            <a class="accordion-toggle text-success" data-toggle="collapse" data-parent="#accordion" href="#collapseCreate">
+                                <span class="label label-success panel-label">POST</span>
+                                <span>/api/collections/{{ collection.name }}</span>
+                                <span class="pull-right">Creates a new {{ collection.name }} item.</span>
+                            </a>
+                        </div>
+                        <div id="collapseCreate" class="panel-collapse collapse">
+                            <div class="panel-body">
+                                
+                                <h4 class="page-header text-success">Implementation Notes</h4>
+                                <p>Creates a new {{ collection.name }} item.</p>
+                            
+                                <h4 class="page-header text-success">Request Model</h4>
+                                <p>The model of the {{ collection.name }} item to be created.</p>
+                                <pre class="pre-scrollable">{{ toJson() }}</pre>
+                            
+                                <h4 class="page-header text-success">Error Status Codes</h4>
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>HTTP Status Code</th>
+                                            <th>Reason</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td width="15%">404</td>
+                                            <td>{{ collection.name }} item not found.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

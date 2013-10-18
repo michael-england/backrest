@@ -20,11 +20,14 @@
                           </div>
                           <div ng-switch-when="Date">
                               <label class="control-label">{{ field.label || field.name }}</label>
-                              <input type="date" name="{{field.name}}" id="{{field.name}}" class="form-control" placeholder="{{ 'Enter ' + (field.label || field.name) }}" ng-model-fn="getModel(field)" ng-required="field.required" />
+                              <div class="input-group">
+                                  <input type="date" name="{{field.name}}" id="{{field.name}}" class="form-control" placeholder="{{ 'Enter ' + (field.label || field.name) }}" ng-model-fn="getModel(field)" ng-required="field.required" />
+                                  <span class="input-group-addon"><i class="icon-calendar"></i></span>
+                              </div>
                           </div>
                           <div ng-switch-when="Number">
                               <label class="control-label">{{ field.label || field.name }}</label>
-                              <input type="number" name="{{field.name}}" id="{{field.name}}" class="form-control" placeholder="{{ 'Enter ' + (field.label || field.name) }}" ng-model-fn="getModel(field)" ng-required="field.required" />
+                              <input type="number" name="{{field.name}}" id="{{field.name}}" class="form-control" placeholder="{{ 'Enter ' + (field.label || field.name) }}" ng-required="field.required" />
                           </div>
                           <div ng-switch-when="Boolean">
                               <div class="checkbox">

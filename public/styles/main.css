@@ -2,23 +2,34 @@
  body {
     padding-top: 50px;
 }
+.panel-label {
+    margin: -11px 15px -11px -15px;
+    display: block;
+    float:left;
+    line-height:12px;
+    padding: 15px 15px;
+    border-radius: 0;
+    font-weight: normal;
+    vertical-align: middle;
+    width: 80px;
+    font-family: Courier
+}
+.modal-dialog-documentation {
+    width: 75%;
+}
 
 .margin-top {
     margin-bottom: 10px;
 }
-
 .margin-left {
     margin-bottom: 10px;
 }
-
 .margin-bottom {
     margin-bottom: 10px;
 }
-
 .margin-right {
     margin-bottom: 10px;
 }
-
 .navbar img {
     height:30px;
     margin: -10px 7px -10px 3px;
@@ -34,11 +45,9 @@
     width: 50%;
     margin: 10px auto;
 }
-
 .form-group-indent {
     margin-left: 20px !important;
 }
-
 .container-padded {
     padding: 10px 20px;
 }
@@ -182,8 +191,8 @@
         font-weight: bold;
     }
     /*
-	Label the data
-	*/
+    Label the data
+    */
     .responsive-table td:before {
         content: attr(data-title);
     }
