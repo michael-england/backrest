@@ -29,6 +29,8 @@ angular.module('mongoConductorApp').controller('CollectionsCtrl', function($scop
     });
   };
 
+  $scope.baseUri = document.location.protocol + '//' + document.location.host;
+
   $scope.fieldKeys = function(fields, excludeModelFields) {
     if (fields) {
       var keys = Object.keys(fields).sort();

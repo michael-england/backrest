@@ -11,7 +11,7 @@
                         <div class="panel-heading">
                             <a class="accordion-toggle text-warning" data-toggle="collapse" data-parent="#accordion" href="#collapseUpdate">
                                 <span class="label label-warning panel-label">PUT</span>
-                                <span>/api/collections/{{ collection.name }}/{_id}</span>
+                                <span>{{ baseUri }}/api/collections/{{ collection.name }}/{_id}</span>
                                 <span class="pull-right">Updates a {{ collection.name }} item.</span>
                             </a>
                         </div>
@@ -75,7 +75,7 @@
                         <div class="panel-heading">
                             <a class="accordion-toggle text-danger" data-toggle="collapse" data-parent="#accordion" href="#collapseDelete">
                                 <span class="label label-danger panel-label">DELETE</span>
-                                <span>/api/collections/{{ collection.name }}/{_id}</span>
+                                <span>{{ baseUri }}/api/collections/{{ collection.name }}/{_id}</span>
                                 <span class="pull-right">Deletes a {{ collection.name }} item.</span>
                             </a>
                         </div>
@@ -85,7 +85,7 @@
                                 <h4 class="page-header text-danger">Implementation Notes</h4>
                                 <p>Deletes a {{ collection.name }} item.</p>
 
-                                <h4 class="page-header text-danger">Response Class</h4>
+                                <h4 class="page-header text-danger">Response Model</h4>
                                 <p>The model of the {{ collection.name }} item that was deleted.</p>
                                 <pre class="pre-scrollable">{{ toJson() }}</pre>
 
@@ -139,7 +139,7 @@
                         <div class="panel-heading">
                             <a class="accordion-toggle text-info" data-toggle="collapse" data-parent="#accordion" href="#collapseList">
                                 <span class="label label-info panel-label">GET</span>
-                                <span>/api/collections/{{ collection.name }}</span>
+                                <span>{{ baseUri }}/api/collections/{{ collection.name }}</span>
                                 <span class="pull-right">Gets a list of {{ collection.name }} items.</span>
                             </a>
                         </div>
@@ -149,7 +149,7 @@
                                 <h4 class="page-header text-info">Implementation Notes</h4>
                                 <p>Gets a list of {{ collection.name }} items.</p>
                             
-                                <h4 class="page-header text-info">Response Class</h4>
+                                <h4 class="page-header text-info">Response Model</h4>
                                 <p>The model of the {{ collection.name }} items being fetched.</p>
                                 <pre class="pre-scrollable">{{ toJson(true) }}</pre>
                                 
@@ -230,7 +230,7 @@
                         <div class="panel-heading">
                             <a class="accordion-toggle text-info" data-toggle="collapse" data-parent="#accordion" href="#collapseGet">
                                 <span class="label label-info panel-label">GET</span>
-                                <span>/api/collections/{{ collection.name }}/{_id}</span>
+                                <span>{{ baseUri }}/api/collections/{{ collection.name }}/{_id}</span>
                                 <span class="pull-right">Gets an individual {{ collection.name }} item.</span>
                             </a>
                         </div>
@@ -240,7 +240,7 @@
                                 <h4 class="page-header text-info">Implementation Notes</h4>
                                 <p>Gets an individual {{ collection.name }} item.</p>
 
-                                <h4 class="page-header text-info">Response Class</h4>
+                                <h4 class="page-header text-info">Response Model</h4>
                                 <p>The model of the {{ collection.name }} item to be fetched.</p>
                                 <pre class="pre-scrollable">{{ toJson() }}</pre>
 
@@ -294,7 +294,7 @@
                         <div class="panel-heading">
                             <a class="accordion-toggle text-success" data-toggle="collapse" data-parent="#accordion" href="#collapseCreate">
                                 <span class="label label-success panel-label">POST</span>
-                                <span>/api/collections/{{ collection.name }}</span>
+                                <span>{{ baseUri }}/api/collections/{{ collection.name }}</span>
                                 <span class="pull-right">Creates a new {{ collection.name }} item.</span>
                             </a>
                         </div>
