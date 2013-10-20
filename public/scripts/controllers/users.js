@@ -69,29 +69,26 @@ angular.module('mongoConductorApp').controller('UsersCtrl', function($scope, api
   };
 
   $scope.save = function() {
+
+    var success = function() {
+      $scope.users = [];
+      $scope.list.end = false;
+      $scope.list.index = 0;
+      $scope.list.loading = false;
+      $scope.list.page();
+    };
+
     if ($scope.user._id) {
       api.update({
         'collection': 'users',
         'document': $scope.user,
-        'success': function() {
-          $scope.users = [];
-          $scope.list.end = false;
-          $scope.list.index = 0;
-          $scope.list.loading = false;
-          $scope.list.page();
-        }
+        'success': success
       });
     } else {
       api.create({
         'collection': 'users',
         'document': $scope.user,
-        'success': function(data) {
-          $scope.users = [];
-          $scope.list.end = false;
-          $scope.list.index = 0;
-          $scope.list.loading = false;
-          $scope.list.page();
-        }
+        'success': success
       });
     }
   };

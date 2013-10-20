@@ -51,29 +51,26 @@ angular.module('mongoConductorApp').controller('RolesCtrl', function($scope, api
   };
 
   $scope.save = function() {
+
+    var success = function() {
+      $scope.$root.roles = [];
+      $scope.list.end = false;
+      $scope.list.index = 0;
+      $scope.list.loading = false;
+      $scope.list.page();
+    };
+
     if ($scope.role._id) {
       api.update({
         'collection': 'roles',
         'document': $scope.role,
-        'success': function() {
-          $scope.$root.roles = [];
-          $scope.list.end = false;
-          $scope.list.index = 0;
-          $scope.list.loading = false;
-          $scope.list.page();
-        }
+        'success': success
       });
     } else {
       api.create({
         'collection': 'roles',
         'document': $scope.role,
-        'success': function(data) {
-          $scope.$root.roles = [];
-          $scope.list.end = false;
-          $scope.list.index = 0;
-          $scope.list.loading = false;
-          $scope.list.page();
-        }
+        'success': success
       });
     }
   };
