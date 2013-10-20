@@ -1,7 +1,40 @@
 'use strict';
-angular.module('mongoConductorApp').controller('UsersCtrl', function($scope, api) {
+angular.module('mongoConductorApp').controller('UsersCtrl', function($scope, api, odm) {
 
   $scope.users = [];
+
+  $scope.odm = odm;
+  $scope.baseUri = document.location.protocol + '//' + document.location.host;
+  $scope.collection = {
+    'name': 'users',
+    'definition': {
+      'firstName': {
+        'type': 'String'
+      },
+      'lastName': {
+        'type': 'String'
+      },
+      'email': {
+        'type': 'String'
+      },
+      'password': {
+        'type': 'String'
+      },
+      '_acl': {
+        'type': 'Mixed'
+      },
+      'hash': {
+        'type': 'String'
+      },
+      'salt': {
+        'type': 'String'
+      },
+      'roles': [],
+      '_created': 'Date',
+      '_modified': 'Date',
+      '_lastLogin': 'Date'
+    }
+  };
 
   $scope.list = {};
   $scope.list.end = false;

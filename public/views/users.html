@@ -6,6 +6,7 @@
                 Users
                 <small class="pull-right">
                     <a data-toggle="modal" href="#userModal" class="btn btn-small btn-primary" ng-click="add()">Add</a>
+                    <a data-toggle="modal" href="#documentationModal" class="btn btn-default">API Documentation</a>
                 </small>
             </h3>
         </div>
@@ -28,7 +29,7 @@
                         <td data-title="Name">{{user.firstName}} {{user.lastName}}</td>
                         <td data-title="Email"><a ng-href="mailto:{{user.email}}">{{user.email}}</a>
                         </td>
-                        <td>
+                        <td class="text-right">
                             <a data-toggle="modal" href="#userModal" class="btn btn-default btn-small" ng-click="edit(user)">Edit</a>
                             <a data-toggle="modal" href="#userModalDelete" class="btn btn-danger btn-small" ng-click="delete(user)">Delete</a>
                         </td>
@@ -96,3 +97,5 @@
         </div>
     </div>
 </div>
+
+<ng-include src="'/views/users.documentation.html'"></ng-include>

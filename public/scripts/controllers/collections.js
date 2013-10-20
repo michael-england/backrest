@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('mongoConductorApp').controller('CollectionsCtrl', function($scope, $routeParams, $parse, api) {
+angular.module('mongoConductorApp').controller('CollectionsCtrl', function($scope, $routeParams, $parse, api, odm) {
 
   Array.prototype.naturalSort = function() {
     var a, b, a1, b1, rx = /(\d+)|(\D+)/g,
@@ -107,134 +107,6 @@ angular.module('mongoConductorApp').controller('CollectionsCtrl', function($scop
     }
   };
 
-  $scope.fromOdm = function(fields, parent) {
-
-    if (fields) {
-      var keys = Object.keys(fields);
-      angular.forEach(keys, function(key) {
-        if (fields[key]) {
-          if (!fields[key].type) {
-            if (['children', 'parent', 'name', 'type'].indexOf(key) < 0) {
-
-              // convert objects
-              if (Object.prototype.toString.call(fields[key]) === '[object Object]') {
-                var field = {
-                  'id': Math.random(),
-                  'type': 'Mixed',
-                  'name': key,
-                  'children': {},
-                  'parent': parent
-                };
-
-                field.children = (Object.keys(fields[key]).length > 0 ? $scope.fromOdm(fields[key], field) : {});
-                fields[key] = field;
-              }
-
-              // convert arrays
-              if (Object.prototype.toString.call(fields[key]) === '[object Array]') {
-                var field = {
-                  'id': Math.random(),
-                  'type': 'Array',
-                  'name': key,
-                  'children': {},
-                  'parent': parent
-                };
-
-                field.children = (fields[key].length > 0 ? $scope.fromOdm(fields[key][0], field) : {})
-                fields[key] = field;
-              }
-            }
-          } else {
-
-            // add name from key
-            fields[key].id = Math.random();
-            fields[key].name = key;
-            fields[key].parent = parent;
-            fields[key].children = {};
-          }
-        }
-      });
-    }
-
-    return fields;
-  };
-
-  $scope.toOdm = function(fields) {
-
-    if (fields) {
-      var keys = Object.keys(fields);
-      angular.forEach(keys, function(key) {
-
-        // remove name
-        delete fields[key].id;
-        delete fields[key].name;
-        delete fields[key].parent;
-
-        // change array type to array
-        if (fields[key].type === 'Array') {
-          fields[key] = [JSON.parse(JSON.stringify($scope.toOdm(fields[key].children)))];
-          delete fields[key].children;
-        }
-
-        // change mixed type to object
-        if (fields[key].type === 'Mixed') {
-          fields[key] = JSON.parse(JSON.stringify($scope.toOdm(fields[key].children)));
-          delete fields[key].children;
-        }
-      });
-    }
-
-    return fields;
-  };
-
-  $scope.toOdmCopy = function(fields) {
-
-    var newFields = {};
-    var ignore = ['id', 'name', 'parent', '$$hashKey', 'children'];
-
-    if (fields && typeof fields === 'object') {
-      var keys = Object.keys(fields);
-      angular.forEach(keys, function(key) {
-
-        if (ignore.indexOf(key) === -1) {
-
-          // change array type to array
-          if (fields[key].type === 'Array') {
-            newFields[key] = [JSON.parse(JSON.stringify($scope.toOdmCopy(fields[key].children)))];
-          }
-
-          // change mixed type to object
-          else if (fields[key].type === 'Mixed') {
-            newFields[key] = JSON.parse(JSON.stringify($scope.toOdmCopy(fields[key].children)));
-          }
-
-          else {
-            newFields[key] = JSON.parse(JSON.stringify($scope.toOdmCopy(fields[key])));
-          }
-        }
-
-      });
-      return newFields;
-    } else {
-      return JSON.parse(JSON.stringify(fields));
-    }
-  };
-
-  $scope.toJson = function (isArray) {
-
-    var json = $scope.toOdmCopy($scope.collection.definition);
-    if (isArray) {
-      json = {
-        'data': [json],
-        'total': {
-          'type': 'Number'
-        }
-      }
-    }
-
-    return JSON.stringify(json, null, '\t');
-  };
-
   $scope.collectionModel = {
     'name': 'NewCollection',
     'definition': {
@@ -278,9 +150,23 @@ angular.module('mongoConductorApp').controller('CollectionsCtrl', function($scop
     'Array'
   ];
 
+  if (!$scope.roles) {
+    api.read({
+      'collection': 'roles',
+      'conditions': {},
+      'limit': 30,
+      'sort': {
+        'name': 1
+      },
+      'success': function(result) {
+        $scope.$root.roles = result.data;
+      }
+    });
+  } else {
+    $scope.role = $scope.roles[0];
+  }
 
-  $scope.role = $scope.roles[0];
-
+  $scope.odm = odm;
   $scope.collection = {};
   $scope.fieldNameFocused = false;
   $scope.items = [];
@@ -339,7 +225,7 @@ angular.module('mongoConductorApp').controller('CollectionsCtrl', function($scop
         }
 
         // change odm to definition
-        $scope.collection.definition = $scope.fromOdm($scope.collection.definition, $scope.collection.definition);
+        $scope.collection.definition = odm.from($scope.collection.definition, $scope.collection.definition);
 
         // select first field
         $scope.field = $scope.firstField($scope.collection.definition);
@@ -357,7 +243,7 @@ angular.module('mongoConductorApp').controller('CollectionsCtrl', function($scop
     angular.element('#collectionFlipPanel').toggleClass('flip');
 
     // change odm to definition
-    $scope.collection.definition = $scope.fromOdm($scope.collection.definition, $scope.collection.definition);
+    $scope.collection.definition = odm.from($scope.collection.definition, $scope.collection.definition);
 
     // select first field
     $scope.field = $scope.firstField($scope.collection.definition);
@@ -428,7 +314,7 @@ angular.module('mongoConductorApp').controller('CollectionsCtrl', function($scop
   $scope.saveCollection = function() {
 
     // change definition to odm
-    $scope.collection.definition = $scope.toOdm($scope.collection.definition);
+    $scope.collection.definition = odm.to($scope.collection.definition);
 
     var success = function() {
       angular.element('#collectionFlipPanel').toggleClass('flip');
@@ -450,7 +336,7 @@ angular.module('mongoConductorApp').controller('CollectionsCtrl', function($scop
     }
 
     // change odm to definition and re-select first field
-    $scope.collection.definition = $scope.fromOdm($scope.collection.definition);
+    $scope.collection.definition = odm.from($scope.collection.definition);
     $scope.field = $scope.firstField($scope.collection.definition);
   };
 

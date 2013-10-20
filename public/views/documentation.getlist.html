@@ -1,0 +1,79 @@
+<div>
+    <h4 class="page-header text-info">Implementation Notes</h4>
+    <p>Gets a list of {{ collection.name }} items.</p>
+
+    <h4 class="page-header text-info">Response Model</h4>
+    <p>The model of the {{ collection.name }} items being fetched.</p>
+    <pre class="pre-scrollable">{{ odm.json(collection.definition, true) }}</pre>
+    
+    <h4 class="page-header text-info">Parameters</h4>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Parameter</th>
+                <th>Description</th>
+                <th>Parameter Type</th>
+                <th>Data Type</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="code required">conditions</td>
+                <td>
+                    <strong>The conditions the {{collection.name}} items must match to be returned.</strong>
+                </td>
+                <td>querystring</td>
+                <td>
+                    <span class="model-signature">object</span>
+                </td>
+            </tr>
+            <tr>
+                <td class="code required">limit</td>
+                <td>
+                    <strong>The number of {{collection.name}} items to return.</strong>
+                </td>
+                <td>querystring</td>
+                <td>
+                    <span class="model-signature">number</span>
+                </td>
+            </tr>
+            <tr>
+                <td class="code required">skip</td>
+                <td>
+                    <strong>The number of {{collection.name}} items to skip.</strong>
+                </td>
+                <td>querystring</td>
+                <td>
+                    <span class="model-signature">number</span>
+                </td>
+            </tr>
+            <tr>
+                <td class="code required">sort</td>
+                <td>
+                    <strong>The sort for the {{collection.name}} items being returned.</strong>
+                </td>
+                <td>querystring</td>
+                <td>
+                    <span class="model-signature">object</span>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+
+    <h4 class="page-header text-info">Error Status Codes</h4>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>HTTP Status Code</th>
+                <th>Reason</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td width="15%">404</td>
+                <td>{{ collection.name }} item not found.</td>
+            </tr>
+        </tbody>
+    </table>
+</div>

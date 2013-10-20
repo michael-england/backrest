@@ -1,7 +1,22 @@
 'use strict';
-angular.module('mongoConductorApp').controller('RolesCtrl', function($scope, api) {
+angular.module('mongoConductorApp').controller('RolesCtrl', function($scope, api, odm) {
 
   $scope.$root.roles = [];
+
+  $scope.odm = odm;
+  $scope.baseUri = document.location.protocol + '//' + document.location.host;
+  $scope.collection = {
+    'name': 'roles',
+    'definition': {
+      'name': {
+        'type': 'String'
+      },
+      '_created': 'Date',
+      '_modified': 'Date',
+      '_lastLogin': 'Date'
+    }
+  };
+
 
   $scope.list = {};
   $scope.list.end = false;
