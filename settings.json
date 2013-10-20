@@ -122,7 +122,6 @@
             },
             "sanitize": true
         }
-
     }, {
         "name": "users",
         "definition": {
@@ -133,9 +132,6 @@
                 "type": "String"
             },
             "email": {
-                "type": "String"
-            },
-            "password": {
                 "type": "String"
             },
             "_acl": {
