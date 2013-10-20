@@ -20,7 +20,7 @@ angular.module('mongoConductorApp').factory('api', function($http) {
       }
 
       // build the service url
-      var url = '/api/collections/' + options.collection;
+      var url = '/api/' + options.collection;
 
       // execute the service call
       $http({
@@ -50,7 +50,7 @@ angular.module('mongoConductorApp').factory('api', function($http) {
       }
 
       // build the service url
-      var url = '/api/collections/' + options.collection + '/' + options.document._id;
+      var url = '/api/' + options.collection + '/' + options.document._id;
 
       // execute the service call
       $http({
@@ -72,7 +72,7 @@ angular.module('mongoConductorApp').factory('api', function($http) {
       }
 
       // build the service url
-      var url = '/api/collections/' + options.collection;
+      var url = '/api/' + options.collection;
       var params = {};
 
       if (options._id) {
@@ -116,7 +116,7 @@ angular.module('mongoConductorApp').factory('api', function($http) {
       }
 
       // build the service url
-      var url = '/api/collections/' + options.collection + '/' + options._id;
+      var url = '/api/' + options.collection + '/' + options._id;
 
       // execute the service call
       $http({

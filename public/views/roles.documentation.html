@@ -11,7 +11,7 @@
                         <div class="panel-heading">
                             <a class="accordion-toggle text-warning" data-toggle="collapse" data-parent="#accordion" href="#collapseUpdate">
                                 <span class="label label-warning panel-label">PUT</span>
-                                <span>{{ baseUri }}/api/collections/{{ collection.name }}/{_id}</span>
+                                <span>{{ baseUri }}/api/{{ collection.name }}/{_id}</span>
                                 <span class="pull-right">Updates a {{ collection.name }} item.</span>
                             </a>
                         </div>
@@ -24,7 +24,7 @@
                         <div class="panel-heading">
                             <a class="accordion-toggle text-danger" data-toggle="collapse" data-parent="#accordion" href="#collapseDelete">
                                 <span class="label label-danger panel-label">DELETE</span>
-                                <span>{{ baseUri }}/api/collections/{{ collection.name }}/{_id}</span>
+                                <span>{{ baseUri }}/api/{{ collection.name }}/{_id}</span>
                                 <span class="pull-right">Deletes a {{ collection.name }} item.</span>
                             </a>
                         </div>
@@ -37,7 +37,7 @@
                         <div class="panel-heading">
                             <a class="accordion-toggle text-info" data-toggle="collapse" data-parent="#accordion" href="#collapseList">
                                 <span class="label label-info panel-label">GET</span>
-                                <span>{{ baseUri }}/api/collections/{{ collection.name }}</span>
+                                <span>{{ baseUri }}/api/{{ collection.name }}</span>
                                 <span class="pull-right">Gets a list of {{ collection.name }} items.</span>
                             </a>
                         </div>
@@ -50,7 +50,7 @@
                         <div class="panel-heading">
                             <a class="accordion-toggle text-info" data-toggle="collapse" data-parent="#accordion" href="#collapseGet">
                                 <span class="label label-info panel-label">GET</span>
-                                <span>{{ baseUri }}/api/collections/{{ collection.name }}/{_id}</span>
+                                <span>{{ baseUri }}/api/{{ collection.name }}/{_id}</span>
                                 <span class="pull-right">Gets an individual {{ collection.name }} item.</span>
                             </a>
                         </div>
@@ -63,7 +63,7 @@
                         <div class="panel-heading">
                             <a class="accordion-toggle text-success" data-toggle="collapse" data-parent="#accordion" href="#collapseCreate">
                                 <span class="label label-success panel-label">POST</span>
-                                <span>{{ baseUri }}/api/collections/{{ collection.name }}</span>
+                                <span>{{ baseUri }}/api/{{ collection.name }}</span>
                                 <span class="pull-right">Creates a new {{ collection.name }} item.</span>
                             </a>
                         </div>
