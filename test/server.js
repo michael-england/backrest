@@ -325,8 +325,6 @@ describe('API', function() {
 	});
 });
 
-
-
 // 	// Upload an image
 // 	it ('upload', function (done) {
 // 		request.post('http://localhost:8080/')
