@@ -1,13 +1,11 @@
 'use strict';
 
-var mongojs = require('mongojs');
 var http = require('http');
 var https = require('https');
 var events = require('events');
 var libpath = require('path');
 var fs = require('./lib/fs');
 var url = require('url');
-var mime = require('mime');
 var util = require('util');
 var users = require('./lib/users');
 var email = require('./node_modules/emailjs/email');
@@ -64,9 +62,6 @@ var MongoConductor = function() {
 
         // start the http server
         this.httpStart();
-
-        // connect to the database
-        this.db = mongojs(this.settings.databaseUrl, this.collections);
       } catch (ex) {
         
         // handle error
@@ -165,6 +160,8 @@ var MongoConductor = function() {
 
     var uri = url.parse(request.url, true);
     if (uri.query.callback) {
+
+      // jsonp response
       response.writeHead(200, {
         'Content-Type': 'text/javascript',
         'Access-Control-Allow-Origin': '*'
@@ -172,6 +169,7 @@ var MongoConductor = function() {
       response.end(uri.query.callback + '(' + JSON.stringify(result) + ')');
     } else {
 
+      // json response
       response.writeHead(200, {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*'
@@ -189,12 +187,16 @@ var MongoConductor = function() {
 
     var query = url.parse(request.url, true).query;
     if (query.callback) {
+      
+      // jsonp response
       response.writeHead(200, {
         'Content-Type': 'text/javascript',
         'Access-Control-Allow-Origin': '*'
       });
       response.end(query.callback + '(' + JSON.stringify(json) + ')');
     } else {
+
+      // json response
       response.writeHead(200, {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*'

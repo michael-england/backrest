@@ -29,7 +29,7 @@
         "lastLoginField": "_lastLogin",
         "confirmEmailField": "isConfirmed",
         "confirmEmailTimeout": 1440,
-        "passwordResetToken": {
+        "resetPasswordToken": {
             "timeout": 120,
             "algorithm": "aes-256-cbc",
             "password": "012345678"

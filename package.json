@@ -8,12 +8,12 @@
 		"node": "0.8.x"
 	},
 	"version": "0.0.1-19",
-	"author": "Michael England <michael@element8labs.com>",
-	"description": "MongoConductor is JSON-RPC server for MongoDB written in node.js and can be accessed through HTTP or HTTPS.",
+	"author": "Michael England <michael@8bitfactory.co>",
+	"description": "RESTful API and ODM manager for MongoDB",
 	"contributors": [
 		{
 			"name": "Michael England",
-			"email": "michael@element8labs.com"
+			"email": "michael@8bitfactory.co"
 		}
 	],
 	"private": true,
