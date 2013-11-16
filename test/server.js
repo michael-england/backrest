@@ -90,14 +90,14 @@ var tests = [{
 	'data': {
 		'firstName': 'FirstNameUpdate',
 		'lastName': 'LastNameUpdate',
-		'email': 'michael@8bitfactory.co'
+		'email': 'emailUpdate@8bitfactory.co'
 	},
 	'assertions': function(result, done) {
 		expect(result.salt).to.be(undefined);
 		expect(result.hash).to.be(undefined);
 		expect(result.firstName).to.equal('FirstNameUpdate');
 		expect(result.lastName).to.equal('LastNameUpdate');
-		expect(result.email).to.equal('michael@8bitfactory.co');
+		expect(result.email).to.equal('emailUpdate@8bitfactory.co');
 		done();
 	}
 }, {
@@ -117,7 +117,7 @@ var tests = [{
 		expect(result.hash).to.be(undefined);
 		expect(result.firstName).to.equal('FirstNameUpdate');
 		expect(result.lastName).to.equal('LastNameUpdate');
-		expect(result.email).to.equal('michael@8bitfactory.co');
+		expect(result.email).to.equal('emailUpdate@8bitfactory.co');
 		done();
 	}
 }, {
@@ -125,7 +125,7 @@ var tests = [{
 	'url': 'http://localhost:8080/api/users/reset-password-request',
 	'description': 'should request a password reset',
 	'data': {
-		'email': 'michael@8bitfactory.co'
+		'email': 'emailUpdate@8bitfactory.co'
 	},
 	'assertions': function(result, done) {
 		expect(result).to.be(true);
@@ -150,7 +150,7 @@ var tests = [{
 	'url': 'http://localhost:8080/api/users/confirm-email-request',
 	'description': 'should request an email confirmation',
 	'data': {
-		'email': 'michael@8bitfactory.co'
+		'email': 'emailUpdate@8bitfactory.co'
 	},
 	'assertions': function(result, done) {
 		expect(result).to.be(true);
@@ -178,7 +178,7 @@ var tests = [{
 		expect(result.hash).to.be(undefined);
 		expect(result.firstName).to.equal('FirstNameUpdate');
 		expect(result.lastName).to.equal('LastNameUpdate');
-		expect(result.email).to.equal('michael@8bitfactory.co');
+		expect(result.email).to.equal('emailUpdate@8bitfactory.co');
 		done();
 	}
 }, {
@@ -213,7 +213,7 @@ var tests = [{
 		expect(result.hash).to.be(undefined);
 		expect(result.firstName).to.equal('FirstNameUpdate');
 		expect(result.lastName).to.equal('LastNameUpdate');
-		expect(result.email).to.equal('michael@8bitfactory.co');
+		expect(result.email).to.equal('emailUpdate@8bitfactory.co');
 		done();
 	}
 }];
@@ -239,7 +239,7 @@ describe('API', function() {
 		// remove existing test user
 		db.users.remove({
 			'email': {
-				'$in': ['emailCreate@8bitfactory.co', 'michael@8bitfactory.co']
+				'$in': ['emailCreate@8bitfactory.co', 'emailUpdate@8bitfactory.co']
 			}
 		}, function(error, result) {
 			done();
