@@ -82,9 +82,7 @@
         }
     },
     "paths": {
-        "uploads": "./",
-        "events": "./events.js",
-        "customValidators": "./customValidators.js"
+        "uploads": "./"
     },
     "session": {
         "store": {

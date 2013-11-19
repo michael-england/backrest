@@ -55,11 +55,6 @@ var MongoConductor = function() {
           this.loadMail('errorEmail');
         }
 
-        // register validators
-        if (this.settings.paths.customValidators !== undefined) {
-          this.customValidators = require(this.settings.paths.customValidators);
-        }
-
         // start the http server
         this.httpStart();
       } catch (ex) {
