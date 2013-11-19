@@ -22,7 +22,6 @@
         }
     },
     "authentication": {
-        "collection": "users",
         "usernameField": "email",
         "passwordField": "password",
         "rolesField": "roles",
