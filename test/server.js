@@ -38,7 +38,7 @@ var sessionCookie;
 var _id;
 var tests = [{
 	'method': 'POST',
-	'url': 'http://localhost:8080/api/users',
+	'url': 'http://localhost/api/users',
 	'description': 'should create a new user',
 	'data': {
 		'firstName': 'FirstNameCreate',
@@ -69,7 +69,7 @@ var tests = [{
 	}
 }, {
 	'method': 'POST',
-	'url': 'http://localhost:8080/api/users/login',
+	'url': 'http://localhost/api/users/login',
 	'description': 'should login a user',
 	'data': {
 		'email': 'emailCreate@8bitfactory.co',
@@ -85,7 +85,7 @@ var tests = [{
 	}
 }, {
 	'method': 'PUT',
-	'url': 'http://localhost:8080/api/users/{_id}',
+	'url': 'http://localhost/api/users/{_id}',
 	'description': 'should update a user by id',
 	'data': {
 		'firstName': 'FirstNameUpdate',
@@ -102,7 +102,7 @@ var tests = [{
 	}
 }, {
 	'method': 'GET',
-	'url': 'http://localhost:8080/api/users',
+	'url': 'http://localhost/api/users',
 	'description': 'should get a list of users',
 	'assertions': function(result, done) {
 		expect(result.data.length).to.be.greaterThan(0);
@@ -110,7 +110,7 @@ var tests = [{
 	}
 }, {
 	'method': 'GET',
-	'url': 'http://localhost:8080/api/users/{_id}',
+	'url': 'http://localhost/api/users/{_id}',
 	'description': 'should get a user by id',
 	'assertions': function(result, done) {
 		expect(result.salt).to.be(undefined);
@@ -122,7 +122,7 @@ var tests = [{
 	}
 }, {
 	'method': 'POST',
-	'url': 'http://localhost:8080/api/users/reset-password-request',
+	'url': 'http://localhost/api/users/reset-password-request',
 	'description': 'should request a password reset',
 	'data': {
 		'email': 'emailUpdate@8bitfactory.co'
@@ -133,7 +133,7 @@ var tests = [{
 	}
 }, {
 	'method': 'POST',
-	'url': 'http://localhost:8080/api/users/reset-password',
+	'url': 'http://localhost/api/users/reset-password',
 	'description': 'should reset a password',
 	'data': function () {
 		return {
@@ -147,7 +147,7 @@ var tests = [{
 	}
 }, {
 	'method': 'POST',
-	'url': 'http://localhost:8080/api/users/confirm-email-request',
+	'url': 'http://localhost/api/users/confirm-email-request',
 	'description': 'should request an email confirmation',
 	'data': {
 		'email': 'emailUpdate@8bitfactory.co'
@@ -158,7 +158,7 @@ var tests = [{
 	}
 }, {
 	'method': 'POST',
-	'url': 'http://localhost:8080/api/users/confirm-email',
+	'url': 'http://localhost/api/users/confirm-email',
 	'description': 'should confirm an email',
 	'data': function () {
 		return {
@@ -171,7 +171,7 @@ var tests = [{
 	}
 }, {
 	'method': 'GET',
-	'url': 'http://localhost:8080/api/users/current',
+	'url': 'http://localhost/api/users/current',
 	'description': 'should get the currently logged in user',
 	'assertions': function(result, done) {
 		expect(result.salt).to.be(undefined);
@@ -183,8 +183,8 @@ var tests = [{
 	}
 }, {
 	'method': 'POST',
-	'url': 'http://localhost:8080/api/users/current/is-in-role',
-	'description': 'should check wheter a user is in a role',
+	'url': 'http://localhost/api/users/current/is-in-role',
+	'description': 'should check whether a user is in a role',
 	'data': {
 		'role': 'admin'
 	},
@@ -194,7 +194,7 @@ var tests = [{
 	}
 }, {
 	'method': 'POST',
-	'url': 'http://localhost:8080/api/users/current/change-password',
+	'url': 'http://localhost/api/users/current/change-password',
 	'description': 'should change the currently logged in user password',
 	'data': {
 		'oldPassword': 'password',
@@ -206,7 +206,7 @@ var tests = [{
 	}
 }, {
 	'method': 'DELETE',
-	'url': 'http://localhost:8080/api/users/{_id}',
+	'url': 'http://localhost/api/users/{_id}',
 	'description': 'should delete a user by id',
 	'assertions': function(result, done) {
 		expect(result.salt).to.be(undefined);
@@ -220,7 +220,7 @@ var tests = [{
 
 describe('Load Static File', function() {
 	it('Index.html can be loaded.', function(done) {
-		request.get('http://localhost:8080/').end(function(res) {
+		request.get('http://localhost/').end(function(res) {
 			expect(res).to.exist;
 			expect(res.status).to.equal(200);
 			expect(res.text).to.contain('MongoConductor');
@@ -327,7 +327,7 @@ describe('API', function() {
 
 // 	// Upload an image
 // 	it ('upload', function (done) {
-// 		request.post('http://localhost:8080/')
+// 		request.post('http://localhost/')
 // 			.set('Cookie', sessionCookie)
 // 			.field('_id', userSave._id)
 // 			.field('collection', 'users')

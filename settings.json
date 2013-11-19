@@ -22,12 +22,6 @@
         }
     },
     "authentication": {
-        "usernameField": "email",
-        "passwordField": "password",
-        "rolesField": "roles",
-        "lastLoginField": "_lastLogin",
-        "confirmEmailField": "isConfirmed",
-        "confirmEmailTimeout": 1440,
         "resetPasswordToken": {
             "timeout": 120,
             "algorithm": "aes-256-cbc",
