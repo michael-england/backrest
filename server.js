@@ -18,18 +18,31 @@ var MongoStore = require('connect-mongo')(express);
 
 var MongoConductor = function() {
   events.EventEmitter.call(this);
-  this.path = '.';
   this.uploads = require('./lib/uploads');
   this.app = express();
 
   this.init = function() {
-    this.settingsFilename = libpath.join(this.path, 'settings.json');
-    fs.exists(this.settingsFilename, this.libpathExists.bind(this));
-  };
+    var settingsFilename = './settings.json';
+    if (fs.existsSync(settingsFilename)) {
 
-  this.libpathExists = function(exists) {
-    if (exists) {
-      fs.readFile(this.settingsFilename, 'binary', this.fsReadFile.bind(this));
+      // read the settings file
+      var file = fs.readFileSync(settingsFilename, {
+        'encoding': 'binary'
+      });
+
+      // parse file to this.settings object
+      this.settings = JSON.parse(file);
+
+      // create mail server
+      if (this.settings.mail) {
+        this.mail = email.server.connect(this.settings.mail.server);
+        this.loadMail('confirmEmail');
+        this.loadMail('passwordResetRequest');
+        this.loadMail('errorEmail');
+      }
+
+      // start the http server
+      this.httpStart();
     } else {
 
       // handle error
@@ -40,59 +53,23 @@ var MongoConductor = function() {
     }
   };
 
-  this.fsReadFile = function(error, file) {
-    if (!error) {
-      try {
-        // parse file to this.settings object
-        this.settings = JSON.parse(file);
-
-        // create mail server
-        if (this.settings.mail) {
-          this.mail = email.server.connect(this.settings.mail.server);
-
-          this.loadMail('confirmEmail');
-          this.loadMail('passwordResetRequest');
-          this.loadMail('errorEmail');
-        }
-
-        // start the http server
-        this.httpStart();
-      } catch (ex) {
-        
-        // handle error
-        throw ex;
-
-        // exit the application
-        process.exit();
-      }
-    } else {
-
-      // exit the application
-      process.exit();
-    }
-  };
-
   this.loadMail = function(key) {
 
-    fs.exists(this.settings.mail.messages[key].text, function(exists) {
-      if (exists) {
-        fs.readFile(this.settings.mail.messages[key].text, 'binary', function(errorMessage, fileMessage) {
-          this.settings.mail.messages[key].text = fileMessage;
-        }.bind(this));
-      }
-    }.bind(this));
+    // text version
+    var message = this.settings.mail.messages[key];
+    if (fs.existsSync(message.text)) {
+      message.text = fs.readFileSync(message.text, {
+        'encoding': 'binary'
+      });
+    }
 
-    if (this.settings.mail.messages[key].attachment) {
-      if (this.settings.mail.messages[key].attachment[0]) {
-        if (this.settings.mail.messages[key].attachment[0].alternative === true) {
-          fs.exists(this.settings.mail.messages[key].attachment[0].data, function(exists) {
-            if (exists) {
-              fs.readFile(this.settings.mail.messages[key].attachment[0].data, 'binary', function(errorAttachment, fileAttachment) {
-                this.settings.mail.messages[key].attachment[0].data = fileAttachment;
-              }.bind(this));
-            }
-          }.bind(this));
-        }
+    // html version
+    var attachment = message.attachment;
+    if (attachment && attachment[0] && attachment[0].alternative === true) {
+      if (fs.existsSync(attachment[0].data)) {
+        attachment[0].data = fs.readFileSync(attachment[0].data, {
+          'encoding': 'binary'
+        });
       }
     }
   };
@@ -173,7 +150,7 @@ var MongoConductor = function() {
     }
   };
 
-  this.error = function(request, response, message) {
+  this.error = function(request, response, message, statusCode) {
 
     // Internal error occurred, create internal error response
     var json = {
@@ -182,9 +159,9 @@ var MongoConductor = function() {
 
     var query = url.parse(request.url, true).query;
     if (query.callback) {
-      
+
       // jsonp response
-      response.writeHead(200, {
+      response.writeHead(statusCode || 200, {
         'Content-Type': 'text/javascript',
         'Access-Control-Allow-Origin': '*'
       });
@@ -192,7 +169,7 @@ var MongoConductor = function() {
     } else {
 
       // json response
-      response.writeHead(200, {
+      response.writeHead(statusCode || 200, {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*'
       });
