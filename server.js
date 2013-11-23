@@ -3,17 +3,12 @@
 var http = require('http');
 var https = require('https');
 var events = require('events');
-var libpath = require('path');
 var fs = require('./lib/fs');
 var url = require('url');
 var util = require('util');
-var users = require('./lib/users');
 var email = require('./node_modules/emailjs/email');
-var uploads = require('./lib/uploads');
-var collections = require('./lib/collections');
-var error = require('./lib/error');
-var render = require('./lib/render');
 var express = require('express');
+var mongoose = require('mongoose');
 var MongoStore = require('connect-mongo')(express);
 
 var MongoConductor = function() {
@@ -33,16 +28,25 @@ var MongoConductor = function() {
       // parse file to this.settings object
       this.settings = JSON.parse(file);
 
-      // create mail server
-      if (this.settings.mail) {
-        this.mail = email.server.connect(this.settings.mail.server);
-        this.loadMail('confirmEmail');
-        this.loadMail('passwordResetRequest');
-        this.loadMail('errorEmail');
-      }
+      // init mongoose
+      this.mongoose = mongoose;
+      this.mongoose.connect(this.settings.databaseUrl);
+      this.mongoose.set('cache', false);
 
-      // start the http server
-      this.httpStart();
+      // perform initial setup
+      if (this.settings.setup && !this.settings.setup.completed) {
+        require('./lib/setup')(this, function() {
+
+          // start the servers
+          this.smtpStart();
+          this.httpStart();
+        }.bind(this));
+      } else {
+
+        // start the servers
+        this.smtpStart();
+        this.httpStart();
+      }
     } else {
 
       // handle error
@@ -74,7 +78,18 @@ var MongoConductor = function() {
     }
   };
 
-  this.httpStart = function() {
+  this.smtpStart = function() {
+
+    // create mail server
+    if (this.settings.mail) {
+      this.mail = email.server.connect(this.settings.mail.server);
+      this.loadMail('confirmEmail');
+      this.loadMail('passwordResetRequest');
+      this.loadMail('errorEmail');
+    }
+  }
+
+  this.httpStart = function(callback) {
 
     // define the session
     var session = {};
@@ -96,11 +111,11 @@ var MongoConductor = function() {
     this.app.use(express.session(session));
     this.app.use('/', express.static('./public'));
     this.app.use('/uploads', './uploads');
-    this.app.use(error(this));
-    this.app.use(render(this));
-    this.app.use(users(this));
-    this.app.use(uploads(this));
-    this.app.use(collections(this));
+    this.app.use(require('./lib/error')(this));
+    this.app.use(require('./lib/render')(this));
+    this.app.use(require('./lib/users')(this));
+    this.app.use(require('./lib/uploads')(this));
+    this.app.use(require('./lib/collections')(this));
 
     if (this.settings.https) {
       if (this.settings.https.enabled) {
@@ -111,8 +126,17 @@ var MongoConductor = function() {
             cert: fs.readFileSync(this.settings.https.certificate).toString()
           };
 
-          https.createServer(options, this.app).listen(this.settings.https.port || 443);
-          console.log('HTTPS Server running on port ' + (this.settings.https.port || 443) + '.');
+          https.createServer(options, this.app).listen(this.settings.https.port || 443, function() {
+            console.log('HTTPS Server running on port ' + (this.settings.https.port || 443) + '.');
+
+            if (this.settings.http) {
+              if (this.settings.http.enabled) {
+                http.createServer(this.app).listen(this.settings.http.port || 80, undefined, function() {
+                  console.log('HTTP Server running on port ' + (this.settings.http.port || 80) + '.');
+                }.bind(this));
+              }
+            }
+          }.bind(this));
         } else {
           throw new Error('HTTPS credientials are not valid.');
         }
@@ -129,51 +153,58 @@ var MongoConductor = function() {
   };
 
   this.result = function(request, response, result) {
+    if (response) {
+      var uri = url.parse(request.url, true);
+      if (uri.query.callback) {
 
-    var uri = url.parse(request.url, true);
-    if (uri.query.callback) {
+        // jsonp response
+        response.writeHead(200, {
+          'Content-Type': 'text/javascript',
+          'Access-Control-Allow-Origin': '*'
+        });
+        response.end(uri.query.callback + '(' + JSON.stringify(result) + ')');
+      } else {
 
-      // jsonp response
-      response.writeHead(200, {
-        'Content-Type': 'text/javascript',
-        'Access-Control-Allow-Origin': '*'
-      });
-      response.end(uri.query.callback + '(' + JSON.stringify(result) + ')');
+        // json response
+        response.writeHead(200, {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        });
+        response.end(JSON.stringify(result));
+      }
     } else {
-
-      // json response
-      response.writeHead(200, {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*'
-      });
-      response.end(JSON.stringify(result));
+      return result;
     }
   };
 
   this.error = function(request, response, message, statusCode) {
+    if (response) {
 
-    // Internal error occurred, create internal error response
-    var json = {
-      'error': message
-    };
+      // Internal error occurred, create internal error response
+      var json = {
+        'error': message
+      };
 
-    var query = url.parse(request.url, true).query;
-    if (query.callback) {
+      var query = url.parse(request.url, true).query;
+      if (query.callback) {
 
-      // jsonp response
-      response.writeHead(statusCode || 200, {
-        'Content-Type': 'text/javascript',
-        'Access-Control-Allow-Origin': '*'
-      });
-      response.end(query.callback + '(' + JSON.stringify(json) + ')');
+        // jsonp response
+        response.writeHead(statusCode || 200, {
+          'Content-Type': 'text/javascript',
+          'Access-Control-Allow-Origin': '*'
+        });
+        response.end(query.callback + '(' + JSON.stringify(json) + ')');
+      } else {
+
+        // json response
+        response.writeHead(statusCode || 200, {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        });
+        response.end(JSON.stringify(json));
+      }
     } else {
-
-      // json response
-      response.writeHead(statusCode || 200, {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*'
-      });
-      response.end(JSON.stringify(json));
+      return message;
     }
   };
 };

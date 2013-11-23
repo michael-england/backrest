@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "appPath": "public",
   "dependencies": {
-    "angular": "~1.0.8",
+    "angular": "1.0.8",
     "json3": "~3.2.4",
     "jquery": "~1.9.1",
     "bootstrap": ">= 3.0.0",

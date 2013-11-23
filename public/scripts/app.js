@@ -51,7 +51,7 @@ angular.module('mongoConductorApp', ['$strap.directives', 'ui', 'ui.keypress', '
       redirectTo: '/'
     });
 }).run(function($rootScope, $location, api) {
-  $rootScope.user = {};
+  $rootScope.user = undefined;
 
   $rootScope.logout = function() {
     api.logout({
