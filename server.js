@@ -189,7 +189,7 @@ var MongoConductor = function() {
       if (query.callback) {
 
         // jsonp response
-        response.writeHead(statusCode || 200, {
+        response.writeHead(200, {
           'Content-Type': 'text/javascript',
           'Access-Control-Allow-Origin': '*'
         });
