@@ -34,7 +34,7 @@ var MongoConductor = function() {
       this.mongoose.set('cache', false);
 
       // perform initial setup
-      if (this.settings.setup && !this.settings.setup.completed) {
+      if (this.settings.setup && !fs.existsSync('./INSTALLED')) {
         require('./lib/setup')(this, function() {
 
           // start the servers

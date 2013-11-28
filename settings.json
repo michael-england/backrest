@@ -2,7 +2,6 @@
 	"databaseUrl": "mongodb://localhost:27017/db",
 	"isDebug": true,
 	"setup": {
-		"completed": false,
 		"defaults": {
 			"roles": [
 				"admin",

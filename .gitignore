@@ -1,8 +1,10 @@
+INSTALLED
 uploads/
 .DS_Store
 certificate.pem
 certrequest.csr
 privatekey.pem
+
 
 *.sublime-project
 
