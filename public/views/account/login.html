@@ -5,16 +5,35 @@
             <div class="text-center">
                 <img src="/images/logo.png" alt="MongoConductor" />
             </div>
-            <form>
+            <form role="form" name="formLogin">
                 <fieldset>
                     <legend>Login</legend>
+                    
+                    <div>
+                        <!-- show only one error -->
+                        <div class="alert alert-danger" ng-show="formLogin.validationSummary.length == 1" ng-bind="formLogin.validationSummary[0]">
+                        </div>
+
+                        <!-- show a list of errors -->
+                        <div class="alert alert-danger" ng-show="formLogin.validationSummary.length > 1">
+                            <ul>
+                                <li ng-repeat="validation in formLogin.validationSummary" ng-bind="validation"></li>
+                            </ul>
+                        </div>
+
+                        <!-- show angular form validation -->
+                        <div class="alert alert-danger" ng-show="formLogin.$invalid && formLogin.submitted">
+                            Email address and password are both required.
+                        </div>
+                    </div>
+
                     <div class="form-group">
                         <label>Email address</label>
-                        <input type="text" class="form-control" placeholder="Enter email" ng-model="email">
+                        <input type="text" class="form-control" placeholder="Enter email" ng-model="email" ng-required="true">
                     </div>
                     <div class="form-group">
                         <label>Password</label>
-                        <input type="password" class="form-control" placeholder="Enter password" ng-model="password">
+                        <input type="password" class="form-control" placeholder="Enter password" ng-model="password" ng-required="true">
                         <p class="help-block"><a href="#">Forgot Password?</a>
                         </p>
                     </div>

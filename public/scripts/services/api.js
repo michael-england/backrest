@@ -28,7 +28,9 @@ angular.module('mongoConductorApp').factory('api', function($http) {
         'url': url,
         'data': options.document,
         'cache': false
-      }).success(options.success);
+      })
+      .success(options.success)
+      .error(options.error);
     },
 
     update: function(options) {
@@ -58,7 +60,9 @@ angular.module('mongoConductorApp').factory('api', function($http) {
         'url': url,
         'data': options.document,
         'cache': false
-      }).success(options.success);
+      })
+      .success(options.success)
+      .error(options.error);
     },
 
     read: function(options) {
@@ -98,7 +102,9 @@ angular.module('mongoConductorApp').factory('api', function($http) {
         'url': url,
         'params': params,
         'cache': false
-      }).success(options.success);
+      })
+      .success(options.success)
+      .error(options.error);
     },
 
     delete: function(options) {
@@ -123,7 +129,9 @@ angular.module('mongoConductorApp').factory('api', function($http) {
         'method': 'DELETE',
         'url': url,
         'cache': false
-      }).success(options.success);
+      })
+      .success(options.success)
+      .error(options.error);
     },
 
     login: function(options) {
@@ -148,7 +156,9 @@ angular.module('mongoConductorApp').factory('api', function($http) {
           'password': options.password
         },
         'cache': false
-      }).success(options.success);
+      })
+      .success(options.success)
+      .error(options.error);
     },
 
     logout: function(options) {
@@ -161,7 +171,9 @@ angular.module('mongoConductorApp').factory('api', function($http) {
         'method': 'GET',
         'url': '/api/users/logout',
         'cache': false
-      }).success(options.success);
+      })
+      .success(options.success)
+      .error(options.error);
     },
 
     current: function(options) {
@@ -174,7 +186,9 @@ angular.module('mongoConductorApp').factory('api', function($http) {
         'method': 'GET',
         'url': '/api/users/current',
         'cache': false
-      }).success(options.success);
+      })
+      .success(options.success)
+      .error(options.error);
     }
   };
 });
