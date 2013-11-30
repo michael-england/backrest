@@ -40,73 +40,73 @@ angular.module('mongoConductorApp').controller('UsersCtrl', function($scope, api
     'method': 'PUT',
     'url': $scope.baseUri + '/api/' + $scope.collection.name + '/{_id}',
     'description': 'Updates a user by id.',
-    'include': '/views/documentation.update.html'
+    'include': '/views/documentation/update.html'
   },{
     'key': 'collapseDelete',
     'method': 'DELETE',
     'url': $scope.baseUri + '/api/' + $scope.collection.name + '/{_id}',
     'description': 'Deletes a user.',
-    'include': '/views/documentation.delete.html'
+    'include': '/views/documentation/delete.html'
   },{
     'key': 'collapseList',
     'method': 'GET',
     'url': $scope.baseUri + '/api/' + $scope.collection.name,
     'description': 'Gets a list of users.',
-    'include': '/views/documentation.getlist.html'
+    'include': '/views/documentation/getlist.html'
   },{
     'key': 'collapseGet',
     'method': 'GET',
     'url': $scope.baseUri + '/api/' + $scope.collection.name + '/{_id}',
     'description': 'Gets an individual user by id.',
-    'include': '/views/documentation.get.html'
+    'include': '/views/documentation/get.html'
   },{
     'key': 'collapseCreate',
     'method': 'POST',
     'url': $scope.baseUri + '/api/' + $scope.collection.name,
     'description': 'Creates a new user.',
-    'include': '/views/documentation.create.html'
+    'include': '/views/documentation/create.html'
   },{
     'key': 'collapseResetPasswordRequest',
     'method': 'POST',
     'url': $scope.baseUri + '/api/' + $scope.collection.name + '/reset-password-request',
     'description': 'Sends a token to the provided email so a user can reset their password.',
-    'include': '/views/documentation.reset-password-request.html'
+    'include': '/views/documentation/reset-password-request.html'
   },{
     'key': 'collapseResetPassword',
     'method': 'POST',
     'url': $scope.baseUri + '/api/' + $scope.collection.name + '/reset-password',
     'description': 'Resets a user\'s password using a token previous requested.',
-    'include': '/views/documentation.reset-password.html'
+    'include': '/views/documentation/reset-password.html'
   },{
     'key': 'collapseRequestConfirmEmail',
     'method': 'POST',
-    'url': $scope.baseUri + '/api/' + $scope.collection.name + '/request-confirm-email',
+    'url': $scope.baseUri + '/api/' + $scope.collection.name + '/confirm-email-request',
     'description': 'Sends a token to the provided email so a user can confirm their account.',
-    'include': '/views/documentation.requestconfirm-email.html'
+    'include': '/views/documentation/confirm-email-request.html'
   },{
     'key': 'collapseConfirmEmail',
     'method': 'POST',
     'url': $scope.baseUri + '/api/' + $scope.collection.name + '/confirm-email',
     'description': 'Confirms a users account using a token sent to the user\'s email.',
-    'include': '/views/documentation.confirm-email.html'
+    'include': '/views/documentation/confirm-email.html'
   },{
     'key': 'collapseCurrent',
     'method': 'GET',
     'url': $scope.baseUri + '/api/' + $scope.collection.name + '/current',
     'description': 'Gets the currently logged in user.',
-    'include': '/views/documentation.current.html'
+    'include': '/views/documentation/current.html'
   },{
     'key': 'collapseCurrentIsInRole',
     'method': 'POST',
     'url': $scope.baseUri + '/api/' + $scope.collection.name + '/current/is-in-role',
     'description': 'Determines if the currently logged in user is in a role',
-    'include': '/views/documentation.current-is-in-role.html'
+    'include': '/views/documentation/current-is-in-role.html'
   },{
     'key': 'collapseCurrentChangePassword',
     'method': 'POST',
     'url': $scope.baseUri + '/api/' + $scope.collection.name + '/current/change-password',
     'description': 'Updates the current user\'s password',
-    'include': '/views/documentation.current-change-password.html'
+    'include': '/views/documentation/current-change-password.html'
   }];
 
   $scope.getColor = function (method) {
