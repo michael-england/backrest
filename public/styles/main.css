@@ -18,6 +18,10 @@
     width: 75%;
 }
 
+.display-inline {
+    display: inline;
+}
+
 .margin-top {
     margin-bottom: 10px;
 }
