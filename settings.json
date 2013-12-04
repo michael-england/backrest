@@ -44,10 +44,11 @@
 	},
 	"mail": {
 		"server": {
-			"user": "no-reply@example.com",
-			"password": "t#$tP@55!",
-			"host": "smtp.gmail.com",
-			"ssl": true
+			"user": "mongo-conductor-4620feb27d2500af",
+			"password": "8676bf0c249e85e2",
+			"host": "mailtrap.io",
+			"port": 2525,
+			"ssl": false
 		},
 		"messages": {
 			"passwordResetRequest": {
