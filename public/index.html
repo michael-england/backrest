@@ -63,7 +63,7 @@
                         <li ng-repeat="collection in collections">
                             <a ng-href="{{ '#/collections/' + collection._id}}">{{ collection.name }}</a>
                         </li>
-                        <li class="divider"></li>
+                        <li class="divider" ng-show="collections.length > 0"></li>
                         <li><a href="#/collections">Add Collection</a>
                         </li>
                     </ul>
