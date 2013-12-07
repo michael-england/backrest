@@ -1,12 +1,12 @@
 ![alt text][logo]
-[logo]: https://github.com/8bitfactory/mongoConductor/raw/master/public/images/logo.png "MongoConductor"
+[logo]: https://github.com/8bitfactory/backrest/raw/master/public/images/logo.png "Backrest"
 
-MongoConductor is a RESTful API server for [MongoDB](http://www.mongodb.org/).  It is written in [Node.js](http://nodejs.org/), [Express](http://expressjs.com/), [AngularJS](http://angularjs.org/), and utilizes [Mongoose](http://mongoosejs.com/) and [Twitter Bootstrap](http://getbootstrap.com).  Thanks to all these great projects and many others that make this project possible.
+Backrest is a noBackend RESTful API server.  It is written in [Node.js](http://nodejs.org/), [Express](http://expressjs.com/), [AngularJS](http://angularjs.org/), and utilizes [MongoDB](http://www.mongodb.org/), [Mongoose](http://mongoosejs.com/) and [Twitter Bootstrap](http://getbootstrap.com).  Thanks to all these great projects and many others that make this project possible.
 
 ##Installation
 ```
-  git clone http://github.com/8bitfactory/MongoConductor.git
-  cd MongoConductor
+  git clone http://github.com/8bitfactory/Backrest.git
+  cd Backrest
   npm install
   bower install
   node server.js

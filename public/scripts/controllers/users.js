@@ -1,5 +1,5 @@
 'use strict';
-angular.module('mongoConductorApp').controller('UsersCtrl', function($scope, api, odm) {
+angular.module('backrestApp').controller('UsersCtrl', function($scope, api, odm) {
 
   $scope.users = [];
   $scope.odm = odm;

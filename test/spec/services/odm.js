@@ -3,7 +3,7 @@
 describe('Service: odm', function () {
 
   // load the service's module
-  beforeEach(module('mongoConductorApp'));
+  beforeEach(module('backrestApp'));
 
   // instantiate service
   var odm;

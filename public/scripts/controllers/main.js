@@ -1,4 +1,4 @@
 'use strict';
 
-angular.module('mongoConductorApp')
+angular.module('backrestApp')
   .controller('MainCtrl', function($scope) {});

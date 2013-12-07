@@ -3,7 +3,7 @@
 describe('Controller: CollectionsCtrl', function () {
 
   // load the controller's module
-  beforeEach(module('mongoConductorApp'));
+  beforeEach(module('backrestApp'));
 
   var CollectionsCtrl,
     scope;

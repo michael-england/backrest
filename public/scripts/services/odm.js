@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('mongoConductorApp').service('odm', function odm() {
+angular.module('backrestApp').service('odm', function odm() {
 
   var from = function(fields, parent) {
     if (fields) {

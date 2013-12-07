@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('mongoConductorApp')
+angular.module('backrestApp')
   .controller('ReportsCtrl', function ($scope) {
     $scope.awesomeThings = [
       'HTML5 Boilerplate',

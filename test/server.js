@@ -43,7 +43,7 @@ var tests = [{
 	'data': {
 		'firstName': 'FirstNameCreate',
 		'lastName': 'LastNameCreate',
-		'email': 'emailCreate@8bitfactory.co',
+		'email': 'emailCreate@backrest.io',
 		'password': 'password'
 	},
 	'assertions': function(result, done) {
@@ -51,7 +51,7 @@ var tests = [{
 		expect(result.hash).to.be(undefined);
 		expect(result.firstName).to.equal('FirstNameCreate');
 		expect(result.lastName).to.equal('LastNameCreate');
-		expect(result.email).to.equal('emailCreate@8bitfactory.co');
+		expect(result.email).to.equal('emailCreate@backrest.io');
 
 		// connect to the database
 		var db = mongojs('db', ['users']);
@@ -72,7 +72,7 @@ var tests = [{
 	'url': 'http://localhost/api/users/login',
 	'description': 'should login a user',
 	'data': {
-		'email': 'emailCreate@8bitfactory.co',
+		'email': 'emailCreate@backrest.io',
 		'password': 'password'
 	},
 	'assertions': function(result, done) {
@@ -80,7 +80,7 @@ var tests = [{
 		expect(result.hash).to.be(undefined);
 		expect(result.firstName).to.equal('FirstNameCreate');
 		expect(result.lastName).to.equal('LastNameCreate');
-		expect(result.email).to.equal('emailCreate@8bitfactory.co');
+		expect(result.email).to.equal('emailCreate@backrest.io');
 		done();
 	}
 }, {
@@ -90,14 +90,14 @@ var tests = [{
 	'data': {
 		'firstName': 'FirstNameUpdate',
 		'lastName': 'LastNameUpdate',
-		'email': 'emailUpdate@8bitfactory.co'
+		'email': 'emailUpdate@backrest.io'
 	},
 	'assertions': function(result, done) {
 		expect(result.salt).to.be(undefined);
 		expect(result.hash).to.be(undefined);
 		expect(result.firstName).to.equal('FirstNameUpdate');
 		expect(result.lastName).to.equal('LastNameUpdate');
-		expect(result.email).to.equal('emailUpdate@8bitfactory.co');
+		expect(result.email).to.equal('emailUpdate@backrest.io');
 		done();
 	}
 }, {
@@ -117,7 +117,7 @@ var tests = [{
 		expect(result.hash).to.be(undefined);
 		expect(result.firstName).to.equal('FirstNameUpdate');
 		expect(result.lastName).to.equal('LastNameUpdate');
-		expect(result.email).to.equal('emailUpdate@8bitfactory.co');
+		expect(result.email).to.equal('emailUpdate@backrest.io');
 		done();
 	}
 }, {
@@ -125,7 +125,7 @@ var tests = [{
 	'url': 'http://localhost/api/users/reset-password-request',
 	'description': 'should request a password reset',
 	'data': {
-		'email': 'emailUpdate@8bitfactory.co'
+		'email': 'emailUpdate@backrest.io'
 	},
 	'assertions': function(result, done) {
 		expect(result).to.be(true);
@@ -150,7 +150,7 @@ var tests = [{
 	'url': 'http://localhost/api/users/confirm-email-request',
 	'description': 'should request an email confirmation',
 	'data': {
-		'email': 'emailUpdate@8bitfactory.co'
+		'email': 'emailUpdate@backrest.io'
 	},
 	'assertions': function(result, done) {
 		expect(result).to.be(true);
@@ -178,7 +178,7 @@ var tests = [{
 		expect(result.hash).to.be(undefined);
 		expect(result.firstName).to.equal('FirstNameUpdate');
 		expect(result.lastName).to.equal('LastNameUpdate');
-		expect(result.email).to.equal('emailUpdate@8bitfactory.co');
+		expect(result.email).to.equal('emailUpdate@backrest.io');
 		done();
 	}
 }, {
@@ -213,7 +213,7 @@ var tests = [{
 		expect(result.hash).to.be(undefined);
 		expect(result.firstName).to.equal('FirstNameUpdate');
 		expect(result.lastName).to.equal('LastNameUpdate');
-		expect(result.email).to.equal('emailUpdate@8bitfactory.co');
+		expect(result.email).to.equal('emailUpdate@backrest.io');
 		done();
 	}
 }];
@@ -223,7 +223,7 @@ describe('Load Static File', function() {
 		request.get('http://localhost/').end(function(res) {
 			expect(res).to.exist;
 			expect(res.status).to.equal(200);
-			expect(res.text).to.contain('MongoConductor');
+			expect(res.text).to.contain('Backrest');
 			done();
 		});
 	});
@@ -239,7 +239,7 @@ describe('API', function() {
 		// remove existing test user
 		db.users.remove({
 			'email': {
-				'$in': ['emailCreate@8bitfactory.co', 'emailUpdate@8bitfactory.co']
+				'$in': ['emailCreate@backrest.io', 'emailUpdate@backrest.io']
 			}
 		}, function(error, result) {
 			done();

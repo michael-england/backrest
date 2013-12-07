@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('mongoConductorApp').controller('AccountLoginCtrl', function($scope, $location, api) {
+angular.module('backrestApp').controller('AccountLoginCtrl', function($scope, $location, api) {
   $scope.login = function() {
 
     // mark the form as being submitted

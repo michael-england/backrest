@@ -1,5 +1,5 @@
 {
-  "name": "mongoConductor",
+  "name": "backrest",
   "version": "0.0.0",
   "appPath": "public",
   "dependencies": {

@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('mongoConductorApp').factory('api', function($http) {
+angular.module('backrestApp').factory('api', function($http) {
 
   // Public API here
   return {

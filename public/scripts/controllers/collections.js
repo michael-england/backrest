@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('mongoConductorApp').controller('CollectionsCtrl', function($scope, $routeParams, $parse, api, odm) {
+angular.module('backrestApp').controller('CollectionsCtrl', function($scope, $routeParams, $parse, api, odm) {
 
   Array.prototype.naturalSort = function() {
     var a, b, a1, b1, rx = /(\d+)|(\D+)/g,

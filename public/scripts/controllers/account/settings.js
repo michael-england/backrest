@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('mongoConductorApp').controller('AccountSettingsCtrl', function($scope, $rootScope, api) {
+angular.module('backrestApp').controller('AccountSettingsCtrl', function($scope, $rootScope, api) {
   $scope.save = function() {
     api.update({
       user: $rootScope.user,

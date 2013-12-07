@@ -1,5 +1,5 @@
 'use strict';
-angular.module('mongoConductorApp').controller('RolesCtrl', function($scope, api, odm) {
+angular.module('backrestApp').controller('RolesCtrl', function($scope, api, odm) {
 
   $scope.$root.roles = [];
 

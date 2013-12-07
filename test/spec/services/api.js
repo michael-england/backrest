@@ -3,7 +3,7 @@
 describe('Service: api', function () {
 
   // load the service's module
-  beforeEach(module('mongoConductorApp'));
+  beforeEach(module('backrestApp'));
 
   // instantiate service
   var api;

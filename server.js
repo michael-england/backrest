@@ -11,7 +11,7 @@ var express = require('express');
 var mongoose = require('mongoose');
 var MongoStore = require('connect-mongo')(express);
 
-var MongoConductor = function() {
+var Backrest = function() {
   events.EventEmitter.call(this);
   this.uploads = require('./lib/uploads');
   this.app = express();
@@ -209,7 +209,7 @@ var MongoConductor = function() {
   };
 };
 
-util.inherits(MongoConductor, events.EventEmitter);
+util.inherits(Backrest, events.EventEmitter);
 
-var mongoConductor = new MongoConductor();
-mongoConductor.init();
+var backrest = new Backrest();
+backrest.init();

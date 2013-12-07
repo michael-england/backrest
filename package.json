@@ -1,6 +1,6 @@
 {
-	"name": "MongoConductor",
-	"subdomain": "mongo-conductor",
+	"name": "Backrest",
+	"subdomain": "Backrest",
 	"scripts": {
 		"start": "server.js"
 	},

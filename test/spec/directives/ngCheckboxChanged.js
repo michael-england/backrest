@@ -3,7 +3,7 @@
 describe('Directive: ngCheckboxChanged', function () {
 
   // load the directive's module
-  beforeEach(module('mongoConductorApp'));
+  beforeEach(module('backrestApp'));
 
   var element,
     scope;

@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('mongoConductorApp', ['$strap.directives', 'ui', 'ui.keypress', 'ui.event', 'ui.gravatar', 'infinite-scroll']).config(function($routeProvider) {
+angular.module('backrestApp', ['$strap.directives', 'ui', 'ui.keypress', 'ui.event', 'ui.gravatar', 'infinite-scroll']).config(function($routeProvider) {
 
   $routeProvider
     .when('/', {
