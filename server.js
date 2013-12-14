@@ -4,7 +4,7 @@
   var http = require('http');
   var https = require('https');
   var events = require('events');
-  var fs = require('./lib/fs');
+  var fs = require('fs');
   var url = require('url');
   var util = require('util');
   var email = require('./node_modules/emailjs/email');
@@ -14,7 +14,6 @@
 
   var Backrest = function() {
     events.EventEmitter.call(this);
-    this.uploads = require('./lib/uploads');
     this.app = express();
 
     this.init = function() {
@@ -111,11 +110,8 @@
       this.app.use(express.cookieParser());
       this.app.use(express.session(session));
       this.app.use('/', express.static('./public'));
-      this.app.use('/uploads', './uploads');
       this.app.use(require('./lib/error')(this));
-      this.app.use(require('./lib/render')(this));
       this.app.use(require('./lib/users')(this));
-      this.app.use(require('./lib/uploads')(this));
       this.app.use(require('./lib/collections')(this));
 
       if (this.settings.https) {
