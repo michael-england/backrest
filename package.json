@@ -1,6 +1,6 @@
 {
-	"name": "Backrest",
-	"subdomain": "Backrest",
+	"name": "br",
+	"subdomain": "backrest",
 	"version": "0.0.1-19",
 	"author": "Michael England <michael@8bitfactory.co>",
 	"description": "The noBackend RESTful API.",
@@ -12,7 +12,7 @@
 		"br" : "./br.js" 
 	},
 	"engines": {
-		"node": "0.8.x"
+		"node": "0.10.x"
 	},
 	"repository": { 
 		"type" : "git",
@@ -24,7 +24,6 @@
 			"email": "michael@8bitfactory.co"
 		}
 	],
-	"private": true,
 	"dependencies": {
 		"emailjs": "0.2.x",
 		"eyes": "0.1.x",
