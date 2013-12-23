@@ -18,9 +18,30 @@ var rmdir = function(path) {
 	}
 };
 
+var settingsFilename = '../settings.json';
+var settings;
+if (fs.existsSync(settingsFilename)) {
+  // read the settings file
+  var file = fs.readFileSync(settingsFilename, {
+	'encoding': 'binary'
+  });
+
+  // parse file to this.settings object
+  settings = JSON.parse(file);
+} else {
+
+  // default settings
+  settings = {
+    'http': {
+      'port': 80
+    }
+  };
+}
+
+
 var generateToken = function (timeout, algorithm, password, _id) {
 
-	// determine expiration
+  // determine expiration
   var expiration = new Date();
   expiration.setMinutes(expiration.getMinutes() + timeout);
 
@@ -38,7 +59,7 @@ var sessionCookie;
 var _id;
 var tests = [{
 	'method': 'POST',
-	'url': 'http://localhost/api/users',
+	'url': 'http://localhost:' + settings.http.port + '/api/users',
 	'description': 'should create a new user',
 	'data': {
 		'firstName': 'FirstNameCreate',
@@ -69,7 +90,7 @@ var tests = [{
 	}
 }, {
 	'method': 'POST',
-	'url': 'http://localhost/api/users/login',
+	'url': 'http://localhost:' + settings.http.port + '/api/users/login',
 	'description': 'should login a user',
 	'data': {
 		'email': 'emailCreate@backrest.io',
@@ -85,7 +106,7 @@ var tests = [{
 	}
 }, {
 	'method': 'PUT',
-	'url': 'http://localhost/api/users/{_id}',
+	'url': 'http://localhost:' + settings.http.port + '/api/users/{_id}',
 	'description': 'should update a user by id',
 	'data': {
 		'firstName': 'FirstNameUpdate',
@@ -102,7 +123,7 @@ var tests = [{
 	}
 }, {
 	'method': 'GET',
-	'url': 'http://localhost/api/users',
+	'url': 'http://localhost:' + settings.http.port + '/api/users',
 	'description': 'should get a list of users',
 	'assertions': function(result, done) {
 		expect(result.data.length).to.be.greaterThan(0);
@@ -110,7 +131,7 @@ var tests = [{
 	}
 }, {
 	'method': 'GET',
-	'url': 'http://localhost/api/users/{_id}',
+	'url': 'http://localhost:' + settings.http.port + '/api/users/{_id}',
 	'description': 'should get a user by id',
 	'assertions': function(result, done) {
 		expect(result.salt).to.be(undefined);
@@ -122,7 +143,7 @@ var tests = [{
 	}
 }, {
 	'method': 'POST',
-	'url': 'http://localhost/api/users/reset-password-request',
+	'url': 'http://localhost:' + settings.http.port + '/api/users/reset-password-request',
 	'description': 'should request a password reset',
 	'data': {
 		'email': 'emailUpdate@backrest.io'
@@ -133,7 +154,7 @@ var tests = [{
 	}
 }, {
 	'method': 'POST',
-	'url': 'http://localhost/api/users/reset-password',
+	'url': 'http://localhost:' + settings.http.port + '/api/users/reset-password',
 	'description': 'should reset a password',
 	'data': function () {
 		return {
@@ -147,7 +168,7 @@ var tests = [{
 	}
 }, {
 	'method': 'POST',
-	'url': 'http://localhost/api/users/confirm-email-request',
+	'url': 'http://localhost:' + settings.http.port + '/api/users/confirm-email-request',
 	'description': 'should request an email confirmation',
 	'data': {
 		'email': 'emailUpdate@backrest.io'
@@ -158,7 +179,7 @@ var tests = [{
 	}
 }, {
 	'method': 'POST',
-	'url': 'http://localhost/api/users/confirm-email',
+	'url': 'http://localhost:' + settings.http.port + '/api/users/confirm-email',
 	'description': 'should confirm an email',
 	'data': function () {
 		return {
@@ -171,7 +192,7 @@ var tests = [{
 	}
 }, {
 	'method': 'GET',
-	'url': 'http://localhost/api/users/current',
+	'url': 'http://localhost:' + settings.http.port + '/api/users/current',
 	'description': 'should get the currently logged in user',
 	'assertions': function(result, done) {
 		expect(result.salt).to.be(undefined);
@@ -183,7 +204,7 @@ var tests = [{
 	}
 }, {
 	'method': 'POST',
-	'url': 'http://localhost/api/users/current/is-in-role',
+	'url': 'http://localhost:' + settings.http.port + '/api/users/current/is-in-role',
 	'description': 'should check whether a user is in a role',
 	'data': {
 		'role': 'admin'
@@ -194,7 +215,7 @@ var tests = [{
 	}
 }, {
 	'method': 'POST',
-	'url': 'http://localhost/api/users/current/change-password',
+	'url': 'http://localhost:' + settings.http.port + '/api/users/current/change-password',
 	'description': 'should change the currently logged in user password',
 	'data': {
 		'oldPassword': 'password',
@@ -206,7 +227,7 @@ var tests = [{
 	}
 }, {
 	'method': 'DELETE',
-	'url': 'http://localhost/api/users/{_id}',
+	'url': 'http://localhost:' + settings.http.port + '/api/users/{_id}',
 	'description': 'should delete a user by id',
 	'assertions': function(result, done) {
 		expect(result.salt).to.be(undefined);
@@ -220,7 +241,7 @@ var tests = [{
 
 describe('Load Static File', function() {
 	it('Index.html can be loaded.', function(done) {
-		request.get('http://localhost/').end(function(res) {
+		request.get('http://localhost:' + settings.http.port + '/').end(function(res) {
 			expect(res).to.exist;
 			expect(res.status).to.equal(200);
 			expect(res.text).to.contain('Backrest');
@@ -327,7 +348,7 @@ describe('API', function() {
 
 // 	// Upload an image
 // 	it ('upload', function (done) {
-// 		request.post('http://localhost/')
+// 		request.post('http://localhost:' + settings.http.port + '/')
 // 			.set('Cookie', sessionCookie)
 // 			.field('_id', userSave._id)
 // 			.field('collection', 'users')

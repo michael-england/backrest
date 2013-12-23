@@ -3,11 +3,11 @@
   "version": "0.0.0",
   "appPath": "public",
   "dependencies": {
-    "angular": "1.0.8",
+    "angular": "~1.0.8",
     "json3": "~3.2.4",
     "jquery": "~1.9.1",
     "bootstrap": ">= 3.0.0",
-    "es5-shim": "~2.0.8",
+    "es5-shim": "2.1.0",
     "angular-resource": "~1.0.8",
     "angular-cookies": "~1.0.8",
     "angular-sanitize": "~1.0.8",
@@ -19,7 +19,10 @@
     "ngInfiniteScroll": ">= 0.0.0"
   },
   "devDependencies": {
-    "angular-mocks": "~1.0.5",
-    "angular-scenario": "~1.0.5"
+    "angular-mocks": "~1.0.8",
+    "angular-scenario": "~1.0.8"
+  },
+  "resolutions": {
+    "bootstrap": ">= 3.0.0"
   }
 }
