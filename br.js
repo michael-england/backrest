@@ -7,6 +7,7 @@
   var https = require('https');
   var events = require('events');
   var fs = require('fs');
+  var path = require('path');
   var url = require('url');
   var util = require('util');
   var email = require('./node_modules/emailjs/email');
@@ -19,7 +20,7 @@
     this.app = express();
 
     this.init = function() {
-      var settingsFilename = './settings.json';
+      var settingsFilename = path.resolve(__dirname, 'settings.json');
       if (fs.existsSync(settingsFilename)) {
 
         // read the settings file
