@@ -9,4 +9,5 @@ deploy:
   email: michael@8bitfactory.co
   provider: npm
   on:
+    branch: master
     tags: true
