@@ -8,4 +8,4 @@ Backrest is a noBackend RESTful API server.  It is written in [Node.js](http://n
   npm install br
   br
 ```
-Depending on your environment you may need to change the http/https port (it's port 80 by default) configuration in settings.json or sudo the last command.  Once running you can browse to http://localhost and start configuring your server.
+Depending on your environment you may need to change the http/https port (it's port 3000 by default) configuration in settings.json or sudo the last command.  Once running you can browse to http://localhost:3000 and start configuring your server.
