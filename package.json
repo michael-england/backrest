@@ -1,48 +1,48 @@
 {
-	"name": "br",
-	"subdomain": "backrest",
-	"version": "0.0.1-19",
-	"author": "Michael England <michael@8bitfactory.co>",
-	"description": "The noBackend RESTful API.",
-	"scripts": {
-		"start": "node br.js",
-    		"postinstall": "npm install bower -g; bower install"
-	},
-	"bin" : { 
-		"br" : "./br.js" 
-	},
-	"engines": {
-		"node": "0.10.x"
-	},
-	"repository": { 
-		"type" : "git",
-		"url" : "http://github.com/8BitFactory/Backrest.git"
-	},
-	"contributors": [
-		{
-			"name": "Michael England",
-			"email": "michael@8bitfactory.co"
-		}
-	],
-	"dependencies": {
-		"emailjs": "0.2.x",
-		"eyes": "0.1.x",
-		"imagemagick": "0.1.x",
-		"mime": "1.2.x",
-		"password-hash": "1.1.x",
-		"mongojs": "0.7.x",
-    		"express": "3.x",
-    		"connect-mongo": "0.3.x",
-    		"superagent": "0.14.x",
-    		"expect.js": "0.2.x",
-    		"mongoose": "3.x",
-        "mongoose-times": "0.1.x",
-        "mongoose-acl": "https://github.com/8BitFactory/mongoose-acl/archive/master.tar.gz",
-        "mongoose-filter-denormalize": "x",
-        "passport": "0.1.x",
-        "passport-local": "0.1.x",
-        "passport-local-mongoose": "0.2.x",
-        "read": "1.0.5",
-        "moment": "2.4.0"
-	}
+  "name": "br",
+  "subdomain": "backrest",
+  "version": "0.0.2-0",
+  "author": "Michael England <michael@8bitfactory.co>",
+  "description": "The noBackend RESTful API.",
+  "scripts": {
+    "start": "node br.js",
+    "postinstall": "npm install bower -g; bower install"
+  },
+  "bin": {
+    "br": "./br.js"
+  },
+  "engines": {
+    "node": "0.10.x"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/8BitFactory/Backrest.git"
+  },
+  "contributors": [
+    {
+      "name": "Michael England",
+      "email": "michael@8bitfactory.co"
+    }
+  ],
+  "dependencies": {
+    "emailjs": "0.2.x",
+    "eyes": "0.1.x",
+    "imagemagick": "0.1.x",
+    "mime": "1.2.x",
+    "password-hash": "1.1.x",
+    "mongojs": "0.7.x",
+    "express": "3.x",
+    "connect-mongo": "0.3.x",
+    "superagent": "0.14.x",
+    "expect.js": "0.2.x",
+    "mongoose": "3.x",
+    "mongoose-times": "0.1.x",
+    "mongoose-acl": "https://github.com/8BitFactory/mongoose-acl/archive/master.tar.gz",
+    "mongoose-filter-denormalize": "x",
+    "passport": "0.1.x",
+    "passport-local": "0.1.x",
+    "passport-local-mongoose": "0.2.x",
+    "read": "1.0.5",
+    "moment": "2.4.0"
+  }
 }
