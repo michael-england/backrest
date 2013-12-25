@@ -1,14 +1,13 @@
 language: node_js
 services: mongodb
 node_js:
-- '0.10'
-- '0.8'
+- "0.10"
+- "0.8"
 deploy:
-  api_key:
-    secure: R+vlRICwPcDSy2IznvbWCqRlDCBHISYbDm3sUuqZkyDqkiY3hRuGWvf8oyuZutUtKx70KKQIMxkezXX5WTrWSt1URO82Ed/5NEqujm5wgXMsv5iHCs81deSERyQHjTs+tbfBPywbegMeLGSkN0f8YxvplPWiL9Ga9j6r8QCzXIM=
-  email: michael@8bitfactory.co
-  provider: npm
   on:
-    branch: master
     tags: true
-    node: '0.10'
+    node: "0.10"
+  api_key:
+    - secure: "R+vlRICwPcDSy2IznvbWCqRlDCBHISYbDm3sUuqZkyDqkiY3hRuGWvf8oyuZutUtKx70KKQIMxkezXX5WTrWSt1URO82Ed/5NEqujm5wgXMsv5iHCs81deSERyQHjTs+tbfBPywbegMeLGSkN0f8YxvplPWiL9Ga9j6r8QCzXIM="
+  email: "michael@8bitfactory.co"
+  provider: npm
