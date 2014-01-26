@@ -5,8 +5,8 @@
             <h3>
                 Roles
                 <small class="pull-right">
-                    <a data-toggle="modal" href="#roleModal" class="btn btn-small btn-primary" ng-click="add()">Add</a>
-                    <a data-toggle="modal" href="#documentationModal" class="btn btn-default">API Documentation</a>
+                    <button data-toggle="modal" data-target="#roleModal" class="btn btn-small btn-primary" ng-click="add()">Add</button>
+                    <button data-toggle="modal" data-target="#documentationModal" class="btn btn-default">API Documentation</button>
                 </small>
             </h3>
         </div>
@@ -23,8 +23,8 @@
                     <tr ng-repeat="role in roles">
                         <td data-title="Name">{{role.name}}</td>
                         <td class="text-right">
-                            <a data-toggle="modal" href="#roleModal" class="btn btn-default btn-small" ng-click="edit(role)">Edit</a>
-                            <a data-toggle="modal" href="#roleModalDelete" class="btn btn-danger btn-small" ng-click="delete(role)">Delete</a>
+                            <button data-toggle="modal" data-target="#roleModal" class="btn btn-default btn-small" ng-click="edit(role)">Edit</button>
+                            <button data-toggle="modal" data-target="#roleModalDelete" class="btn btn-danger btn-small" ng-click="delete(role)">Delete</button>
                         </td>
                     </tr>
                 </tbody>
@@ -75,4 +75,4 @@
     </div>
 </div>
 
-<ng-include src="'/views/users.documentation.html'"></ng-include>
+<ng-include src="'/views/roles.documentation.html'"></ng-include>

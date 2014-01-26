@@ -1,6 +1,7 @@
 'use strict';
 
-angular.module('backrestApp', ['$strap.directives', 'ui', 'ui.keypress', 'ui.event', 'ui.gravatar', 'infinite-scroll']).config(function($routeProvider) {
+angular.module('backrestApp', ['ngRoute', 'mgcrea.ngStrap', 'ui', 'ui.keypress', 'ui.event', 'ui.gravatar', 'infinite-scroll'])
+.config(function($routeProvider) {
 
   $routeProvider
     .when('/', {

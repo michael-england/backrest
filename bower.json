@@ -8,21 +8,22 @@
     "jquery": "~1.9.1",
     "bootstrap": ">= 3.0.0",
     "es5-shim": "2.1.0",
-    "angular-resource": "~1.0.8",
-    "angular-cookies": "~1.0.8",
-    "angular-sanitize": "~1.0.8",
+    "angular-resource": "~1.2.9",
+    "angular-cookies": "~1.2.9",
+    "angular-sanitize": "~1.2.9",
     "angular-gravatar": ">= 0.0.0",
-    "angular-strap": ">= 0.0.0",
+    "angular-strap": "~2.0.0",
     "angular-ui": ">= 0.0.0",
     "angular-ui-utils": ">= 0.0.0",
     "font-awesome": ">= 0.0.0",
-    "ngInfiniteScroll": ">= 0.0.0"
+    "ngInfiniteScroll": ">= 0.0.0",
+    "angular-route": "~1.2.9"
   },
   "devDependencies": {
-    "angular-mocks": "~1.0.8",
-    "angular-scenario": "~1.0.8"
+    "angular-mocks": "~1.2.9",
+    "angular-scenario": "~1.2.9"
   },
   "resolutions": {
-    "bootstrap": ">= 3.0.0"
+    "angular": "~1.2.9"
   }
 }

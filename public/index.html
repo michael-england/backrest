@@ -55,7 +55,7 @@
                 <li data-match-route="/roles"><a href="#/roles">Roles</a>
                 </li>
                 <li data-match-route="/collections.*" class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                    <a data-tagrget="#" href="javacript:" class="dropdown-toggle" data-toggle="dropdown">
                         Collections
                         <b class="caret"></b>
                     </a>
@@ -72,13 +72,13 @@
             </ul>
             <ul class="nav navbar-nav navbar-right">
                 <li data-match-route="/account/settings" class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                    <a data-tagrget="#" href="javacript:" class="dropdown-toggle" data-toggle="dropdown">
                         <img class="img-circle" gravatar-src="$root.user.email" gravatar-size="40">
                         <span ng-bind="$root.user.firstName"></span>
                         <span ng-bind="$root.user.lastName"></span>
-                        <b class="caret"></b>
+                        <b class="caret"></b>&nbsp;
                     </a>
-                    <ul class="dropdown-menu">
+                    <ul class="dropdown-menu" role="menu" aria-labelledby="userMenu">
                         <li><a href="#/account/settings">Account Settings</a>
                         </li>
                         <li><a ng-click="$root.logout()">Logout</a>
@@ -97,9 +97,9 @@
     <script src="bower_components/jquery/jquery.js"></script>
     <script src="bower_components/bootstrap/dist/js/bootstrap.js"></script>
     <script src="bower_components/angular/angular.js"></script>
+    <script src="bower_components/angular-route/angular-route.js"></script>
     <script src="bower_components/angular-ui/build/angular-ui.min.js"></script>
-    <script src="bower_components/angular-ui-utils/modules/event/event.js"></script>
-    <script src="bower_components/angular-ui-utils/modules/keypress/keypress.js"></script>
+    <script src="bower_components/angular-ui-utils/ui-utils.min.js"></script>
     <script src="bower_components/angular-resource/angular-resource.js"></script>
     <script src="bower_components/angular-cookies/angular-cookies.js"></script>
     <script src="bower_components/angular-sanitize/angular-sanitize.js"></script>

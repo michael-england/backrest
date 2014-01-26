@@ -5,8 +5,8 @@
             <h3>
                 Users
                 <small class="pull-right">
-                    <a data-toggle="modal" href="#userModal" class="btn btn-small btn-primary" ng-click="add()">Add</a>
-                    <a data-toggle="modal" href="#documentationModal" class="btn btn-default">API Documentation</a>
+                    <button data-toggle="modal" data-target="#userModal" class="btn btn-small btn-primary" ng-click="add()">Add</button>
+                    <button data-toggle="modal" data-target="#documentationModal" class="btn btn-default">API Documentation</button>
                 </small>
             </h3>
         </div>
@@ -30,8 +30,8 @@
                         <td data-title="Email"><a ng-href="mailto:{{user.email}}">{{user.email}}</a>
                         </td>
                         <td class="text-right">
-                            <a data-toggle="modal" href="#userModal" class="btn btn-default btn-small" ng-click="edit(user)">Edit</a>
-                            <a data-toggle="modal" href="#userModalDelete" class="btn btn-danger btn-small" ng-click="delete(user)">Delete</a>
+                            <button data-toggle="modal" data-target="#userModal" class="btn btn-default btn-small" ng-click="edit(user)">Edit</button>
+                            <button data-toggle="modal" data-target="#userModalDelete" class="btn btn-danger btn-small" ng-click="delete(user)">Delete</button>
                         </td>
                     </tr>
                 </tbody>
@@ -40,6 +40,7 @@
         </div>
     </div>
 </div>
+
 
 <div class="modal fade" id="userModal">
     <div class="modal-dialog">

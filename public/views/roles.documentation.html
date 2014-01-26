@@ -3,13 +3,13 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h4 class="modal-title">{{ collection.name }} API Documentation</h4>
+                <h4 class="modal-title">Roles API Documentation</h4>
             </div>
             <div class="modal-body">
                 <div class="panel-group" id="accordion">
                     <div class="panel panel-warning">
                         <div class="panel-heading">
-                            <a class="accordion-toggle text-warning" data-toggle="collapse" data-parent="#accordion" href="#collapseUpdate">
+                            <a class="accordion-toggle text-warning" data-toggle="collapse" data-parent="#accordion" href="javascript:" data-target="#collapseUpdate">
                                 <span class="label label-warning panel-label">PUT</span>
                                 <span>{{ baseUri }}/api/{{ collection.name }}/{_id}</span>
                                 <span class="pull-right">Updates a {{ collection.name }} item.</span>
@@ -22,7 +22,7 @@
                     </div>
                     <div class="panel panel-danger">
                         <div class="panel-heading">
-                            <a class="accordion-toggle text-danger" data-toggle="collapse" data-parent="#accordion" href="#collapseDelete">
+                            <a class="accordion-toggle text-danger" data-toggle="collapse" data-parent="#accordion" href="javascript:" data-target="#collapseDelete">
                                 <span class="label label-danger panel-label">DELETE</span>
                                 <span>{{ baseUri }}/api/{{ collection.name }}/{_id}</span>
                                 <span class="pull-right">Deletes a {{ collection.name }} item.</span>
@@ -35,7 +35,7 @@
                     </div>
                     <div class="panel panel-info">
                         <div class="panel-heading">
-                            <a class="accordion-toggle text-info" data-toggle="collapse" data-parent="#accordion" href="#collapseList">
+                            <a class="accordion-toggle text-info" data-toggle="collapse" data-parent="#accordion" href="javascript:" data-target="#collapseList">
                                 <span class="label label-info panel-label">GET</span>
                                 <span>{{ baseUri }}/api/{{ collection.name }}</span>
                                 <span class="pull-right">Gets a list of {{ collection.name }} items.</span>
@@ -48,7 +48,7 @@
                     </div>
                     <div class="panel panel-info">
                         <div class="panel-heading">
-                            <a class="accordion-toggle text-info" data-toggle="collapse" data-parent="#accordion" href="#collapseGet">
+                            <a class="accordion-toggle text-info" data-toggle="collapse" data-parent="#accordion" href="javascript:" data-target="#collapseGet">
                                 <span class="label label-info panel-label">GET</span>
                                 <span>{{ baseUri }}/api/{{ collection.name }}/{_id}</span>
                                 <span class="pull-right">Gets an individual {{ collection.name }} item.</span>
@@ -61,7 +61,7 @@
                     </div>
                     <div class="panel panel-success">
                         <div class="panel-heading">
-                            <a class="accordion-toggle text-success" data-toggle="collapse" data-parent="#accordion" href="#collapseCreate">
+                            <a class="accordion-toggle text-success" data-toggle="collapse" data-parent="#accordion" href="javascript:" data-target="#collapseCreate">
                                 <span class="label label-success panel-label">POST</span>
                                 <span>{{ baseUri }}/api/{{ collection.name }}</span>
                                 <span class="pull-right">Creates a new {{ collection.name }} item.</span>

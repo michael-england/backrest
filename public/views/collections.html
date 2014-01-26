@@ -6,9 +6,9 @@
                     {{ collection.name }}
                     <small>Collection</small>
                     <small class="pull-right">
-                        <a data-toggle="modal" href="#itemModal" class="btn btn-primary" ng-click="addItem()">Add</a>
+                        <button data-toggle="modal" data-target="#itemModal" class="btn btn-primary" ng-click="addItem()">Add</button>
                         <button class="btn btn-default" ng-class="{hide: !collection._id}" ng-click="editCollection(collection)">Edit Collection</button>
-                        <a data-toggle="modal" href="#documentationModal" class="btn btn-default">API Documentation</a>
+                        <button data-toggle="modal" data-target="#documentationModal" class="btn btn-default">API Documentation</button>
                     </small>
                 </h3>
             </div>
@@ -24,8 +24,8 @@
                         <tr ng-repeat="item in items">
                             <td ng-repeat="field in fieldKeys(collection.definition)" data-title="{{field}}">{{ item[field] }}</td>
                             <td>
-                                <a data-toggle="modal" href="#itemModal" class="btn btn-default" ng-click="editItem(item)">Edit</a>
-                                <a data-toggle="modal" href="#itemModalDelete" class="btn btn-danger" ng-click="deleteItem(item)">Delete</a>
+                                <button data-toggle="modal" data-target="#itemModal" class="btn btn-default" ng-click="editItem(item)">Edit</button>
+                                <button data-toggle="modal" data-target="#itemModalDelete" class="btn btn-danger" ng-click="deleteItem(item)">Delete</button>
                             </td>
                         </tr>
                     </tbody>
@@ -42,7 +42,7 @@
                     <small class="pull-right">
                         <button class="btn btn-primary" ng-click="saveCollection(collection)">Save</button>
                         <button class="btn btn-default" ng-click="cancelCollection(collection)" ng-class="{hide: !collection._id}">Cancel</button>
-                        <a data-toggle="modal" href="#collectionModalDelete" class="btn btn-danger" ng-class="{hide: !collection._id}">Delete</a>
+                        <button data-toggle="modal" data-target="#collectionModalDelete" class="btn btn-danger" ng-class="{hide: !collection._id}">Delete</button>
                     </small>
                 </h3>
             </div>
@@ -54,13 +54,13 @@
                         </div>
                         <div class="panel-body">
                             <ul class="nav nav-pills nav-stacked">
-                                <li class="active"><a href="#general" data-toggle="tab">General
+                                <li class="active"><a href="javascript:" data-target="#general" data-toggle="tab">General
                                   <i class="icon icon-chevron-right pull-right"></i></a>
                                 </li>
-                                <li><a href="#fields" data-toggle="tab">Fields
+                                <li><a href="javascript:" data-target="#fields" data-toggle="tab">Fields
                                   <i class="icon icon-chevron-right pull-right"></i></a>
                                 </li>
-                                <li><a href="#filters" data-toggle="tab">Filters
+                                <li><a href="javascript:" data-target="#filters" data-toggle="tab">Filters
                                   <i class="icon icon-chevron-right pull-right"></i></a>
                                 </li>
                             </ul>

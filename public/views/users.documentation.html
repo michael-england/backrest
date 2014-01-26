@@ -9,7 +9,7 @@
                 <div class="panel-group" id="accordion">
                     <div ng-repeat="apiCall in apiCalls" class="panel panel-{{ getColor(apiCall.method) }}">
                         <div class="panel-heading">
-                            <a class="accordion-toggle text-{{ getColor(apiCall.method) }}" data-toggle="collapse" data-parent="#accordion" href="{{ '#' + apiCall.key }}">
+                            <a class="accordion-toggle text-{{ getColor(apiCall.method) }}" data-toggle="collapse" data-parent="#accordion" href="javascript:" data-target="{{ '#' + apiCall.key }}">
                                 <span class="label label-{{ getColor(apiCall.method) }} panel-label">{{ apiCall.method }}</span>
                                 <span>{{ apiCall.url }}</span>
                                 <span class="pull-right">{{ apiCall.description }}</span>
