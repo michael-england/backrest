@@ -12,7 +12,7 @@
 	},
 	"http": {
 		"enabled": true,
-		"port": "3000",
+		"port": "80",
 		"static": {
 			"headers": {
 				"Cache-Control": "max-age=1200"
