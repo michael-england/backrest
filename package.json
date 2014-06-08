@@ -1,7 +1,7 @@
 {
   "name": "br",
   "subdomain": "backrest",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "author": "Michael England <michael@8bitfactory.co>",
   "description": "The noBackend RESTful API.",
   "scripts": {
