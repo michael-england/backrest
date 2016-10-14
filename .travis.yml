@@ -1,11 +1,11 @@
 language: node_js
 services: mongodb
 node_js:
-- '0.10'
+- '6.6.0'
 deploy:
   on:
     tags: true
-    node: '0.10'
+    node: '6.6.0'
   api_key:
     secure: XWt9s1FTcGHkRRvH5VLSc/0gkfFfMHKNohK+Bnlp+7XWBh7hOkRkT+Qee7lt2CSfd1oZSlSaAsz9igEkqsXdlFZCHhMNvQnJ53C4fxdfr4oNRjGZGxz2sJMxZpcyFQknGAp08NG3NGIHlvc1iMMyOWQBKCVwvR03SVKd+GREkaE=
   email: michael@8bitfactory.co
