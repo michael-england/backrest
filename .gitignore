@@ -1,14 +1,13 @@
-INSTALLED
-uploads/
+# Created by .ignore support plugin (hsz.mobi)
 .DS_Store
+INSTALLED
 certificate.pem
 certrequest.csr
 privatekey.pem
-
-
 *.sublime-project
-
 *.sublime-workspace
 
+/.idea
 /node_modules
 /public/bower_components
+/uploads
