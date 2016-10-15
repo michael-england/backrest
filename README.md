@@ -1,6 +1,8 @@
 ![alt text][logo]
 [logo]: https://github.com/8bitfactory/backrest/raw/master/public/images/logo.png "Backrest"
 
+[![Build Status](https://travis-ci.org/michael-england/backrest.svg?branch=master)](https://travis-ci.org/michael-england/backrest)
+
 Backrest is a noBackend RESTful API server.  It is written in [Node.js](http://nodejs.org/), [Express](http://expressjs.com/), [AngularJS](http://angularjs.org/), and utilizes [MongoDB](http://www.mongodb.org/), [Mongoose](http://mongoosejs.com/) and [Twitter Bootstrap](http://getbootstrap.com).  Thanks to all these great projects and many others that make this project possible.
 
 ##Installation
