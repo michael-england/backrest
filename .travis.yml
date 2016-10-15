@@ -10,6 +10,11 @@ addons:
     - g++-4.8
 node_js:
 - '6.6.0'
+before_script:
+  - npm install
+script:
+  - node br.js &
+  - npm test
 deploy:
   on:
     tags: true
