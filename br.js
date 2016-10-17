@@ -2,7 +2,6 @@
 
 'use strict';
 
-const q = require('q');
 const clone = require('clone');
 const http = require('http');
 const https = require('https');
