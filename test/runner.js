@@ -2,7 +2,10 @@ const request = require('superagent');
 const expect = require('expect.js');
 const mongojs = require('mongojs');
 const fs = require('fs');
-const settings = require('../settings.json');
+const settings = require('../settings.development.json');
+var before = require('mocha').before;
+var it = require('mocha').it;
+var describe = require('mocha').describe;
 
 var sessionCookie;
 var _id;

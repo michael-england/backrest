@@ -1,6 +1,6 @@
 const expect = require('expect.js');
 const mongojs = require('mongojs');
-const settings = require('../../settings.json');
+const settings = require('../../settings.development.json');
 
 module.exports = {
 	'order': 0,

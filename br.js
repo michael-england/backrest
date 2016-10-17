@@ -24,7 +24,7 @@ const logger = require('morgan');
 class Backrest {
 	constructor () {
 		this.app = express();
-		this.settings = require('./settings.json');
+		this.settings = require('./settings.' + (this.app.get('env') === 'development' ? 'development' : 'production')  +  '.json');
 
 		// init the database
 		this.db = mongojs(this.settings.databaseUrl);
