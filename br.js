@@ -6,9 +6,6 @@ const clone = require('clone');
 const http = require('http');
 const https = require('https');
 const fs = require('fs');
-const path = require('path');
-const url = require('url');
-const util = require('util');
 const email = require('./node_modules/emailjs/email');
 const express = require('express');
 const expressSession = require('express-session');
@@ -17,7 +14,8 @@ const MongoStore = require('connect-mongo')(expressSession);
 const CollectionController = require('./controllers/collection-controller');
 const UserController = require('./controllers/user-controller');
 const Setup = require('./lib/setup');
-const errors = require('./lib/error');
+const Email = require('./lib/email');
+const ErrorHandler = require('./lib/error-handler');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const livereload = require('express-livereload');
@@ -140,11 +138,12 @@ class Backrest {
 		this.app.use(cookieParser());
 		this.app.use(expressSession(session));
 
-		// app controllers and endpoint
+		// app controllers and endpoints
 		new UserController(this);
 		new CollectionController(this);
+		new ErrorHandler(this);
 
-		this.app.use(errors(this));
+		// static files
 		this.app.use('/', express.static('./public'));
 
 		// catch 404 and forward to error handler
@@ -207,16 +206,28 @@ class Backrest {
 			.json(result);
 	}
 
-	error (request, response, message, statusCode) {
+	error (request, response, error, statusCode) {
 		if (!response) {
-			return message;
+			return error;
 		}
 
-		response.status(statusCode || 500)
+		// throw error to console
+		console.log(error);
+
+		// default to 500
+		statusCode = statusCode || 500;
+
+		// send response back to xhr request
+		response.status(statusCode)
 			.json({
-				'error': message
+				'error': error
 			});
+
+		if (statusCode === 500) {
+			Email.sendErrorEmail(server, request, error);
+		}
+
 	}
 }
 
-const backrest = new Backrest();
+new Backrest();
