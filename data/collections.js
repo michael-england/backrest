@@ -46,8 +46,8 @@ module.exports = [{
 		},
 		"sanitize": true
 	},
-	"_modified": new Date("2014-10-05T00:00:00.000Z"),
-	"_created": new Date("2014-10-05T00:00:00.000Z")
+	"_modified": new Date(),
+	"_created": new Date()
 }, {
 	"name": "users",
 	"label": "Users",
@@ -148,8 +148,8 @@ module.exports = [{
 		},
 		"sanitize": true
 	},
-	"_modified": new Date("2014-10-05T00:00:00.000Z"),
-	"_created": new Date("2014-10-05T00:00:00.000Z")
+	"_modified": new Date(),
+	"_created": new Date()
 }, {
 	"name": "roles",
 	"label": "Roles",
@@ -191,6 +191,6 @@ module.exports = [{
 		},
 		"sanitize": true
 	},
-	"_modified": new Date("2014-10-05T00:00:00.000Z"),
-	"_created": new Date("2014-10-05T00:00:00.000Z")
+	"_modified": new Date(),
+	"_created": new Date()
 }];
