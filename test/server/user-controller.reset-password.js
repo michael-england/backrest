@@ -1,5 +1,5 @@
 const expect = require('expect.js');
-const generateToken = require('../../lib/generate-token.js');
+const Token = require('../../lib/token.js');
 module.exports = {
 	'order': 8,
 	'method': 'POST',
@@ -7,7 +7,7 @@ module.exports = {
 	'description': 'should reset a password',
 	'data': function (_id) {
 		return {
-			'token': generateToken(120, 'aes-256-cbc', '012345678', _id),
+			'token': Token.generate(120, 'aes-256-cbc', '012345678', _id),
 			'password': 'password'
 		};
 	},
