@@ -2,8 +2,8 @@
 
 const bcrypt = require('bcrypt');
 const clone = require('clone');
-const crypto = require('crypto');
 const Email = require('../lib/email');
+const Token = require('../lib/token');
 const moment = require('moment');
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
@@ -139,13 +139,8 @@ module.exports = class UserController {
 	resetPassword (request, response) {
 		var algorithm = this.server.settings.authentication.resetPasswordToken.algorithm;
 		var password = this.server.settings.authentication.resetPasswordToken.password;
-		var decipher = crypto.createDecipher(algorithm, password);
-		var token = decipher.update(request.body.token, 'hex', 'utf8');
-		token += decipher.final('utf8');
-		token = JSON.parse(token);
-
-		if (new Date() >= new Date(token.expiration)) {
-			// token has expired
+		var token = Token.parse(algorithm, password, request.body.token);
+		if (Token.validate(token)) {
 			return this.server.error(request, response, 'Bad Request', 400);
 		}
 
@@ -202,13 +197,8 @@ module.exports = class UserController {
 	confirmEmail (request, response) {
 		var algorithm = this.server.settings.authentication.confirmEmailToken.algorithm;
 		var password = this.server.settings.authentication.confirmEmailToken.password;
-		var decipher = crypto.createDecipher(algorithm, password);
-		var token = decipher.update(request.body.token, 'hex', 'utf8');
-		token += decipher.final('utf8');
-		token = JSON.parse(token);
-
-		// token has expired
-		if (new Date() >= new Date(token.expiration)) {
+		var token = Token.parse(algorithm, password, request.body.token);
+		if (Token.validate(token)) {
 			return this.server.error(request, response, 'Bad Request', 400);
 		}
 

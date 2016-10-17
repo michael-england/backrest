@@ -224,7 +224,7 @@ class Backrest {
 			});
 
 		if (statusCode === 500) {
-			Email.sendErrorEmail(server, request, error);
+			Email.sendErrorEmail(this, request, error);
 		}
 
 	}
