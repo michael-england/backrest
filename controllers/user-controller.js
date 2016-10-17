@@ -3,7 +3,7 @@
 const bcrypt = require('bcrypt');
 const clone = require('clone');
 const crypto = require('crypto');
-const Email = require('./email');
+const Email = require('../lib/email');
 const moment = require('moment');
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
@@ -64,7 +64,7 @@ module.exports = class UserController {
 		var emailConfirmed = true;
 		if (Email.confirmEmailEnabled(this.server) && request.user._created) {
 			if (!request.user.isConfirmed) {
-				var timeout = server.settings.authentication.confirmEmailToken.timeout ? server.settings.authentication.confirmEmailToken.timeout : 1440;
+				var timeout = this.server.settings.authentication.confirmEmailToken.timeout ? this.server.settings.authentication.confirmEmailToken.timeout : 1440;
 				var timeoutDate = moment(request.user._created).add('minutes', timeout);
 				var currentDate = moment();
 				emailConfirmed = timeoutDate >= currentDate;
@@ -87,7 +87,7 @@ module.exports = class UserController {
 				}
 			}, (error) => {
 				if (error) {
-					return result.error(request, response, error, 500);
+					return this.server.error(request, response, error, 500);
 				}
 
 				// return result
