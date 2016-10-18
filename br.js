@@ -27,7 +27,7 @@ class Backrest {
 		this.settings = require('./settings.' + (this.app.get('env') === 'development' ? 'development' : 'production')  +  '.json');
 
 		// init the database
-		this.db = mongojs(this.settings.databaseUrl);
+		this.db = mongojs(process.env.MONGODB_URI || this.settings.databaseUrl);
 
 		// perform initial setup
 		if (!fs.existsSync('./INSTALLED')) {
@@ -80,7 +80,7 @@ class Backrest {
 			session = clone(this.settings.session);
 			if (session.store) {
 				if (!session.store.url) {
-					session.store.url = this.settings.databaseUrl;
+					session.store.url = process.env.MONGODB_URI || this.settings.databaseUrl;
 				}
 
 				session.store = new MongoStore(session.store);
