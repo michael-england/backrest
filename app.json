@@ -5,6 +5,14 @@
   "logo": "https://github.com/michael-england/backrest/raw/master/public/images/logo.png",
   "website": "http://backrest.io/",
   "keywords": [],
+  "success_url": "/",
+  "image": "heroku/nodejs",
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "Free"
+    }
+  },
   "addons": [{
     "plan": "mongolab:shared-single-small",
     "as": "MONGO"
