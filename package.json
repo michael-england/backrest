@@ -4,6 +4,9 @@
   "version": "0.1.5",
   "author": "Michael England <michael@8bitfactory.co>",
   "description": "The noBackend RESTful API.",
+  "engines": {
+    "node": "6.6.0"
+  },
   "scripts": {
     "start": "node br.js",
     "test": "mocha"
