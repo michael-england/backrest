@@ -1,0 +1,12 @@
+{
+  "name": "Backrest",
+  "description": "The noBackend RESTful API",
+  "repository": "https://github.com/michael-england/backrest",
+  "logo": "https://github.com/michael-england/backrest/raw/master/public/images/logo.png",
+  "website": "http://backrest.io/",
+  "keywords": [],
+  "addons": [{
+    "plan": "mongolab:shared-single-small",
+    "as": "MONGO"
+  }]
+}
