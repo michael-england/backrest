@@ -79,8 +79,12 @@ class Backrest {
 		if (this.settings.session) {
 			session = clone(this.settings.session);
 			if (session.store) {
+				if (process.env.MONGODB_URI) {
+					session.store.url = process.env.MONGODB_URI;
+				}
+
 				if (!session.store.url) {
-					session.store.url = process.env.MONGODB_URI || this.settings.databaseUrl;
+					session.store.url =  this.settings.databaseUrl;
 				}
 
 				session.store = new MongoStore(session.store);
