@@ -146,7 +146,7 @@ module.exports = class UserController {
 
 		bcrypt.hash(request.body.password, 10, (error, hash) => {
 			this.users.findAndModify({
-				'query': {'_id': this.server.db.ObjectId(token._id)},
+				'query': {'_id': this.server.db.ObjectId(token.data)},
 				'update': {
 					'$set': {
 						'password': hash,
@@ -204,7 +204,7 @@ module.exports = class UserController {
 
 		// update confirmation and save changes
 		this.users.update({
-			'_id': this.server.db.ObjectId(token._id)
+			'_id': this.server.db.ObjectId(token.data)
 		}, {
 			'$set': {
 				'isConfirmed': true,
