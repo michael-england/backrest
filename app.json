@@ -13,8 +13,5 @@
       "size": "Free"
     }
   },
-  "addons": [{
-    "plan": "mongolab:shared-single-small",
-    "as": "MONGO"
-  }]
+  "addons": ["mongolab:sandbox"]
 }
