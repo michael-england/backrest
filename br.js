@@ -185,7 +185,7 @@ class Backrest {
 			let server = http.createServer(this.app);
 			server.on('error', onError);
 			server.on('listening', onListeningFn(server));
-			server.listen(this.settings.http.port || 80);
+			server.listen(process.env.PORT || this.settings.http.port || 80);
 		}
 
 		// live reloading for dev environments
