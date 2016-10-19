@@ -6,6 +6,11 @@
 Backrest is a noBackend RESTful API server.  It is written in [Node.js](http://nodejs.org/), [Express](http://expressjs.com/), and utilizes [MongoDB](http://www.mongodb.org/).  Thanks to all these great projects and many others that make this project possible.
 
 ##Installation
+
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/michael-england/backrest)
+
+Or:
+
 ```
   npm install br
   br
