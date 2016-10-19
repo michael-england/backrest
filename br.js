@@ -29,18 +29,20 @@ class Backrest {
 		// init the database
 		this.db = mongojs(process.env.MONGODB_URI || this.settings.databaseUrl);
 
-		// perform initial setup
-		if (!fs.existsSync('./INSTALLED')) {
-			Setup.init(this).then(() => {
+		this.db.collection('properties').findOne({ 'name': 'backrest.installed'}, (error, property) => {				
+			if (property && property.value) {
 				// start the servers
 				this.smtpStart();
 				this.httpStart();
-			});
-		} else {
-			// start the servers
-			this.smtpStart();
-			this.httpStart();
-		}
+			} else {				
+				// perform initial setup
+				Setup.init(this).then(() => {
+					// start the servers
+					this.smtpStart();
+					this.httpStart();
+				});
+			}
+		});
 	}
 
 	loadMail (key) {
