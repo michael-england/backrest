@@ -1,6 +1,7 @@
 'use strict';
 
 const clone = require('clone');
+const db = require('../lib/db');
 
 module.exports = class CollectionController {
 	constructor (server) {
@@ -13,7 +14,7 @@ module.exports = class CollectionController {
 	}
 
 	create (request, response) {
-		var collection = this.server.db.collection(request.params.collection);
+		var collection = db.collection(request.params.collection);
 		var document = clone(request.body);
 		document._created = new Date();
 		document._createdBy = request.user._id;
@@ -35,7 +36,7 @@ module.exports = class CollectionController {
 	}
 
 	find (request, response) {
-		var collection = this.server.db.collection(request.params.collection);
+		var collection = db.collection(request.params.collection);
 
 		// set max limit
 		if (request.query.limit && request.query.limit > 100) {
@@ -83,11 +84,11 @@ module.exports = class CollectionController {
 	}
 
 	findById (request, response) {
-		var collection = this.server.db.collection(request.params.collection);
+		var collection = db.collection(request.params.collection);
 
 		// find the item
 		collection.findOne({
-			'_id': this.server.db.ObjectId(request.params.id)
+			'_id': db.ObjectId(request.params.id)
 		}, (error, data) => {
 			if (error) {
 				return this.server.error(request, response, error, 500);
@@ -102,14 +103,14 @@ module.exports = class CollectionController {
 	}
 
 	update (request, response) {
-		var collection = this.server.db.collection(request.params.collection);
+		var collection = db.collection(request.params.collection);
 		var document = clone(request.body);
 		document._modified = new Date();
 		document._modifiedBy = request.user._id;
 		delete document._id;
 
 		collection.findAndModify({
-			'query': {'_id': this.server.db.ObjectId(request.params.id)},
+			'query': {'_id': db.ObjectId(request.params.id)},
 			'update': {'$set': document},
 			'new': true
 		}, (error, data) => {
@@ -134,9 +135,9 @@ module.exports = class CollectionController {
 	}
 
 	delete (request, response) {
-		var collection = this.server.db.collection(request.params.collection);
+		var collection = db.collection(request.params.collection);
 		var condition = {
-			'_id': this.server.db.ObjectId(request.params.id)
+			'_id': db.ObjectId(request.params.id)
 		};
 
 		collection.findOne(condition, (error, data) => {

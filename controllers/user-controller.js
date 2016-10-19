@@ -2,6 +2,7 @@
 
 const bcrypt = require('bcrypt');
 const clone = require('clone');
+const db = require('../lib/db');
 const Email = require('../lib/email');
 const Token = require('../lib/token');
 const moment = require('moment');
@@ -11,7 +12,7 @@ const LocalStrategy = require('passport-local').Strategy;
 module.exports = class UserController {
 	constructor (server) {
 		this.server = server;
-		this.users = this.server.db.collection('users');
+		this.users = db.collection('users');
 		this.server.app.use(passport.initialize());
 		this.server.app.use(passport.session());
 
@@ -45,7 +46,7 @@ module.exports = class UserController {
 
 		// deserialize the user by find the user by id
 		passport.deserializeUser((_id, done) => {
-			this.users.findOne({'_id': this.server.db.ObjectId(_id)}, done);
+			this.users.findOne({'_id': db.ObjectId(_id)}, done);
 		});
 
 		this.server.app.post('/api/users/login', passport.authenticate('local'), this.login.bind(this));
@@ -146,7 +147,7 @@ module.exports = class UserController {
 
 		bcrypt.hash(request.body.password, 10, (error, hash) => {
 			this.users.findAndModify({
-				'query': {'_id': this.server.db.ObjectId(token.data)},
+				'query': {'_id': db.ObjectId(token.data)},
 				'update': {
 					'$set': {
 						'password': hash,
@@ -204,7 +205,7 @@ module.exports = class UserController {
 
 		// update confirmation and save changes
 		this.users.update({
-			'_id': this.server.db.ObjectId(token.data)
+			'_id': db.ObjectId(token.data)
 		}, {
 			'$set': {
 				'isConfirmed': true,
@@ -281,7 +282,7 @@ module.exports = class UserController {
 
 			bcrypt.hash(request.body.newPassword, 10, (error, hash) => {
 				this.users.update({
-					'_id': this.server.db.ObjectId(request.user._id)
+					'_id': db.ObjectId(request.user._id)
 				}, {
 					'$set': {
 						'password': hash,

@@ -11,11 +11,13 @@ const express = require('express');
 const expressSession = require('express-session');
 const mongojs = require('mongojs');
 const MongoStore = require('connect-mongo')(expressSession);
+const db = require('./lib/db');
 const CollectionController = require('./controllers/collection-controller');
 const UserController = require('./controllers/user-controller');
 const Setup = require('./lib/setup');
 const Email = require('./lib/email');
 const ErrorHandler = require('./lib/error-handler');
+const Property = require('./lib/property');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const livereload = require('express-livereload');
@@ -23,20 +25,19 @@ const logger = require('morgan');
 
 class Backrest {
 	constructor () {
+		const BACKREST_INSTALLED = 'backrest.installed';
+
 		this.app = express();
 		this.settings = require('./settings.' + (this.app.get('env') === 'development' ? 'development' : 'production')  +  '.json');
 
-		// init the database
-		this.db = mongojs(process.env.MONGODB_URI || this.settings.databaseUrl);
-
-		this.db.collection('properties').findOne({ 'name': 'backrest.installed'}, (error, property) => {				
-			if (property && property.value) {
+		Property.getValue(BACKREST_INSTALLED, false).then((value) => {
+			if (value) {
 				// start the servers
 				this.smtpStart();
 				this.httpStart();
-			} else {				
+			} else {
 				// perform initial setup
-				Setup.init(this).then(() => {
+				Setup.init().then(() => {
 					// start the servers
 					this.smtpStart();
 					this.httpStart();
