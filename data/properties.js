@@ -2,4 +2,76 @@ module.exports = [{
 	"name": "backrest.installed",
 	"type": "boolean",
 	"value": true
+}, {
+	"name": "backrest.https.enabled",
+	"type": "boolean",
+	"value": false
+}, {
+	"name": "backrest.https.privateKey",
+	"type": "string",
+	"value": ""
+}, {
+	"name": "backrest.https.certificate",
+	"type": "string",
+	"value": ""
+}, {
+	"name": "backrest.https.port",
+	"type": "integer",
+	"value": 443
+}, {
+	"name": "backrest.http.enabled",
+	"type": "boolean",
+	"value": true
+}, {
+	"name": "backrest.http.port",
+	"type": "integer",
+	"value": 3000
+}, {
+	"name": "backrest.authentication.confirmEmailToken.algorithm",
+	"type": "string",
+	"value": "aes-256-cbc"
+}, {
+	"name": "backrest.authentication.confirmEmailToken.password",
+	"type": "string",
+	"value": "0123456"
+}, {
+	"name": "backrest.authentication.confirmEmailToken.timeout",
+	"type": "integer",
+	"value": 1440
+}, {
+	"name": "backrest.authentication.resetPasswordToken.algorithm",
+	"type": "string",
+	"value": "aes-256-cbc"
+}, {
+	"name": "backrest.authentication.resetPasswordToken.password",
+	"type": "string",
+	"value": "0123456"
+}, {
+	"name": "backrest.authentication.resetPasswordToken.timeout",
+	"type": "integer",
+	"value": 120
+}, {
+	"name": "backrest.email.enabled",
+	"type": "boolean",
+	"value": true
+}, {
+	"name": "backrest.email.server.user",
+	"type": "string",
+	"value": "9303be88c21f7900"
+}, {
+	"name": "backrest.email.server.password",
+	"type": "string",
+	"value": "546e6bd08f9974"
+}, {
+	"name": "backrest.email.server.host",
+	"type": "string",
+	"value": "mailtrap.io"
+}, {
+	"name": "backrest.email.server.port",
+	"type": "integer",
+	"value": 2525
+}, {
+	"name": "backrest.email.server.ssl",
+	"type": "boolean",
+	"value": false
 }];

@@ -28,7 +28,6 @@ class Backrest {
 		const BACKREST_INSTALLED = 'backrest.installed';
 
 		this.app = express();
-		this.settings = require('./settings.' + (this.app.get('env') === 'development' ? 'development' : 'production')  +  '.json');
 
 		Property.getValue(BACKREST_INSTALLED, false).then((value) => {
 			if (value) {
@@ -46,54 +45,42 @@ class Backrest {
 		});
 	}
 
-	loadMail (key) {
-		// text version
-		var message = this.settings.mail.messages[key];
-		if (fs.existsSync(message.text)) {
-			message.text = fs.readFileSync(message.text, {
-				'encoding': 'binary'
-			});
-		}
-
-		// html version
-		var attachment = message.attachment;
-		if (attachment && attachment[0] && attachment[0].alternative === true) {
-			if (fs.existsSync(attachment[0].data)) {
-				attachment[0].data = fs.readFileSync(attachment[0].data, {
-					'encoding': 'binary'
-				});
-			}
-		}
-	}
-
 	smtpStart () {
-		// create mail server
-		if (this.settings.mail) {
-			this.mail = email.server.connect(this.settings.mail.server);
-			this.loadMail('confirmEmail');
-			this.loadMail('passwordResetRequest');
-			this.loadMail('errorEmail');
-		}
+		Property.getValue('backrest.email.enabled', true).then((enabled) => {
+			if (!enabled) {
+				return;
+			}
+
+			var promises = [
+				Property.getValue('backrest.email.server.user'),
+				Property.getValue('backrest.email.server.password'),
+				Property.getValue('backrest.email.server.host'),
+				Property.getValue('backrest.email.server.port'),
+				Property.getValue('backrest.email.server.ssl')
+			];
+
+			Promise.all(promises).then((properties) => {
+				this.mail = email.server.connect({
+					'user': properties[0],
+					'password': properties[1],
+					'host': properties[2],
+					'port': properties[3],
+					'ssl': properties[4]
+				});
+			});
+		});
 	}
 
 	sessionStart () {
-		// define the session
-		var session = {};
-		if (this.settings.session) {
-			session = clone(this.settings.session);
-			if (session.store) {
-				if (process.env.MONGODB_URI) {
-					session.store.url = process.env.MONGODB_URI;
-				}
-
-				if (!session.store.url) {
-					session.store.url =  this.settings.databaseUrl;
-				}
-
-				session.store = new MongoStore(session.store);
-			}
-		}
-		return session;
+		return {
+			'store': new MongoStore({
+				'url': process.env.MONGODB_URI || 'mongodb://localhost:27017/backrest',
+				'maxAge': 300000
+			}),
+			'secret': '$3cr3t',
+			'resave': false,
+			'saveUninitialized': true
+		};
 	}
 
 	httpStart () {
@@ -168,32 +155,42 @@ class Backrest {
 			});
 		});
 
-		if (this.settings.https && this.settings.https.enabled) {
-			if (this.settings.https.privateKey !== undefined &&
-				this.settings.https.privateKey !== '' &&
-				this.settings.https.certificate !== undefined &&
-				this.settings.https.certificate !== '') {
+		Property.getValue('backrest.https.enabled', false).then((enabled) => {
+			if (!enabled) {
+				return;
+			}
 
-				let options = {
-					key: fs.readFileSync(this.settings.https.privateKey).toString(),
-					cert: fs.readFileSync(this.settings.https.certificate).toString()
+			var promises = [];
+			promises.push(Property.getValue('backrest.https.privateKey', ''));
+			promises.push(Property.getValue('backrest.https.certificate', ''));
+			promises.push(Property.getValue('backrest.https.port', 443));
+			Promise.all(promises).then((values) => {
+				var options = {
+					'key': values[0],
+					'cert': values[1]
 				};
 
-				let server = https.createServer(options, this.app);
-				server.on('error', onError);
-				server.on('listening', onListeningFn(server));
-				server.listen(this.settings.https.port || 443);
-			} else {
-				throw new Error('HTTPS credentials are not valid.');
-			}
-		}
+				if (options.key && options.cert) {
+					let server = https.createServer(options, this.app);
+					server.on('error', onError);
+					server.on('listening', onListeningFn(server));
+					server.listen(values[3]);
+				} else {
+					throw new Error('HTTPS credentials are not valid.');
+				}
+			});
+		});
 
-		if (this.settings.http && this.settings.http.enabled) {
+		Property.getValue('backrest.http.enabled', true).then((enabled) => {
+			if (!enabled) {
+				return;
+			}
+
 			let server = http.createServer(this.app);
 			server.on('error', onError);
 			server.on('listening', onListeningFn(server));
-			server.listen(process.env.PORT || this.settings.http.port || 80);
-		}
+			server.listen(process.env.PORT || 3000);
+		});
 
 		// live reloading for dev environments
 		if (this.app.get('env') === 'development') {
@@ -233,7 +230,6 @@ class Backrest {
 		if (statusCode === 500) {
 			Email.sendErrorEmail(this, request, error);
 		}
-
 	}
 }
 

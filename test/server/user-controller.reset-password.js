@@ -7,7 +7,7 @@ module.exports = {
 	'description': 'should reset a password',
 	'data': function (_id) {
 		return {
-			'token': Token.generate(120, 'aes-256-cbc', '012345678', _id),
+			'token': Token.generate(120, 'aes-256-cbc', '0123456', _id),
 			'password': 'password'
 		};
 	},

@@ -4,6 +4,7 @@ const bcrypt = require('bcrypt');
 const clone = require('clone');
 const db = require('../lib/db');
 const Email = require('../lib/email');
+const Property = require('../lib/property');
 const Token = require('../lib/token');
 const moment = require('moment');
 const passport = require('passport');
@@ -63,45 +64,44 @@ module.exports = class UserController {
 
 	login (request, response) {
 		var emailConfirmed = true;
-		if (Email.confirmEmailEnabled(this.server) && request.user._created) {
-			if (!request.user.isConfirmed) {
-				var timeout = this.server.settings.authentication.confirmEmailToken.timeout ? this.server.settings.authentication.confirmEmailToken.timeout : 1440;
+		Property.getValue('backrest.authentication.confirmEmailToken.timeout', 1440).then((timeout) => {
+			if (request.user._created && !request.user.isConfirmed) {
 				var timeoutDate = moment(request.user._created).add('minutes', timeout);
 				var currentDate = moment();
 				emailConfirmed = timeoutDate >= currentDate;
 			}
-		}
 
-		if (emailConfirmed) {
+			if (emailConfirmed) {
 
-			// log authentication change
-			console.log('Session ' + request.sessionID + ' is now logged in as ' + request.user.email);
+				// log authentication change
+				console.log('Session ' + request.sessionID + ' is now logged in as ' + request.user.email);
 
-			// set last login
-			this.users.update({
-				'_id': request.user._id
-			}, {
-				'$set': {
-					'_lastLogin': new Date(),
-					'_modified': new Date(),
-					'_modifiedBy': request.user._id
-				}
-			}, (error) => {
-				if (error) {
-					return this.server.error(request, response, error, 500);
-				}
+				// set last login
+				this.users.update({
+					'_id': request.user._id
+				}, {
+					'$set': {
+						'_lastLogin': new Date(),
+						'_modified': new Date(),
+						'_modifiedBy': request.user._id
+					}
+				}, (error) => {
+					if (error) {
+						return this.server.error(request, response, error, 500);
+					}
 
-				// return result
-				this.server.result(request, response, request.user);
-			});
-		} else {
+					// return result
+					this.server.result(request, response, request.user);
+				});
+			} else {
 
-			// cancel the login
-			request.logout();
+				// cancel the login
+				request.logout();
 
-			// collection not provided, create procedure not found response
-			this.server.error(request, response, 'Forbidden', 403);
-		}
+				// collection not provided, create procedure not found response
+				this.server.error(request, response, 'Forbidden', 403);
+			}
+		});
 	}
 
 	logout (request, response) {
@@ -123,7 +123,7 @@ module.exports = class UserController {
 					return this.server.error(request, response, error, 500);
 				}
 
-				Email.sendConfirmEmail(this.server, data, (error) => {
+				Email.sendConfirmEmail(this.server, data).then((error) => {
 					if (error) {
 						return this.server.error(request, response, error, 500);
 					}
@@ -138,32 +138,37 @@ module.exports = class UserController {
 	}
 
 	resetPassword (request, response) {
-		var algorithm = this.server.settings.authentication.resetPasswordToken.algorithm;
-		var password = this.server.settings.authentication.resetPasswordToken.password;
-		var token = Token.parse(algorithm, password, request.body.token);
-		if (Token.validate(token)) {
-			return this.server.error(request, response, 'Bad Request', 400);
-		}
+		var promises = [];
+		promises.push(Property.getValue('backrest.authentication.resetPasswordToken.algorithm'));
+		promises.push(Property.getValue('backrest.authentication.resetPasswordToken.password'));
 
-		bcrypt.hash(request.body.password, 10, (error, hash) => {
-			this.users.findAndModify({
-				'query': {'_id': db.ObjectId(token.data)},
-				'update': {
-					'$set': {
-						'password': hash,
-						'_modified': new Date()
+		Promise.all(promises).then((properties) => {
+			var [algorithm, password] = properties;
+			var token = Token.parse(algorithm, password, request.body.token);
+			if (!Token.validate(token)) {
+				return this.server.error(request, response, 'Bad Request', 400);
+			}
+
+			bcrypt.hash(request.body.password, 10, (error, hash) => {
+				this.users.findAndModify({
+					'query': {'_id': db.ObjectId(token.data)},
+					'update': {
+						'$set': {
+							'password': hash,
+							'_modified': new Date()
+						}
 					}
-				}
-			}, (error) => {
-				if (error) {
-					return this.server.error(request, response, error, 500);
-				}
+				}, (error) => {
+					if (error) {
+						return this.server.error(request, response, error, 500);
+					}
 
-				// log email confirmation
-				console.log('Session ' + request.sessionID + ' has updated their password');
+					// log email confirmation
+					console.log('Session ' + request.sessionID + ' has updated their password');
 
-				// return success
-				this.server.result(request, response, true);
+					// return success
+					this.server.result(request, response, true);
+				});
 			});
 		});
 	}
@@ -184,7 +189,7 @@ module.exports = class UserController {
 				return this.server.error(request, response, 'Not Found', 404);
 			}
 
-			Email.sendResetPassword(this.server, data, (error) => {
+			Email.sendResetPassword(this.server, data).then((error) => {
 				if (error) {
 					return this.server.error(request, response, error, 500);
 				}
@@ -196,31 +201,35 @@ module.exports = class UserController {
 	}
 
 	confirmEmail (request, response) {
-		var algorithm = this.server.settings.authentication.confirmEmailToken.algorithm;
-		var password = this.server.settings.authentication.confirmEmailToken.password;
-		var token = Token.parse(algorithm, password, request.body.token);
-		if (Token.validate(token)) {
-			return this.server.error(request, response, 'Bad Request', 400);
-		}
-
-		// update confirmation and save changes
-		this.users.update({
-			'_id': db.ObjectId(token.data)
-		}, {
-			'$set': {
-				'isConfirmed': true,
-				'_modified': new Date()
-			}
-		}, (error) => {
-			if (error) {
-				return this.server.error(request, response, error, 500);
+		var promises = [];
+		promises.push(Property.getValue('backrest.authentication.confirmEmailToken.algorithm'));
+		promises.push(Property.getValue('backrest.authentication.confirmEmailToken.password'));
+		Promise.all(promises).then((values) => {
+			var [algorithm, password] = values;
+			var token = Token.parse(algorithm, password, request.body.token);
+			if (!Token.validate(token)) {
+				return this.server.error(request, response, 'Bad Request', 400);
 			}
 
-			// log email confirmation
-			console.log('Session ' + request.sessionID + ' has confirmed their email');
+			// update confirmation and save changes
+			this.users.update({
+				'_id': db.ObjectId(token.data)
+			}, {
+				'$set': {
+					'isConfirmed': true,
+					'_modified': new Date()
+				}
+			}, (error) => {
+				if (error) {
+					return this.server.error(request, response, error, 500);
+				}
 
-			// return success
-			this.server.result(request, response, true);
+				// log email confirmation
+				console.log('Session ' + request.sessionID + ' has confirmed their email');
+
+				// return success
+				this.server.result(request, response, true);
+			});	
 		});
 	}
 
@@ -238,7 +247,7 @@ module.exports = class UserController {
 				return this.server.error(request, response, 'Not Found', 404);
 			}
 
-			Email.sendConfirmEmail(this.server, data, (error) => {
+			Email.sendConfirmEmail(this.server, data).then((error) => {
 				if (error) {
 					return this.server.error(request, response, error, 500);
 				}

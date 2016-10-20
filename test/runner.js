@@ -2,7 +2,7 @@ const request = require('superagent');
 const expect = require('expect.js');
 const mongojs = require('mongojs');
 const fs = require('fs');
-const settings = require('../settings.development.json');
+const db = require('../lib/db');
 var before = require('mocha').before;
 var it = require('mocha').it;
 var describe = require('mocha').describe;
@@ -17,7 +17,7 @@ var tests = fs.readdirSync('./test/server').map((fileName) => {
 
 describe('Load Static File', () => {
 	it('Index.html can be loaded.', (done) => {
-		request.get('http://localhost:' + settings.http.port + '/').end((error, response) => {
+		request.get('http://localhost:3000' + '/').end((error, response) => {
 			expect(response.status).to.equal(200);
 			expect(response.text).to.contain('Backrest');
 			done();
@@ -28,7 +28,7 @@ describe('Load Static File', () => {
 describe('API', () => {
 	before((done) => {
 		// connect to the database and remove existing test user
-		mongojs(settings.databaseUrl, ['users']).users.remove({
+		db.collection('users').remove({
 			'email': {
 				'$in': ['emailCreate@backrest.io', 'emailUpdate@backrest.io']
 			}
@@ -47,7 +47,7 @@ describe('API', () => {
 				method = 'del';
 			}
 
-			var call = request[method]('http://localhost:' + settings.http.port + test.url.replace('{_id}', _id));
+			var call = request[method]('http://localhost:3000' + test.url.replace('{_id}', _id));
 
 			// add cookies
 			if (sessionCookie) {

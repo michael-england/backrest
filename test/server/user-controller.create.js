@@ -1,6 +1,6 @@
 const expect = require('expect.js');
 const mongojs = require('mongojs');
-const settings = require('../../settings.development.json');
+const db = require('../../lib/db');
 
 module.exports = {
 	'order': 0,
@@ -21,8 +21,7 @@ module.exports = {
 
 		// TODO: Move this
 		// manually add the user to the admin role
-		var db = mongojs(settings.databaseUrl, ['users']);
-		db.users.update({
+		db.collection('users').update({
 			'_id': db.ObjectId(result._id)
 		}, {
 			'$set': {
