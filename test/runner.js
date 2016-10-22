@@ -41,63 +41,64 @@ describe('API', () => {
 	tests.forEach((test) => {
 		it(test.description, function (done) {
 			this.timeout(5000);
+			setTimeout(() => {
+				var method = test.method.toLowerCase();
+				if (method === 'delete') {
+					method = 'del';
+				}
 
-			var method = test.method.toLowerCase();
-			if (method === 'delete') {
-				method = 'del';
-			}
+				var call = request[method]('http://localhost:3000' + test.url.replace('{_id}', _id));
 
-			var call = request[method]('http://localhost:3000' + test.url.replace('{_id}', _id));
+				// add cookies
+				if (sessionCookie) {
+					call = call.set('Cookie', sessionCookie);
+				}
 
-			// add cookies
-			if (sessionCookie) {
-				call = call.set('Cookie', sessionCookie);
-			}
-
-			// add data
-			if (test.method === 'POST' || test.method === 'PUT') {
-				if (test.data) {
-					var type = Object.prototype.toString.call(test.data);
-					if (type === '[object Function]') {
-						call = call.send(test.data(_id))
-					} else {
-						call = call.send(test.data);
+				// add data
+				if (test.method === 'POST' || test.method === 'PUT') {
+					if (test.data) {
+						var type = Object.prototype.toString.call(test.data);
+						if (type === '[object Function]') {
+							call = call.send(test.data(_id))
+						} else {
+							call = call.send(test.data);
+						}
 					}
 				}
-			}
 
-			call.end((error, response) => {
-				// remember cookies
-				if (response.header['set-cookie']) {
-					sessionCookie = response.header['set-cookie'];
-				}
+				call.end((error, response) => {
+					// remember cookies
+					if (response.header['set-cookie']) {
+						sessionCookie = response.header['set-cookie'];
+					}
 
-				// basic call assertions
-				expect(response.status).to.equal(test.statusCode || 200);
+					// basic call assertions
+					expect(response.status).to.equal(test.statusCode || 200);
 
-				// append id to user
-				var result = JSON.parse(response.text);
-				if (result._id) {
-					_id = result._id;
-				}
+					// append id to user
+					var result = JSON.parse(response.text);
+					if (result._id) {
+						_id = result._id;
+					}
 
-				// check assertions
-				if (!test.assertions) {
-					return done();
-				}
+					// check assertions
+					if (!test.assertions) {
+						return done();
+					}
 
-				var type = Object.prototype.toString.call(test.assertions);
-				if (type === '[object Array]') {
-					test.assertions.forEach((assertion) => {
-						expect(result[assertion]).to.equal(test.body[assertion]);
-					});
-					done();
-				} else if (type === '[object Function]') {
-					test.assertions(result, done);
-				} else {
-					done();
-				}
-			});
+					var type = Object.prototype.toString.call(test.assertions);
+					if (type === '[object Array]') {
+						test.assertions.forEach((assertion) => {
+							expect(result[assertion]).to.equal(test.body[assertion]);
+						});
+						done();
+					} else if (type === '[object Function]') {
+						test.assertions(result, done);
+					} else {
+						done();
+					}
+				});	
+			}, test.delay);
 		});
 	});
 });
