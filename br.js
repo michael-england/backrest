@@ -6,7 +6,6 @@ const clone = require('clone');
 const http = require('http');
 const https = require('https');
 const fs = require('fs');
-const email = require('./node_modules/emailjs/email');
 const express = require('express');
 const expressSession = require('express-session');
 const mongojs = require('mongojs');
@@ -31,43 +30,12 @@ class Backrest {
 
 		Property.getValue(BACKREST_INSTALLED, false).then((value) => {
 			if (value) {
-				// start the servers
-				this.smtpStart();
 				this.httpStart();
 			} else {
-				// perform initial setup
 				Setup.init().then(() => {
-					// start the servers
-					this.smtpStart();
 					this.httpStart();
 				});
 			}
-		});
-	}
-
-	smtpStart () {
-		Property.getValue('backrest.email.enabled', true).then((enabled) => {
-			if (!enabled) {
-				return;
-			}
-
-			var promises = [
-				Property.getValue('backrest.email.server.user'),
-				Property.getValue('backrest.email.server.password'),
-				Property.getValue('backrest.email.server.host'),
-				Property.getValue('backrest.email.server.port'),
-				Property.getValue('backrest.email.server.ssl')
-			];
-
-			Promise.all(promises).then((properties) => {
-				this.mail = email.server.connect({
-					'user': properties[0],
-					'password': properties[1],
-					'host': properties[2],
-					'port': properties[3],
-					'ssl': properties[4]
-				});
-			});
 		});
 	}
 
@@ -228,7 +196,7 @@ class Backrest {
 			});
 
 		if (statusCode === 500) {
-			Email.sendErrorEmail(this, request, error);
+			Email.sendErrorEmail(request, error);
 		}
 	}
 }

@@ -123,7 +123,7 @@ module.exports = class UserController {
 					return this.server.error(request, response, error, 500);
 				}
 
-				Email.sendConfirmEmail(this.server, data).then((error) => {
+				Email.sendConfirmEmail(data).then((error) => {
 					if (error) {
 						return this.server.error(request, response, error, 500);
 					}
@@ -189,7 +189,7 @@ module.exports = class UserController {
 				return this.server.error(request, response, 'Not Found', 404);
 			}
 
-			Email.sendResetPassword(this.server, data).then((error) => {
+			Email.sendResetPassword(data).then((error) => {
 				if (error) {
 					return this.server.error(request, response, error, 500);
 				}
@@ -247,7 +247,7 @@ module.exports = class UserController {
 				return this.server.error(request, response, 'Not Found', 404);
 			}
 
-			Email.sendConfirmEmail(this.server, data).then((error) => {
+			Email.sendConfirmEmail(data).then((error) => {
 				if (error) {
 					return this.server.error(request, response, error, 500);
 				}
