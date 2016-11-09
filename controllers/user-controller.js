@@ -2,18 +2,21 @@
 
 const bcrypt = require('bcrypt');
 const clone = require('clone');
+const BaseController = require('./base-controller');
 const db = require('../lib/db');
+const Data = require('../lib/data');
 const Email = require('../lib/email');
 const Property = require('../lib/property');
 const Token = require('../lib/token');
 const moment = require('moment');
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
+const constants = require('../lib/constants');
 
-module.exports = class UserController {
+module.exports = class UserController extends BaseController {
 	constructor (server) {
-		this.server = server;
-		this.users = db.collection('users');
+		super(server);
+		this.users = db.collection(constants.COLLECTION.USERS);
 		this.server.app.use(passport.initialize());
 		this.server.app.use(passport.session());
 
@@ -71,36 +74,34 @@ module.exports = class UserController {
 				emailConfirmed = timeoutDate >= currentDate;
 			}
 
-			if (emailConfirmed) {
-
-				// log authentication change
-				console.log('Session ' + request.sessionID + ' is now logged in as ' + request.user.email);
-
-				// set last login
-				this.users.update({
-					'_id': request.user._id
-				}, {
-					'$set': {
-						'_lastLogin': new Date(),
-						'_modified': new Date(),
-						'_modifiedBy': request.user._id
-					}
-				}, (error) => {
-					if (error) {
-						return this.server.error(request, response, error, 500);
-					}
-
-					// return result
-					this.server.result(request, response, request.user);
-				});
-			} else {
-
+			if (!emailConfirmed) {
 				// cancel the login
 				request.logout();
 
 				// collection not provided, create procedure not found response
-				this.server.error(request, response, 'Forbidden', 403);
+				return this.server.error(request, response, constants.ERROR.FORBIDDEN, 403);
 			}
+
+			// log authentication change
+			console.log('Session ' + request.sessionID + ' is now logged in as ' + request.user.email);
+
+			// set last login
+			this.users.update({
+				'_id': request.user._id
+			}, {
+				'$set': {
+					'_lastLogin': new Date(),
+					'_modified': new Date(),
+					'_modifiedBy': request.user._id
+				}
+			}, (error) => {
+				if (error) {
+					return this.server.error(request, response, error, 500);
+				}
+
+				// return result
+				this.server.result(request, response, request.user);
+			});
 		});
 	}
 
@@ -110,30 +111,27 @@ module.exports = class UserController {
 	}
 
 	create (request, response) {
-		var document = clone(request.body);
-		document._created = new Date();
-		document._modified = new Date();
+		var data = clone(request.body);
 
-		bcrypt.hash(document.password, 10, (error, hash) => {
-			document.password = hash;
+		bcrypt.hash(data.password, 10, (error, hash) => {
+			data.password = hash;
 
 			// create the new user
-			this.users.save(document, (error, data) => {
-				if (error) {
-					return this.server.error(request, response, error, 500);
-				}
+			Data.collection('users', request.user)
+				.create(data)
+				.then((data) => {
+					Email.sendConfirmEmail(data).then((error) => {
+						if (error) {
+							throw err;
+						}
 
-				Email.sendConfirmEmail(data).then((error) => {
-					if (error) {
-						return this.server.error(request, response, error, 500);
-					}
-
-					this.server.result(request, response, data, 201, {
-						'Content-Type': 'application/json',
-						'Location': '/api/users/' + data._id
+						this.server.result(request, response, data, 201, {
+							'Content-Type': 'application/json',
+							'Location': '/api/users/' + data._id
+						});
 					});
-				});
-			});
+				})
+				.catch(this.respondWithErrorFn(request, response));
 		});
 	}
 
@@ -229,7 +227,7 @@ module.exports = class UserController {
 
 				// return success
 				this.server.result(request, response, true);
-			});	
+			});
 		});
 	}
 
@@ -259,11 +257,16 @@ module.exports = class UserController {
 	}
 
 	current (request, response) {
-		if (request.user) {
-			this.server.result(request, response, request.user);
-		} else {
-			this.server.result(request, response);
+		if (!request.user) {
+			return this.server.result(request, response);
 		}
+
+		Data.collection('users', request.user)
+			.findOne({
+				'_id': request.user._id
+			})
+			.then(this.respondWithDataFn(request, response))
+			.catch(this.respondWithErrorFn(request, response));
 	}
 
 	currentIsInRole (request, response) {
@@ -271,16 +274,10 @@ module.exports = class UserController {
 			return this.server.result(request, response, false);
 		}
 
-		// look for the role
-		var isInRole = false;
-		if (request.user.roles) {
-			isInRole = request.user.roles.some((role) => {
-				return role === request.body.role;
-			});
-		}
-
-		// return result
-		this.server.result(request, response, isInRole);
+		var roles = request.user.roles || [];
+		this.server.result(request, response, roles.some((role) => {
+			return role === request.body.role;
+		}));
 	}
 
 	changePassword (request, response) {

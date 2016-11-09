@@ -1,11 +1,13 @@
 'use strict';
 
 const clone = require('clone');
-const db = require('../lib/db');
+const BaseController = require('./base-controller');
+const Data = require('../lib/data');
+const constants = require('../lib/constants');
 
-module.exports = class CollectionController {
+module.exports = class CollectionController extends BaseController {
 	constructor (server) {
-		this.server = server;
+		super(server);
 		this.server.app.post('/api/:collection', this.create.bind(this));
 		this.server.app.get('/api/:collection', this.find.bind(this));
 		this.server.app.get('/api/:collection/:id', this.findById.bind(this));
@@ -14,33 +16,29 @@ module.exports = class CollectionController {
 	}
 
 	create (request, response) {
-		var collection = db.collection(request.params.collection);
-		var document = clone(request.body);
-		document._created = new Date();
-		document._createdBy = request.user._id;
-		document._modified = new Date();
-		document._modifiedBy = request.user._id;
-
-		// save the resource
-		collection.save(document, (error, data) => {
-			if (error) {
-				return this.server.error(request, response, error, 500);
-			}
-
-			// redirect to new resource
-			this.server.result(request, response, data, 201, {
-				'Content-Type': 'application/json',
-				'Location': '/api/' + request.params.schema + '/' + data._id
-			});
-		});
+		Data.collection(request.params.collection, request.user)
+			.create(request.body)
+			.then((data) => {
+				this.server.result(request, response, data, 201, {
+					'Content-Type': 'application/json',
+					'Location': '/api/' + request.params.schema + '/' + data._id
+				});
+			})
+			.catch(this.respondWithErrorFn(request, response));
 	}
 
 	find (request, response) {
-		var collection = db.collection(request.params.collection);
 
 		// set max limit
 		if (request.query.limit && request.query.limit > 100) {
 			request.query.limit = 100;
+		} else {
+			request.query.limit = parseInt(request.query.limit, 10);
+		}
+
+		//  set skip
+		if (request.query.skip) {
+			request.query.skip = parseInt(request.query.skip, 10);
 		}
 
 		// parse query
@@ -59,103 +57,44 @@ module.exports = class CollectionController {
 			}
 		}
 
-		// get total
-		collection.count(request.query.conditions, (error, total) => {
-			if (error) {
-				return this.server.error(request, response, error, 500);
-			}
-
-			// get the data
-			collection.find(request.query.conditions)
-				.sort(request.query.sort || {_created: -1})
-				.limit(parseInt(request.query.limit, 10))
-				.skip(parseInt(request.query.skip, 10), (error, data) => {
-					if (error) {
-						return this.server.error(request, response, error, 500);
-					}
-
-					// response with data and total
-					this.server.result(request, response, {
-						'data': data,
-						'total': total
-					});
-				});
-		});
+		Data.collection(request.params.collection, request.user)
+			.find(request.query.conditions, request.query.sort, request.query.limit, request.query.skip)
+			.then(this.respondWithDataFn(request, response))
+			.catch(this.respondWithErrorFn(request, response));
 	}
 
 	findById (request, response) {
-		var collection = db.collection(request.params.collection);
-
-		// find the item
-		collection.findOne({
-			'_id': db.ObjectId(request.params.id)
-		}, (error, data) => {
-			if (error) {
-				return this.server.error(request, response, error, 500);
-			}
-
-			if (!data) {
-				return this.server.error(request, response, 'Not Found', 404);
-			}
-
-			this.server.result(request, response, data);
-		});
+		Data.collection(request.params.collection, request.user)
+			.findOne({
+				'_id': Data.ObjectId(request.params.id)
+			})
+			.then(this.respondWithDataFn(request, response))
+			.catch(this.respondWithErrorFn(request, response));
 	}
 
 	update (request, response) {
-		var collection = db.collection(request.params.collection);
-		var document = clone(request.body);
-		document._modified = new Date();
-		document._modifiedBy = request.user._id;
-		delete document._id;
+		Data.collection(request.params.collection, request.user)
+			.update({'_id': Data.ObjectId(request.params.id)}, request.body)
+			.then((data) => {
 
-		collection.findAndModify({
-			'query': {'_id': db.ObjectId(request.params.id)},
-			'update': {'$set': document},
-			'new': true
-		}, (error, data) => {
-			if (error) {
-				return this.server.error(request, response, error, 500);
-			}
-
-			if (!data) {
-				return this.server.error(request, response, 'Not Found', 404);
-			}
-
-			// update user session
-			if (request.params.collection === 'users' &&
-				request.user && request.user._id &&
-				request.user._id.toString() === data._id.toString()) {
-				request.user = clone(data);
-			}
-
-			// return updated user
-			this.server.result(request, response, data);
-		});
-	}
-
-	delete (request, response) {
-		var collection = db.collection(request.params.collection);
-		var condition = {
-			'_id': db.ObjectId(request.params.id)
-		};
-
-		collection.findOne(condition, (error, data) => {
-			if (error) {
-				return this.server.error(request, response, error, 500);
-			}
-
-			if (!data) {
-				return this.server.error(request, response, 'Not Found', 404);
-			}
-
-			collection.remove(condition, (error) => {
-				if (error) {
-					return this.server.error(request, response, error, 500);
+				// update user session
+				if (request.params.collection === constants.COLLECTION.USERS &&
+					request.user && request.user._id &&
+					request.user._id.toString() === data._id.toString()) {
+					request.user = clone(data);
 				}
 
 				this.server.result(request, response, data);
 			})
-		});
+			.catch(this.respondWithErrorFn(request, response));
+	}
+
+	delete (request, response) {
+		Data.collection(request.params.collection, request.user)
+			.delete({
+				'_id': Data.ObjectId(request.params.id)
+			})
+			.then(this.respondWithDataFn(request, response))
+			.catch(this.respondWithErrorFn(request, response));
 	}
 };

@@ -1,5 +1,4 @@
 const expect = require('expect.js');
-const mongojs = require('mongojs');
 const db = require('../../lib/db');
 
 module.exports = {

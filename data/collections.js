@@ -15,14 +15,14 @@ module.exports = [{
 		"filter": {
 			"type": "Mixed"
 		},
-		"_acl": {
+		"acl": {
 			"type": "Mixed"
 		},
 		"_created": "Date",
 		"_modified": "Date"
 	},
-	"filter": {
-		"readFilter": {
+	"acl": {
+		"create": {
 			"admin": [
 				"name",
 				"label",
@@ -33,7 +33,19 @@ module.exports = [{
 			],
 			"public": []
 		},
-		"writeFilter": {
+		"read": {
+			"admin": [
+				"_id",
+				"name",
+				"label",
+				"definition",
+				"filter",
+				"_created",
+				"_modified"
+			],
+			"public": []
+		},
+		"update": {
 			"admin": [
 				"name",
 				"label",
@@ -44,7 +56,7 @@ module.exports = [{
 			],
 			"public": []
 		},
-		"sanitize": true
+		"delete": ["admin"]
 	},
 	"_modified": new Date(),
 	"_created": new Date()
@@ -65,17 +77,8 @@ module.exports = [{
 			"label": "Email",
 			"type": "String"
 		},
-		"_acl": {
-			"label": "Access Control List",
-			"type": "Mixed"
-		},
-		"hash": {
-			"label": "Hash",
-			"visible": false,
-			"type": "String"
-		},
-		"salt": {
-			"label": "Salt",
+		"password": {
+			"label": "Password",
 			"visible": false,
 			"type": "String"
 		},
@@ -101,12 +104,14 @@ module.exports = [{
 			"type": "Date"
 		}
 	},
-	"filter": {
-		"readFilter": {
-			"owner": [
+	"acl": {
+		"create": {
+			"public": [
+				"_id",
 				"firstName",
 				"lastName",
 				"email",
+				"password",
 				"_created",
 				"_modified",
 				"_lastLogin"
@@ -117,17 +122,38 @@ module.exports = [{
 				"email",
 				"_created",
 				"_modified",
+				"roles"
+			]
+		},
+		"read": {
+			"owner": [
+				"_id",
+				"firstName",
+				"lastName",
+				"email",
+				"_created",
+				"_modified",
+				"_lastLogin"
+			],
+			"admin": [
+				"_id",
+				"firstName",
+				"lastName",
+				"email",
+				"_created",
+				"_modified",
 				"_lastLogin",
 				"roles"
 			],
 			"public": [
+				"_id",
 				"firstName",
 				"lastName",
 				"_created",
 				"_modified"
 			]
 		},
-		"writeFilter": {
+		"update": {
 			"owner": [
 				"firstName",
 				"lastName",
@@ -146,7 +172,7 @@ module.exports = [{
 			],
 			"public": []
 		},
-		"sanitize": true
+		"delete": ["admin"]
 	},
 	"_modified": new Date(),
 	"_created": new Date()
@@ -162,8 +188,8 @@ module.exports = [{
 		"_created": "Date",
 		"_modified": "Date"
 	},
-	"filter": {
-		"readFilter": {
+	"acl": {
+		"create": {
 			"owner": [
 				"name",
 				"_created",
@@ -176,7 +202,22 @@ module.exports = [{
 			],
 			"public": []
 		},
-		"writeFilter": {
+		"read": {
+			"owner": [
+				"_id",
+				"name",
+				"_created",
+				"_modified"
+			],
+			"admin": [
+				"_id",
+				"name",
+				"_created",
+				"_modified"
+			],
+			"public": []
+		},
+		"update": {
 			"owner": [
 				"name",
 				"_created",
@@ -189,7 +230,7 @@ module.exports = [{
 			],
 			"public": []
 		},
-		"sanitize": true
+		"delete": ["admin"]
 	},
 	"_modified": new Date(),
 	"_created": new Date()
