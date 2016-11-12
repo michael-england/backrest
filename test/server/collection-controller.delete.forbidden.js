@@ -1,4 +1,3 @@
-const expect = require('expect.js');
 const db = require('../../lib/db');
 module.exports = {
 	'order': 0,
