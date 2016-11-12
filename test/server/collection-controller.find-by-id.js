@@ -5,8 +5,7 @@ module.exports = {
 	'url': '/api/users/{_id}',
 	'description': 'should get a user by id',
 	'assertions': function (result, done) {
-		expect(result.salt).to.be(undefined);
-		expect(result.hash).to.be(undefined);
+		expect(result.password).to.be(undefined);
 		expect(result.firstName).to.equal('FirstNameCreate');
 		expect(result.lastName).to.equal('LastNameCreate');
 		expect(result.email).to.equal('emailCreate@backrest.io');

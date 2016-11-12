@@ -3,16 +3,17 @@ module.exports = {
 	'order': 1,
 	'method': 'POST',
 	'url': '/api/users/login',
-	'description': 'should login a user',
+	'description': 'should fail to login a user',
 	'data': {
-		'email': 'emailCreate@backrest.io',
+		'email': 'invalid@backrest.io',
 		'password': 'password'
 	},
+	'statusCode': 401,
 	'assertions': function (result, done) {
 		expect(result.password).to.be(undefined);
-		expect(result.firstName).to.equal('FirstNameCreate');
-		expect(result.lastName).to.equal('LastNameCreate');
-		expect(result.email).to.equal('emailCreate@backrest.io');
+		expect(result.firstName).to.equal(undefined);
+		expect(result.lastName).to.equal(undefined);
+		expect(result.email).to.equal(undefined);
 		done();
 	}
 };

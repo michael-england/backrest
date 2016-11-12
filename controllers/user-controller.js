@@ -30,12 +30,12 @@ module.exports = class UserController extends BaseController {
 				}
 
 				if (!user) {
-					return done(null, false, {message: 'Incorrect email.'});
+					return done(null, false, {message: 'Invalid Credentials'});
 				}
 
 				bcrypt.compare(password, user.password, (error, result) => {
 					if (!result) {
-						return done(null, false, {message: 'Incorrect password.'});
+						return done(null, false, {message: 'Invalid Credentials'});
 					}
 
 					return done(null, user);
@@ -100,7 +100,12 @@ module.exports = class UserController extends BaseController {
 				}
 
 				// return result
-				this.server.result(request, response, request.user);
+				Data.collection('users', request.user)
+					.findOne({
+						'_id': request.user._id
+					})
+					.then(this.respondWithDataFn(request, response))
+					.catch(this.respondWithErrorFn(request, response));
 			});
 		});
 	}

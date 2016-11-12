@@ -75,9 +75,8 @@ describe('API', () => {
 					expect(response.status).to.equal(test.statusCode || 200);
 
 					// append id to user
-					var result = JSON.parse(response.text);
-					if (result._id) {
-						_id = result._id;
+					if (response.body._id) {
+						_id = response.body._id;
 					}
 
 					// check assertions
@@ -88,11 +87,11 @@ describe('API', () => {
 					var type = Object.prototype.toString.call(test.assertions);
 					if (type === '[object Array]') {
 						test.assertions.forEach((assertion) => {
-							expect(result[assertion]).to.equal(test.body[assertion]);
+							expect(response.body[assertion]).to.equal(test.body[assertion]);
 						});
 						done();
 					} else if (type === '[object Function]') {
-						test.assertions(result, done);
+						test.assertions(response.body, done);
 					} else {
 						done();
 					}

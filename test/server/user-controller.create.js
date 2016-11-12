@@ -14,6 +14,7 @@ module.exports = {
 		'password': 'password'
 	},
 	'assertions': function (result, done) {
+		expect(result.password).to.be(undefined);
 		expect(result.firstName).to.equal('FirstNameCreate');
 		expect(result.lastName).to.equal('LastNameCreate');
 		expect(result.email).to.equal('emailCreate@backrest.io');
