@@ -46,6 +46,7 @@ module.exports = class CollectionController extends BaseController {
 			try {
 				request.query.conditions = JSON.parse(request.query.conditions);
 			} catch (error) {
+				// ignore
 			}
 		}
 
@@ -54,6 +55,7 @@ module.exports = class CollectionController extends BaseController {
 			try {
 				request.query.sort = JSON.parse(request.query.sort);
 			} catch (error) {
+				// ignore
 			}
 		}
 

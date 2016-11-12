@@ -2,15 +2,11 @@
 
 'use strict';
 
-const clone = require('clone');
 const http = require('http');
 const https = require('https');
-const fs = require('fs');
 const express = require('express');
 const expressSession = require('express-session');
-const mongojs = require('mongojs');
 const MongoStore = require('connect-mongo')(expressSession);
-const db = require('./lib/db');
 const CollectionController = require('./controllers/collection-controller');
 const UserController = require('./controllers/user-controller');
 const Setup = require('./lib/setup');

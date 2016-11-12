@@ -1,6 +1,5 @@
 const request = require('superagent');
 const expect = require('expect.js');
-const mongojs = require('mongojs');
 const fs = require('fs');
 const db = require('../lib/db');
 var before = require('mocha').before;
@@ -97,7 +96,7 @@ describe('API', () => {
 					} else {
 						done();
 					}
-				});	
+				});
 			}, test.delay);
 		});
 	});

@@ -122,7 +122,7 @@ module.exports = class UserController extends BaseController {
 				.then((data) => {
 					Email.sendConfirmEmail(data).then((error) => {
 						if (error) {
-							throw err;
+							throw error;
 						}
 
 						this.server.result(request, response, data, 201, {

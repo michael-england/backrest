@@ -41,6 +41,10 @@
     "passport-local": "^1.0.0"
   },
   "devDependencies": {
+    "eslint": "^3.9.1",
+    "eslint-config-standard": "^6.2.1",
+    "eslint-plugin-promise": "^3.3.1",
+    "eslint-plugin-standard": "^2.0.1",
     "expect.js": "^0.3.1",
     "mocha": "^3.1.2",
     "superagent": "^2.3.0"
