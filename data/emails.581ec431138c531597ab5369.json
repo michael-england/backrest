@@ -1,0 +1,17 @@
+{
+	"_id": {
+		"$oid": "581ec431138c531597ab5369"
+	},
+	"name": "passwordResetRequest",
+	"enabled": true,
+	"text": "{firstName},\n\nExample received a request to reset the password for your account.\n\nIf you would like to reset your password, click on the link below (or copy and paste the URL into your browser):\n\nhttp://example.com/#/user/passwordReset/{token}\n\nThe link above will take you to a secure page where you can change your password. If you do not want to reset your password, please ignore this message. Your password will not be reset. If you have any concerns, please contact us at http://help..com/\n\nRegards,\nExample.com\n\nPlease do not reply to this message; it was sent from an unmonitored email address. This message is a service email related to your use of Example. For general inquiries or to request support with your account, please visit us at http://help..com/",
+	"from": "Example \u003cno-reply@example.com\u003e",
+	"subject": "Reset your Example password",
+	"attachment": [
+		{
+			"data": "\u003c!DOCTYPE html\u003e\n\u003chtml\u003e\n\u003cbody\u003e\n\u0009\u003cdiv style=\"font: 10pt Arial;\"\u003e\n\u0009\u003ch2\u003e{firstName},\u003c/h2\u003e\n\u0009    \u003cp\u003eExample received a request to reset the password for your account.\u003c/p\u003e\n\u0009    \u003cp\u003eIf you would like to reset your password, click on the link below (or copy and paste the URL into your browser):\u003c/p\u003e\n        \u003cp\u003e\u003ca style=\"color:#F78D1D;\" href=\"http://example.com/#/user/passwordReset/{token}\"\u003ehttp://example.com/#/user/passwordReset/{token}\u003c/a\u003e\u003c/p\u003e\n\u0009    \u003cp\u003eThe link above will take you to a secure page where you can change your password. If you do not want to reset your password, please ignore this message. Your password will not be reset. If you have any concerns, please contact us at \u003ca style=\"color:#F78D1D;\" href=\"http://help..com/\"\u003eExample Support\u003c/a\u003e.\u003c/p\u003e\n\u0009    \u003cp\u003e\u003ci\u003eRegards,\u003cbr /\u003eExample.com\u003c/i\u003e\u003c/p\u003e\n\u0009    \u003cp style=\"font-size: 8pt;color:#acacac;border-top: solid 1px #acacac;margin:10px 0 0 0;padding: 10px 0 0 0;\"\u003ePlease do not reply to this message; it was sent from an unmonitored email address. This message is a service email related to your use of Example. For general inquiries or to request support with your account, please visit us at \u003ca style=\"color:#F78D1D;\" href=\"http://help..com/\"\u003eExample Support.\u003c/a\u003e.\u003c/p\u003e\n    \u003c/div\u003e\n\u003c/body\u003e\n\u003c/html\u003e",
+			"alternative": true
+		}
+	]
+}
+

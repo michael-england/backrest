@@ -1,0 +1,16 @@
+{
+	"_id": {
+		"$oid": "581ec431138c531597ab536a"
+	},
+	"name": "confirmEmail",
+	"enabled": true,
+	"text": "{firstName},\nPlease confirm your email address by clicking on the link below:\n\nhttp://example.com/#/user/confirmEmail/{token}\n\nIf you do not confirm your email address within the first 24 hours after registering you will not be allowed to log into your account\n\nRegards,\nExample.com\n\nPlease do not reply to this message; it was sent from an unmonitored email address. This message is a service email related to your use of Example. For general inquiries or to request support with your account, please visit us at http://help..com/",
+	"from": "Example \u003cno-reply@example.com\u003e",
+	"subject": "Confirm Your Example Account",
+	"attachment": [
+		{
+			"data": "\u003c!DOCTYPE html\u003e\n\u003chtml\u003e\n\u003cbody\u003e\n\u003cdiv style=\"font: 10pt Arial;\"\u003e\n    \u003ch2\u003e{firstName},\u003c/h2\u003e\n    \u003cp\u003ePlease confirm your email address by clicking on the link below:\u003c/p\u003e\n    \u003cp\u003e\u003ca style=\"color:#F78D1D;\" href=\"http://example.com/#/user/confirmEmail/{token}\"\u003ehttp://example.com/#/user/confirmEmail/{token}\u003c/a\u003e\u003c/p\u003e\n    \u003cp\u003eIf you do not confirm your email address within the first 24 hours after registering you will not be allowed to log into your account.\u003c/p\u003e\n    \u003cp\u003e\u003ci\u003eRegards,\u003cbr /\u003eExample.com\u003c/i\u003e\u003c/p\u003e\n    \u003cp style=\"font-size: 8pt;color:#acacac;border-top: solid 1px #acacac;margin:10px 0 0 0;padding: 10px 0 0 0;\"\u003ePlease do not reply to this message; it was sent from an unmonitored email address. This message is a service email related to your use of Example. For general inquiries or to request support with your account, please visit us at \u003ca style=\"color:#F78D1D;\" href=\"http://help..com/\"\u003eExample Support.\u003c/a\u003e.\u003c/p\u003e\n\u003c/div\u003e\n\u003c/body\u003e\n\u003c/html\u003e",
+			"alternative": true
+		}
+	]
+}

@@ -1,0 +1,8 @@
+{
+	"_id": {
+		"$oid": "581ec431138c531597ab5371"
+	},
+	"name": "backrest.http.enabled",
+	"type": "boolean",
+	"value": true
+}

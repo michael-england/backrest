@@ -1,0 +1,8 @@
+{
+	"_id": {
+		"$oid": "581ec431138c531597ab536c"
+	},
+	"name": "backrest.installed",
+	"type": "boolean",
+	"value": true
+}

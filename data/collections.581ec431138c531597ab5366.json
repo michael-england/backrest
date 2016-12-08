@@ -1,0 +1,72 @@
+{
+	"_id": {
+		"$oid": "581ec431138c531597ab5366"
+ 	},
+	"name": "collections",
+	"label": "Collections",
+	"isSystemCollection": true,
+	"definition": {
+		"name": {
+			"type": "String"
+		},
+		"label": {
+			"type": "String"
+		},
+		"definition": {
+			"type": "Mixed"
+		},
+		"filter": {
+			"type": "Mixed"
+		},
+		"acl": {
+			"type": "Mixed"
+		},
+		"_created": "Date",
+		"_modified": "Date"
+	},
+	"acl": {
+		"create": {
+			"admin": [
+				"name",
+				"label",
+				"definition",
+				"filter",
+				"_created",
+				"_modified"
+			],
+			"public": []
+		},
+		"read": {
+			"admin": [
+				"_id",
+				"name",
+				"label",
+				"definition",
+				"filter",
+				"_created",
+				"_modified"
+			],
+			"public": []
+		},
+		"update": {
+			"admin": [
+				"name",
+				"label",
+				"definition",
+				"filter",
+				"_created",
+				"_modified"
+			],
+			"public": []
+		},
+		"delete": [
+			"admin"
+		]
+	},
+	"_modified": {
+		"$date": "2016-11-06T05:48:33.136Z"
+	},
+	"_created": {
+		"$date": "2016-11-06T05:48:33.136Z"
+	}
+}

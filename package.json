@@ -25,6 +25,7 @@
     }
   ],
   "dependencies": {
+    "async": "^2.1.4",
     "bcrypt": "^0.8.7",
     "body-parser": "~1.14.1",
     "clone": "^2.0.0",
@@ -34,7 +35,10 @@
     "express": "^4.14.0",
     "express-livereload": "0.0.24",
     "express-session": "^1.14.1",
+    "jsonfile": "^2.4.0",
+    "lodash": "^4.17.2",
     "moment": "2.4.0",
+    "mongoify": "^1.1.0",
     "mongojs": "^2.4.0",
     "morgan": "^1.7.0",
     "passport": "^0.3.2",

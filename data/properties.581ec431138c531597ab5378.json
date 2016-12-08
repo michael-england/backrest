@@ -1,0 +1,8 @@
+{
+	"_id": {
+		"$oid": "581ec431138c531597ab5378"
+	},
+	"name": "backrest.authentication.resetPasswordToken.timeout",
+	"type": "integer",
+	"value": 120
+}

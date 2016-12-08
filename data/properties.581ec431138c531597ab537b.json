@@ -1,0 +1,8 @@
+{
+	"_id": {
+		"$oid": "581ec431138c531597ab537b"
+	},
+	"name": "backrest.email.server.password",
+	"type": "string",
+	"value": "546e6bd08f9974"
+}

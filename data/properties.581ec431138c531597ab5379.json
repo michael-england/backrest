@@ -1,0 +1,8 @@
+{
+	"_id": {
+		"$oid": "581ec431138c531597ab5379"
+	},
+	"name": "backrest.email.enabled",
+	"type": "boolean",
+	"value": true
+}

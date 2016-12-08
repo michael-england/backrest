@@ -1,0 +1,17 @@
+{
+	"_id": {
+		"$oid": "581ec431138c531597ab536b"
+	},
+	"name": "errorEmail",
+	"enabled": true,
+	"text": "An error occured on Example\n---------------------------------\n\nTimestamp: {timestamp}\n\nError: {error}\n\nURL: {url}\n\nMethod: {method}\n\nHeaders: {headers}\n\nData: {data}\n\nSession: {session}",
+	"to": "Errors \u003cerrors@example.com\u003e",
+	"from": "Error \u003cno-reply@example.com\u003e",
+	"subject": "An error occured on Error",
+	"attachment": [
+		{
+			"data": "\u003c!DOCTYPE html\u003e\n\u003chtml\u003e\n\u003cbody\u003e\n\u0009\u003cdiv style=\"font: 10pt Arial;\"\u003e\n\u0009    \u003ch2\u003eAn error occured on Example\u003c/h2\u003e\n\u0009    \u003cp\u003e\u003cb\u003eTimestamp:\u003c/b\u003e \u003cspan style=\"font-family:Courier\"\u003e{timestamp}\u003c/span\u003e\u003c/p\u003e\n        \u003cp\u003e\u003cb\u003eError:\u003c/b\u003e\u003cpre style=\"font-family:Courier\"\u003e{error}\u003c/pre\u003e\u003c/p\u003e\n\u0009    \u003cp\u003e\u003cb\u003eURL:\u003c/b\u003e \u003cspan style=\"font-family:Courier\"\u003e{url}\u003c/span\u003e\u003c/p\u003e\n\u0009    \u003cp\u003e\u003cb\u003eMethod:\u003c/b\u003e \u003cspan style=\"font-family:Courier\"\u003e{method}\u003c/span\u003e\u003c/p\u003e\n\u0009    \u003cp\u003e\u003cb\u003eHeaders:\u003c/b\u003e \u003cpre style=\"font-family:Courier\"\u003e{headers}\u003c/pre\u003e\u003c/p\u003e\n\u0009    \u003cp\u003e\u003cb\u003eData:\u003c/b\u003e \u003cpre style=\"font-family:Courier\"\u003e{data}\u003c/pre\u003e\u003c/p\u003e\n\u0009    \u003cp\u003e\u003cb\u003eSession:\u003c/b\u003e \u003cpre style=\"font-family:Courier\"\u003e{session}\u003c/pre\u003e\u003c/p\u003e\n    \u003c/div\u003e\n\u003c/body\u003e\n\u003c/html\u003e",
+			"alternative": true
+		}
+	]
+}

@@ -38,6 +38,11 @@ describe('API', () => {
 
 	// loop through each test
 	tests.forEach((test) => {
+		
+		if (test.before) {
+			test.before();
+		}
+		
 		it(test.description, function (done) {
 			this.timeout(5000);
 			setTimeout(() => {
@@ -98,5 +103,9 @@ describe('API', () => {
 				});
 			}, test.delay);
 		});
+		
+		if (test.after) {
+			test.after();
+		}
 	});
 });

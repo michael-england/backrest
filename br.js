@@ -23,6 +23,7 @@ class Backrest {
 		const BACKREST_INSTALLED = 'backrest.installed';
 
 		this.app = express();
+		process.env.NODE_ENV = this.app.get('env');
 
 		Property.getValue(BACKREST_INSTALLED, false).then((value) => {
 			if (value) {
