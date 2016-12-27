@@ -1,0 +1,27 @@
+{
+  "name": "PolymerElements/paper-input",
+  "type": "bower",
+  "package": {
+    "name": "paper-input",
+    "version": "1.1.22",
+    "source": "PolymerElements/paper-input",
+    "main": [
+      "paper-input.html",
+      "paper-textarea.html",
+      "paper-input-behavior.html",
+      "paper-input-container.html",
+      "paper-input-error.html",
+      "paper-input-addon-behavior.html",
+      "paper-input-char-counter.html"
+    ]
+  },
+  "_created": {
+    "$date": "2016-12-20T04:49:54.015Z"
+  },
+  "_modified": {
+    "$date": "2016-12-20T04:49:54.015Z"
+  },
+  "_id": {
+    "$oid": "5858b872d872d7874bb29a68"
+  }
+}

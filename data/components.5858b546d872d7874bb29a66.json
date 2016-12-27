@@ -1,0 +1,23 @@
+{
+  "name": "PolymerElements/app-route",
+  "type": "bower",
+  "package": {
+    "name": "app-route",
+    "version": "0.9.3",
+    "source": "PolymerElements/app-route",
+    "main": [
+      "app-route.html",
+      "app-location.html",
+      "app-route-converter.html"
+    ]
+  },
+  "_created": {
+    "$date": "2016-12-20T04:36:22.601Z"
+  },
+  "_modified": {
+    "$date": "2016-12-20T04:36:22.601Z"
+  },
+  "_id": {
+    "$oid": "5858b546d872d7874bb29a66"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "name": "PolymerElements/paper-dialog",
+  "type": "bower",
+  "package": {
+    "name": "paper-dialog",
+    "version": "1.1.0",
+    "source": "PolymerElements/paper-dialog",
+    "main": "paper-dialog.html"
+  },
+  "_created": {
+    "$date": "2016-12-23T04:52:41.176Z"
+  },
+  "_modified": {
+    "$date": "2016-12-23T04:52:41.176Z"
+  },
+  "_id": {
+    "$oid": "585cad99f462b7ce160c089c"
+  }
+}

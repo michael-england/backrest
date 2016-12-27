@@ -1,0 +1,19 @@
+{
+  "name": "PolymerElements/app-layout",
+  "type": "bower",
+  "package": {
+    "name": "app-layout",
+    "version": "0.10.6",
+    "source": "PolymerElements/app-layout",
+    "main": "app-layout.html"
+  },
+  "_created": {
+    "$date": "2016-12-18T05:19:46.702Z"
+  },
+  "_modified": {
+    "$date": "2016-12-18T05:19:46.702Z"
+  },
+  "_id": {
+    "$oid": "58561c72a3ece97ebaad9eb3"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "name": "PolymerElements/iron-form",
+  "type": "bower",
+  "package": {
+    "name": "iron-form",
+    "version": "1.1.4",
+    "source": "PolymerElements/iron-form",
+    "main": "iron-form.html"
+  },
+  "_created": {
+    "$date": "2016-12-21T05:40:15.356Z"
+  },
+  "_modified": {
+    "$date": "2016-12-21T05:40:15.356Z"
+  },
+  "_id": {
+    "$oid": "585a15bfd872d7874bb29a6d"
+  }
+}

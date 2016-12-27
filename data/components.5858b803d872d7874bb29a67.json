@@ -1,0 +1,19 @@
+{
+  "name": "PolymerElements/iron-pages",
+  "type": "bower",
+  "package": {
+    "name": "iron-pages",
+    "version": "1.0.8",
+    "source": "PolymerElements/iron-pages",
+    "main": "iron-pages.html"
+  },
+  "_created": {
+    "$date": "2016-12-20T04:48:03.128Z"
+  },
+  "_modified": {
+    "$date": "2016-12-20T04:48:03.128Z"
+  },
+  "_id": {
+    "$oid": "5858b803d872d7874bb29a67"
+  }
+}

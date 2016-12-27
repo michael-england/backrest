@@ -9,5 +9,5 @@ privatekey.pem
 
 /.idea
 /node_modules
-/public/bower_components
+/public/components
 /uploads

@@ -1,0 +1,19 @@
+{
+  "name": "PolymerElements/paper-material",
+  "type": "bower",
+  "package": {
+    "name": "paper-material",
+    "version": "1.0.6",
+    "source": "PolymerElements/paper-material",
+    "main": "paper-material.html"
+  },
+  "_created": {
+    "$date": "2016-12-20T05:51:43.755Z"
+  },
+  "_modified": {
+    "$date": "2016-12-20T05:51:43.755Z"
+  },
+  "_id": {
+    "$oid": "5858c6efd872d7874bb29a6b"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "name": "PolymerElements/paper-item",
+  "type": "bower",
+  "package": {
+    "name": "paper-item",
+    "version": "1.2.1",
+    "source": "PolymerElements/paper-item",
+    "main": [
+      "paper-item.html",
+      "paper-icon-item.html",
+      "paper-item-body.html"
+    ]
+  },
+  "_created": {
+    "$date": "2016-12-20T05:22:52.188Z"
+  },
+  "_modified": {
+    "$date": "2016-12-20T05:22:52.188Z"
+  },
+  "_id": {
+    "$oid": "5858c02cd872d7874bb29a6a"
+  }
+}

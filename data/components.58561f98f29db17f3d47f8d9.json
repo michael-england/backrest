@@ -1,0 +1,19 @@
+{
+  "name": "PolymerElements/font-roboto",
+  "type": "bower",
+  "package": {
+    "name": "font-roboto",
+    "version": "1.0.1",
+    "source": "PolymerElements/font-roboto",
+    "main": "roboto.html"
+  },
+  "_created": {
+    "$date": "2016-12-18T05:33:12.221Z"
+  },
+  "_modified": {
+    "$date": "2016-12-18T05:33:12.221Z"
+  },
+  "_id": {
+    "$oid": "58561f98f29db17f3d47f8d9"
+  }
+}

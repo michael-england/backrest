@@ -1,0 +1,19 @@
+{
+  "name": "PolymerElements/iron-icons",
+  "type": "bower",
+  "package": {
+    "name": "iron-icons",
+    "version": "1.2.0",
+    "source": "PolymerElements/iron-icons",
+    "main": "iron-icons.html"
+  },
+  "_created": {
+    "$date": "2016-12-18T05:35:07.819Z"
+  },
+  "_modified": {
+    "$date": "2016-12-18T05:35:07.819Z"
+  },
+  "_id": {
+    "$oid": "5856200bf29db17f3d47f8da"
+  }
+}

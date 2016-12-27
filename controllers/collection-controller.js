@@ -21,7 +21,7 @@ module.exports = class CollectionController extends BaseController {
 			.then((data) => {
 				this.server.result(request, response, data, 201, {
 					'Content-Type': 'application/json',
-					'Location': '/api/' + request.params.schema + '/' + data._id
+					'Location': '/api/' + request.params.collection + '/' + data._id
 				});
 			})
 			.catch(this.respondWithErrorFn(request, response));

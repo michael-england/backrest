@@ -1,0 +1,19 @@
+{
+  "name": "PolymerElements/paper-tabs",
+  "type": "bower",
+  "package": {
+    "name": "paper-tabs",
+    "version": "1.7.0",
+    "source": "PolymerElements/paper-tabs",
+    "main": "paper-tabs.html"
+  },
+  "_created": {
+    "$date": "2016-12-22T04:57:45.830Z"
+  },
+  "_modified": {
+    "$date": "2016-12-22T04:57:45.830Z"
+  },
+  "_id": {
+    "$oid": "585b5d49f462b7ce160c089b"
+  }
+}

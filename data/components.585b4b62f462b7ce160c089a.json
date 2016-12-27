@@ -1,0 +1,19 @@
+{
+  "name": "Juicy/juicy-ace-editor",
+  "type": "bower",
+  "package": {
+    "name": "juicy-ace-editor",
+    "version": "1.2.0",
+    "source": "Juicy/juicy-ace-editor",
+    "main": "juicy-ace-editor.html"
+  },
+  "_created": {
+    "$date": "2016-12-22T03:41:22.984Z"
+  },
+  "_modified": {
+    "$date": "2016-12-22T03:41:22.984Z"
+  },
+  "_id": {
+    "$oid": "585b4b62f462b7ce160c089a"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "name": "PolymerElements/paper-menu",
+  "type": "bower",
+  "package": {
+    "name": "paper-menu",
+    "version": "1.2.2",
+    "source": "PolymerElements/paper-menu",
+    "main": [
+      "paper-menu.html",
+      "paper-submenu.html"
+    ]
+  },
+  "_created": {
+    "$date": "2016-12-20T05:21:45.350Z"
+  },
+  "_modified": {
+    "$date": "2016-12-20T05:21:45.350Z"
+  },
+  "_id": {
+    "$oid": "5858bfe9d872d7874bb29a69"
+  }
+}

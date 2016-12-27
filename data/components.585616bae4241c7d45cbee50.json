@@ -1,0 +1,19 @@
+{
+  "name": "PolymerElements/iron-ajax",
+  "type": "bower",
+  "package": {
+    "name": "iron-ajax",
+    "version": "1.4.3",
+    "source": "PolymerElements/iron-ajax",
+    "main": "iron-ajax.html"
+  },
+  "_created": {
+    "$date": "2016-12-18T04:55:22.458Z"
+  },
+  "_modified": {
+    "$date": "2016-12-18T04:55:22.458Z"
+  },
+  "_id": {
+    "$oid": "585616bae4241c7d45cbee50"
+  }
+}

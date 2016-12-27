@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<% if (page.title) { %>
+	<title><%= page.title %></title>
+	<% } %>
+	<script src="/components/webcomponentsjs/webcomponents.js"></script>
+
+	<% if (page.components) { %>
+	<% page.components.forEach(function(component){ %>
+		<% if (component.package) { %>
+			<% if (component.package.main instanceof Array) { %>
+				<% component.package.main.forEach(function(main) { %>
+				<link rel="import" href="/components/<%= component.package.name %>/<%= main %>" />
+				<% }); %>
+			<% } else { %>
+			<link rel="import" href="/components/<%= component.package.name %>/<%= component.package.main %>" />
+			<% } %>
+		<% } else { %>
+		<link rel="import" href="/components/<%= component._id %>" />
+		<% } %>
+	<% }); %>
+	<% } %>
+
+	<% if (page.styles) { %>
+	<% page.styles.forEach(function(style){ %>
+	<link rel="stylesheet" type="text/css" href="/styles/<%= style %>">
+	<% }); %>
+	<% } %>
+</head>
+<body>
+	<template is="dom-bind" id="app">
+		<style is="custom-style">
+			<%- page.style %>
+		</style>
+
+		<%- page.content %>
+
+		<% if (page.scripts) { %>
+		<% page.scripts.forEach(function(script){ %>
+		<script language="JavaScript" src="/scripts/<%= script %>"></script>
+		<% }); %>
+		<% } %>
+
+		<script>
+			<%- page.script %>
+		</script>
+	</template>
+</body>
+</html>

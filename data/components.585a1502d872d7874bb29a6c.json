@@ -1,0 +1,19 @@
+{
+  "name": "PolymerElements/paper-button",
+  "type": "bower",
+  "package": {
+    "name": "paper-button",
+    "version": "1.0.14",
+    "source": "PolymerElements/paper-button",
+    "main": "paper-button.html"
+  },
+  "_created": {
+    "$date": "2016-12-21T05:37:06.826Z"
+  },
+  "_modified": {
+    "$date": "2016-12-21T05:37:06.826Z"
+  },
+  "_id": {
+    "$oid": "585a1502d872d7874bb29a6c"
+  }
+}

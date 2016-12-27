@@ -8,6 +8,8 @@ const express = require('express');
 const expressSession = require('express-session');
 const MongoStore = require('connect-mongo')(expressSession);
 const CollectionController = require('./controllers/collection-controller');
+const ComponentController = require('./controllers/component-controller');
+const PageController = require('./controllers/page-controller');
 const UserController = require('./controllers/user-controller');
 const Setup = require('./lib/setup');
 const Email = require('./lib/email');
@@ -88,7 +90,7 @@ class Backrest {
 
 		// view engine setup
 		this.app.set('views', 'views');
-		this.app.set('view engine', 'pug');
+		this.app.set('view engine', 'ejs');
 
 		// initialize the session state
 		this.app.use(logger('dev'));
@@ -100,6 +102,8 @@ class Backrest {
 		// app controllers and endpoints
 		new UserController(this);
 		new CollectionController(this);
+		new ComponentController(this);
+		new PageController(this);
 		new ErrorHandler(this);
 
 		// static files

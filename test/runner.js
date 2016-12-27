@@ -16,7 +16,7 @@ var tests = fs.readdirSync('./test/server').map((fileName) => {
 
 describe('Load Static File', () => {
 	it('Index.html can be loaded.', (done) => {
-		request.get('http://localhost:3000' + '/').end((error, response) => {
+		request.get('http://localhost:3000' + '/index.html').end((error, response) => {
 			expect(response.status).to.equal(200);
 			expect(response.text).to.contain('Backrest');
 			done();
@@ -38,11 +38,11 @@ describe('API', () => {
 
 	// loop through each test
 	tests.forEach((test) => {
-		
+
 		if (test.before) {
 			test.before();
 		}
-		
+
 		it(test.description, function (done) {
 			this.timeout(5000);
 			setTimeout(() => {
@@ -103,7 +103,7 @@ describe('API', () => {
 				});
 			}, test.delay);
 		});
-		
+
 		if (test.after) {
 			test.after();
 		}

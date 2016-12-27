@@ -1,0 +1,18 @@
+<link rel="import" href="/components/polymer/polymer.html">
+<% component.components.forEach(function(component){ %>
+<link rel="import" href="/components/<%= component %>" />
+<% }); %>
+
+<dom-module id="<%= component.name %>">
+	<template>
+		<style>
+			<%= component.style %>
+		</style>
+
+		<%- component.content %>
+	</template>
+
+	<script>
+		<%- component.script %>
+	</script>
+</dom-module>
