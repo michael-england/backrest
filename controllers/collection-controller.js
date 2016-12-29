@@ -45,6 +45,21 @@ module.exports = class CollectionController extends BaseController {
 		if (request.query.conditions) {
 			try {
 				request.query.conditions = JSON.parse(request.query.conditions);
+
+				// handle conversion to ObjectIDs
+				if (request.query.conditions._id) {
+					if( request.query.conditions._id.$in) {
+						request.query.conditions._id.$in = request.query.conditions._id.$in.map((id) => {
+							return Data.ObjectId(id);
+						});
+					}
+
+					if( request.query.conditions._id.$nin) {
+						request.query.conditions._id.$nin = request.query.conditions._id.$nin.map((id) => {
+							return Data.ObjectId(id);
+						});
+					}
+				}
 			} catch (error) {
 				// ignore
 			}
