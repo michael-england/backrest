@@ -1,0 +1,8 @@
+{
+  "_id": {
+	"$oid": "5854c32f22bc2b18e77db61b"
+  },
+  "event": "beforeCreate",
+  "script": "if (data.type === \"bower\") {\n\tPackage.installFromBower(data.name, data.version).then((packageData) => {\n\t\tdata.package = {\n\t\t\tname: packageData.endpoint.name,\n\t\t\tversion: packageData.pkgMeta.version,\n\t\t\tsource: packageData.endpoint.source,\n\t\t\tmain: packageData.pkgMeta.main\n\t\t};\n\t\tdone();\n\t});\n} else {\n\tdone();\n}",
+  "collection": "components"
+}
