@@ -4,11 +4,16 @@
   "version": "0.1.5",
   "author": "Michael England <michael@8bitfactory.co>",
   "description": "The noBackend RESTful API.",
+  "cacheDirectories": [
+	"node_modules",
+	"public/components"
+  ],
   "engines": {
     "node": "6.6.0"
   },
   "scripts": {
     "start": "node br.js",
+	"postinstall": "npm install bower -g; bower install",
     "test": "mocha"
   },
   "bin": {
