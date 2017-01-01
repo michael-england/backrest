@@ -1,7 +1,19 @@
 <link rel="import" href="/components/polymer/polymer.html">
-<% component.components.forEach(function(component){ %>
-<link rel="import" href="/components/<%= component %>" />
-<% }); %>
+<% if (component.components) { %>
+	<% component.components.forEach(function(component){ %>
+	<% if (component.package) { %>
+		<% if (component.package.main instanceof Array) { %>
+			<% component.package.main.forEach(function(main) { %>
+			<link rel="import" href="/components/<%= component.package.name %>/<%= main %>" />
+			<% }); %>
+		<% } else { %>
+		<link rel="import" href="/components/<%= component.package.name %>/<%= component.package.main %>" />
+		<% } %>
+	<% } else { %>
+		<link rel="import" href="/components/<%= component._id %>" />
+	<% } %>
+	<% }); %>
+<% } %>
 
 <dom-module id="<%= component.name %>">
 	<template>
