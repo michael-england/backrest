@@ -13,5 +13,11 @@
       "size": "Free"
     }
   },
+  "env": {
+	"INSTALL_BOWER_COMPONENTS": {
+	  "description": "Installs bower components when started",
+	  "value": true
+	}
+  },
   "addons": ["mongolab:sandbox"]
 }
