@@ -7,12 +7,12 @@
     "$date": "2017-01-01T04:33:54.146Z"
   },
   "_modified": {
-    "$date": "2017-01-01T05:38:36.474Z"
+    "$date": "2017-01-02T21:43:16.104Z"
   },
-  "content": "<paper-dialog id=\"dialogNewComponentModal\" modal>\n    <app-header>\n        <app-toolbar>\n        \t<div main-title>\n        \t\tNew Component\n        \t</div>\n    \t\t<paper-icon-button icon=\"close\" dialog-confirm></paper-icon-button>\n        </app-toolbar>\n    </app-header>\n    <form is=\"iron-form\" id=\"dialogNewComponentForm\" content-type=\"application/json\" method=\"post\" action=\"/api/components\">\n        <paper-input name=\"name\" label=\"Name\" autofocus></paper-input>\n\t\t<div class=\"buttons\">\n\t\t\t<paper-button dialog-dismiss>Cancel</paper-button>\n\t\t\t<paper-button onclick=\"dialogNewComponentForm.submit()\">Save</paper-button>\n\t\t</div>\n    </form>\n</paper-dialog>",
+  "content": "<paper-dialog id=\"dialogNewComponentModal\" modal>\n    <app-header>\n        <app-toolbar>\n        \t<div main-title>\n        \t\tNew Component\n        \t</div>\n    \t\t<paper-icon-button icon=\"close\" dialog-confirm></paper-icon-button>\n        </app-toolbar>\n    </app-header>\n    <form is=\"iron-form\" id=\"dialogNewComponentForm\" content-type=\"application/json\" method=\"post\" action=\"/api/components\" on-iron-form-response=\"formResponse\">\n        <paper-input name=\"name\" label=\"Name\" autofocus></paper-input>\n\t\t<div class=\"buttons\">\n\t\t\t<paper-button dialog-dismiss>Cancel</paper-button>\n\t\t\t<paper-button onclick=\"dialogNewComponentForm.submit()\">Save</paper-button>\n\t\t</div>\n    </form>\n</paper-dialog>",
   "_modifiedBy": "anonymous",
   "style": "app-toolbar {\n    background-color: #2c5986;\n    color: #fff;\n}\n\npaper-dialog {\n\tmin-width: 360px;\n}\n\npaper-dialog app-header {\n\tmargin: 0;\n\tpadding: 0;\n}",
-  "script": "Polymer({\n\tis: 'dialog-new-component',\n\t\n    listeners: {\n      'iron-form-response': 'formResponse',\n    },\n    \n    formResponse: function (event) {\n\t\tdialogNewComponentModal.close();\n\t\tdialogNewComponentForm.reset();\n\t\tthis.fire('dialog-new-component-created', event.detail.response);\n    },\n\t\n\topen: function () {\n\t\tdialogNewComponentModal.open();\t\n\t}\n});",
+  "script": "Polymer({\n\tis: 'dialog-new-component',\n    \n    formResponse: function (event) {\n\t\tdialogNewComponentModal.close();\n\t\tdialogNewComponentForm.reset();\n\t\tthis.dispatchEvent(new CustomEvent('new-component-created', {\n\t\t\t'bubbles': true,\n\t\t\t'detail': event.detail.response\n\t\t}));\n    },\n\t\n\topen: function () {\n\t\tdialogNewComponentModal.open();\t\n\t}\n});",
   "components": [
     "585a15bfd872d7874bb29a6d",
     "585a1502d872d7874bb29a6c",
