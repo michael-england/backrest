@@ -16,7 +16,7 @@
   "env": {
 	"INSTALL_BOWER_COMPONENTS": {
 	  "description": "Installs bower components when started",
-	  "value": true
+	  "value": "true"
 	}
   },
   "addons": ["mongolab:sandbox"]
