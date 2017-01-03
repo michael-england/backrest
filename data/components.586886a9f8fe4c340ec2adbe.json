@@ -7,11 +7,11 @@
     "$date": "2017-01-01T04:33:45.807Z"
   },
   "_modified": {
-    "$date": "2017-01-02T21:42:59.473Z"
+    "$date": "2017-01-03T02:14:31.270Z"
   },
-  "content": "<paper-dialog id=\"dialogNewPageModal\" modal>\n    <app-header>\n        <app-toolbar>\n        \t<div main-title>\n        \t\tNew Page\n        \t</div>\n    \t\t<paper-icon-button icon=\"close\" dialog-confirm></paper-icon-button>\n        </app-toolbar>\n    </app-header>\n    <form is=\"iron-form\" id=\"dialogNewPageForm\" content-type=\"application/json\" method=\"post\" action=\"/api/pages\" on-iron-form-response=\"formResponse\">\n        <paper-input name=\"name\" label=\"Name\" autofocus></paper-input>\n        <paper-input name=\"path\" label=\"Path\"></paper-input>\n\t\t<div class=\"buttons\">\n\t\t\t<paper-button dialog-dismiss>Cancel</paper-button>\n\t\t\t<paper-button onclick=\"dialogNewPageForm.submit()\">Save</paper-button>\n\t\t</div>\n    </form>\n</paper-dialog>",
+  "content": "<paper-dialog id=\"dialogNewPageModal\" modal>\n    <app-header>\n        <app-toolbar>\n        \t<div main-title>\n        \t\tNew Page\n        \t</div>\n    \t\t<paper-icon-button icon=\"close\" dialog-confirm></paper-icon-button>\n        </app-toolbar>\n    </app-header>\n    <form is=\"iron-form\" id=\"dialogNewPageForm\" content-type=\"application/json\" method=\"post\" action=\"/api/pages\" on-iron-form-response=\"formResponse\">\n        <paper-input name=\"name\" label=\"Name\" autofocus></paper-input>\n        <paper-input name=\"path\" label=\"Path\"></paper-input>\n\t\t<div class=\"buttons\">\n\t\t\t<paper-button dialog-dismiss>Cancel</paper-button>\n\t\t\t<paper-button on-click=\"save\">Save</paper-button>\n\t\t</div>\n    </form>\n</paper-dialog>",
   "_modifiedBy": "anonymous",
-  "script": "Polymer({\n\tis: 'dialog-new-page',\n    \n    formResponse: function (event) {\n\t\tdialogNewPageModal.close();\n\t\tdialogNewPageForm.reset();\n\t\tthis.dispatchEvent(new CustomEvent('new-page-created', {\n\t\t\t'bubbles': true,\n\t\t\t'detail': event.detail.response\n\t\t}));\n    },\n\t\n\topen: function () {\n\t\tdialogNewPageModal.open();\t\n\t}\n});",
+  "script": "Polymer({\n\tis: 'dialog-new-page',\n    \n    formResponse: function (event) {\n\t\tdocument.querySelector('#dialogNewPageModal').close();\n\t\tdocument.querySelector('#dialogNewPageForm').reset();\n\t\tthis.dispatchEvent(new CustomEvent('new-page-created', {\n\t\t\t'bubbles': true,\n\t\t\t'detail': event.detail.response\n\t\t}));\n    },\n\t\n\tsave: function () {\n\t\tdocument.querySelector('#dialogNewPageForm').submit();\n\t},\n\t\n\topen: function () {\n\t\tdocument.querySelector('#dialogNewPageModal').open();\t\n\t}\n});",
   "components": [
     "58561c72a3ece97ebaad9eb3",
     "585a15bfd872d7874bb29a6d",
