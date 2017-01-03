@@ -29,7 +29,7 @@ class Backrest {
 
 		Property.getValue(BACKREST_INSTALLED, false).then((value) => {
 			if (value) {
-				if (process.env.INSTALL_BOWER_COMPONENTS) {
+				if (JSON.parse(process.env.INSTALL_BOWER_COMPONENTS || 'false')) {
 					Setup.installBowerComponents().then(() => {
 						this.httpStart();
 					});
