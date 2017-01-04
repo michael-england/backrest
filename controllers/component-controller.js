@@ -14,19 +14,23 @@ module.exports = class ComponentController extends BaseController {
 					return next();
 				}
 
-				db.collection('components').find({
-					_id: {
-						$in: component.components.map((id) => {
-							return db.ObjectId(id);
-						})
-					}
-				}, (error, components) => {
-					if (components.length > 0) {
-						component.components = components;
-					}
+				if (component.components && component.components.length > 0) {
+					db.collection('components').find({
+						_id: {
+							$in: component.components.map((id) => {
+								return db.ObjectId(id);
+							})
+						}
+					}, (error, components) => {
+						if (components.length > 0) {
+							component.components = components;
+						}
 
+						response.render('../templates/component', { component, rmWhitespace: true});
+					});
+				} else {
 					response.render('../templates/component', { component, rmWhitespace: true});
-				});
+				}
 			});
 		});
 	}
