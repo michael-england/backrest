@@ -113,7 +113,9 @@ class Backrest {
 		new ErrorHandler(this);
 
 		// static files
-		this.app.use('/', express.static('./public'));
+		this.app.use('/', express.static('./public', {
+			maxAge: 30 * 60 * 1000 // cache for 30 minutes
+		}));
 
 		// catch 404 and forward to error handler
 		this.app.use((request, response, next) => {
