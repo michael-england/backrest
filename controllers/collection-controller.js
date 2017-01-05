@@ -75,7 +75,7 @@ module.exports = class CollectionController extends BaseController {
 		}
 
 		Data.collection(request.params.collection, request.user)
-			.find(request.query.conditions, request.query.sort, request.query.limit, request.query.skip)
+			.find(request.query.conditions, request.query.sort, request.query.limit, request.query.skip, request.query.fields)
 			.then(this.respondWithDataFn(request, response))
 			.catch(this.respondWithErrorFn(request, response));
 	}
