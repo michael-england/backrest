@@ -1,126 +1,127 @@
 {
-	"_id": {
-		"$oid": "581ec431138c531597ab5367"
-	},
-	"name": "users",
-	"label": "Users",
-	"isSystemCollection": true,
-	"definition": {
-		"firstName": {
-			"label": "First Name",
-			"type": "String"
-		},
-		"lastName": {
-			"label": "Last Name",
-			"type": "String"
-		},
-		"email": {
-			"label": "Email",
-			"type": "String"
-		},
-		"password": {
-			"label": "Password",
-			"visible": false,
-			"type": "String"
-		},
-		"isConfirmed": {
-			"label": "Is Confirmed",
-			"visible": true,
-			"type": "Boolean"
-		},
-		"roles": [],
-		"_created": {
-			"label": "Created",
-			"visible": true,
-			"type": "Date"
-		},
-		"_modified": {
-			"label": "Modified",
-			"visible": true,
-			"type": "Date"
-		},
-		"_lastLogin": {
-			"label": "Last Login",
-			"visible": true,
-			"type": "Date"
-		}
-	},
-	"acl": {
-		"create": {
-			"public": [
-				"_id",
-				"firstName",
-				"lastName",
-				"email",
-				"password",
-				"_created",
-				"_modified",
-				"_lastLogin"
-			],
-			"admin": [
-				"firstName",
-				"lastName",
-				"email",
-				"_created",
-				"_modified",
-				"roles"
-			]
-		},
-		"read": {
-			"owner": [
-				"_id",
-				"firstName",
-				"lastName",
-				"email",
-				"_created",
-				"_modified",
-				"_lastLogin"
-			],
-			"admin": [
-				"_id",
-				"firstName",
-				"lastName",
-				"email",
-				"_created",
-				"_modified",
-				"_lastLogin",
-				"roles"
-			],
-			"public": [
-				"_id",
-				"firstName",
-				"lastName",
-				"_created",
-				"_modified"
-			]
-		},
-		"update": {
-			"owner": [
-				"firstName",
-				"lastName",
-				"email",
-				"_created",
-				"_modified",
-				"_lastLogin"
-			],
-			"admin": [
-				"firstName",
-				"lastName",
-				"email",
-				"_created",
-				"_modified",
-				"roles"
-			],
-			"public": []
-		},
-		"delete": [
-			"admin"
-		]
-	},
-	"_modified": {
-		"$date": "2016-11-06T05:48:33.136Z"
-	},
-	"_created": {
-		"$date": "2016-11-06T05:48:33.136Z"
-	}
+  "_id": {
+    "$oid": "581ec431138c531597ab5367"
+  },
+  "name": "users",
+  "label": "Users",
+  "isSystemCollection": true,
+  "definition": {
+    "firstName": {
+      "label": "First Name",
+      "type": "String"
+    },
+    "lastName": {
+      "label": "Last Name",
+      "type": "String"
+    },
+    "email": {
+      "label": "Email",
+      "type": "String"
+    },
+    "password": {
+      "label": "Password",
+      "visible": false,
+      "type": "String"
+    },
+    "isConfirmed": {
+      "label": "Is Confirmed",
+      "visible": true,
+      "type": "Boolean"
+    },
+    "roles": [],
+    "_created": {
+      "label": "Created",
+      "visible": true,
+      "type": "Date"
+    },
+    "_modified": {
+      "label": "Modified",
+      "visible": true,
+      "type": "Date"
+    },
+    "_lastLogin": {
+      "label": "Last Login",
+      "visible": true,
+      "type": "Date"
+    }
+  },
+  "acl": {
+    "create": {
+      "public": [
+        "_id",
+        "firstName",
+        "lastName",
+        "email",
+        "password",
+        "_created",
+        "_modified",
+        "_lastLogin"
+      ],
+      "admin": [
+        "firstName",
+        "lastName",
+        "email",
+        "_created",
+        "_modified",
+        "roles"
+      ]
+    },
+    "read": {
+      "owner": [
+        "_id",
+        "firstName",
+        "lastName",
+        "email",
+        "_created",
+        "_modified",
+        "_lastLogin"
+      ],
+      "admin": [
+        "_id",
+        "firstName",
+        "lastName",
+        "email",
+        "_created",
+        "_modified",
+        "_lastLogin",
+        "roles"
+      ],
+      "public": [
+        "_id",
+        "firstName",
+        "lastName",
+        "_created",
+        "_modified"
+      ]
+    },
+    "update": {
+      "owner": [
+        "firstName",
+        "lastName",
+        "email",
+        "_created",
+        "_modified",
+        "_lastLogin"
+      ],
+      "admin": [
+        "firstName",
+        "lastName",
+        "email",
+        "_created",
+        "_modified",
+        "roles"
+      ],
+      "public": []
+    },
+    "delete": [
+      "admin"
+    ]
+  },
+  "_modified": {
+    "$date": "2017-01-27T05:14:55.825Z"
+  },
+  "_created": {
+    "$date": "2016-12-31T04:49:14.635Z"
+  },
+  "_modifiedBy": "anonymous"
 }

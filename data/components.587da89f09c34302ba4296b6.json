@@ -1,0 +1,21 @@
+{
+  "_id": {
+    "$oid": "587da89f09c34302ba4296b6"
+  },
+  "name": "br-list",
+  "_created": {
+    "$date": "2017-01-17T05:16:15.181Z"
+  },
+  "_modified": {
+    "$date": "2017-01-24T05:47:40.205Z"
+  },
+  "content": "<paper-item>\n\t<paper-item-body>\n\t\t<h3>{{label}}</h3>\n\t</paper-item-body>\n\t<template is=\"dom-if\" if=\"{{createEnabled}}\">\n\t\t<paper-icon-button icon=\"add-circle-outline\" on-click=\"create\"></paper-icon-button>\n\t</template>\n</paper-item>\n\n<iron-ajax auto id=\"request\" url=\"/api/{{collection}}?fields={{field}}&amp;conditions={{conditions}}\" handle-as=\"json\" last-response=\"{{items}}\"></iron-ajax>\n<template is=\"dom-repeat\" items=\"[[items.data]]\">\n\t<div>\n\t\t<template is=\"dom-if\" if=\"{{hasUrlTemplate()}}\" restamp>\n\t\t\t<a class=\"paper-item-link\" href=\"[[itemUrl(item)]]\" tabindex=\"-1\">\n\t\t\t\t<paper-item>\n\t\t\t\t\t<paper-item-body>[[itemText(item)]]</paper-item-body>\n\t\t\t\t\t<template is=\"dom-if\" if=\"{{hasAccessoryIcon()}}\">\n\t\t\t\t\t\t<paper-icon-button icon=\"{{accessoryIcon}}\" on-click=\"accessoryClicked\"></paper-icon-button>\n\t\t\t\t\t</template>\n\t\t\t\t</paper-item>\n\t\t\t</a>\n\t\t</template>\n\t\t<template is=\"dom-if\" if=\"{{!hasUrlTemplate()}}\" restamp>\n\t\t\t<paper-item>\n\t\t\t\t<paper-item-body>[[itemText(item)]]</paper-item-body>\n\t\t\t\t<template is=\"dom-if\" if=\"{{hasAccessoryIcon()}}\">\n\t\t\t\t\t<paper-icon-button icon=\"{{accessoryIcon}}\" on-click=\"accessoryClicked\"></paper-icon-button>\n\t\t\t\t</template>\n\t\t\t</paper-item>\n\t\t</template>\n\t</div>\n</template>",
+  "_modifiedBy": "anonymous",
+  "style": "paper-item {\n\tmin-height: 24px;\n    font-size: 9pt;\n}\n\npaper-item h3 {\n\tmargin: 7px 0;\n}\n\npaper-item paper-icon-button {\n\twidth: 20px;\n\theight: 20px;\n\tpadding: 0;\n}\n\n.paper-item-link {\n    color: #000;\n    text-decoration: none;\n}",
+  "components": [
+    "585616bae4241c7d45cbee50",
+    "58561d44a3ece97ebaad9eb4",
+    "5858c02cd872d7874bb29a6a"
+  ],
+  "script": "Polymer({\n\tis: 'br-list',\n\t\n\titemUrl: function itemUrl(item) {\n\t\treturn this.urlTemplate\n\t\t\t.replace('{collection}', this.collection)\n\t\t\t.replace('{_id}', item._id)\n\t\t\t.replace('{' + this.field + '}', item[this.field]);\n\t},\n\t\n\titemText: function itemText(item) {\n\t\treturn item[this.field];\t\n\t},\n\t\n\tcreate: function create() {\n\t\tthis.dispatchEvent(new CustomEvent('create'));\n\t},\n\t\n\trefresh: function refresh() {\n\t\tthis.querySelector('#request').generateRequest();\n\t},\n\t\n\taccessoryClicked: function accessoryClicked(event) {\n\t\tthis.dispatchEvent(new CustomEvent('accessory-click', {\n\t\t\tbubbles: true,\n\t\t\tdetail: event.model.dataHost.dataHost.item\n\t\t}));\n\t},\n\t\n\thasUrlTemplate: function hasUrlTemplate() {\n\t\treturn this.urlTemplate && this.urlTemplate !== '';\n\t},\n\t\n\thasAccessoryIcon: function hasAccessoryIcon() {\n\t\treturn this.accessoryIcon && this.accessoryIcon !== '';\t\n\t},\n\t\n\tproperties: {\n\t\tlabel: String,\n\t\tcollection: String,\n\t\tfield: {\n\t\t\ttype: String,\n\t\t\tvalue: 'name'\n\t\t},\n\t\tconditions: String,\n\t\tcreateEnabled: {\n\t\t\ttype: Boolean,\n\t\t\tvalue: false\n\t\t},\n\t\taccessoryIcon: String, \n\t\turlTemplate: {\n\t\t\ttype: String\n\t\t}\n\t}\n});"
+}

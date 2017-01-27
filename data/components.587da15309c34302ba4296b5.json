@@ -1,0 +1,26 @@
+{
+  "_id": {
+    "$oid": "587da15309c34302ba4296b5"
+  },
+  "name": "br-editor",
+  "_created": {
+    "$date": "2017-01-17T04:45:07.628Z"
+  },
+  "_modified": {
+    "$date": "2017-01-25T05:05:52.215Z"
+  },
+  "content": "<app-header-layout fullbleed>\n    <app-header fixed>\n        <app-toolbar class=\"app-toolbar-primary\">\n            <div main-title>Backrest</div>\n        </app-toolbar>\n    </app-header>\n    <div class=\"resource-wrapper\">\n\t\t<app-drawer-layout fullbleed>\n\t\t    <app-drawer swipe-open>\n\t\t    \t<br-list id=\"components\" \n\t\t    \t\turl-template=\"/ui#/{collection}/{_id}\" \n\t\t    \t\tcollection=\"components\" \n\t\t    \t\tfield=\"name\" \n\t\t    \t\tlabel=\"Components\" \n\t\t    \t\tcreate-enabled on-create=\"onCreateComponent\" \n\t\t    \t\tconditions='{\"type\":{\"$not\":{\"$eq\":\"bower\"}}}'></br-list>\n\t\t    \t\n\t\t    \t<br-list id=\"pages\" \n\t\t    \t\turl-template=\"/ui#/{collection}/{_id}\" \n\t\t    \t\tcollection=\"pages\" \n\t\t    \t\tfield=\"name\" \n\t\t    \t\tlabel=\"Pages\" \n\t\t    \t\tcreate-enabled on-create=\"onCreatePage\"></br-list>\n\t\t    \t\n\t\t    \t<br-list id=\"collections\" \n\t\t    \t\turl-template=\"/schema#/{_id}\" \n\t\t    \t\tcollection=\"collections\" \n\t\t    \t\tfield=\"name\" \n\t\t    \t\tlabel=\"Schema\" \n\t\t    \t\tcreate-enabled on-create=\"onCreateCollection\"></br-list>\n\t\t    </app-drawer>\n\t\t    <slot></slot>\n\t\t</app-drawer-layout>\n    </div>\n</app-header-layout>\n<dialog-new-component id=\"dialogNewComponent\" on-new-component-created=\"onNewComponentCreated\"></dialog-new-component>\n<dialog-new-page id=\"dialogNewPage\" on-new-page-created=\"onNewPageCreated\"></dialog-new-page>",
+  "_modifiedBy": "anonymous",
+  "script": "Polymer({\n\tis: 'br-editor',\n\t\n\trefresh: function (type) {\n\t\tthis.querySelector('#' + type).refresh();\n\t},\n\t\n\tonCreatePage: function (event) {\n\t\tthis.querySelector('#dialogNewPage').open();\n\t},\n\t\n\tonCreateComponent: function (event) {\n\t\tthis.querySelector('#dialogNewComponent').open();\n\t},\n\t\n\tonNewComponentCreated: function (event) {\n\t\tthis.querySelector('#components').refresh();\n\t\twindow.location.hash = '/components/' + event.detail._id;\n\t},\n\t\n\tonNewPageCreated: function (event) {\n\t\tthis.querySelector('#pages').refresh();\n\t\twindow.location.hash = '/pages/' + event.detail._id;\n\t}\n});",
+  "components": [
+    "5858b546d872d7874bb29a66",
+    "585616bae4241c7d45cbee50",
+    "58561c72a3ece97ebaad9eb3",
+    "5869defe5c50c24d6e91b65e",
+    "58689c85ebec5b3f9d011ab1",
+    "586886b2f8fe4c340ec2adbf",
+    "586886a9f8fe4c340ec2adbe",
+    "587da89f09c34302ba4296b6"
+  ],
+  "style": "body {\n    margin: 0;\n    font-family: 'Roboto', 'Noto', sans-serif;\n    background-color: #eee;\n}\n\n.app-toolbar-primary {\n    background-color: #2c5986;\n    color: #fff;\n}\n\napp-drawer-layout {\n    position: absolute;\n    top: 0;\n    left: 0;\n    right: 0;\n    bottom: 0;\n}\n\napp-drawer {\n\ttop: -54px;\n\t\n    --app-drawer-content-container: {\n        background-color: #fff;\n        overflow: auto;\n    }\n}\n\n.resource-wrapper {\n\tposition: absolute;\n\ttop: 64px;\n\tleft: 0;\n\tright: 0;\n\tbottom: 0;\n}"
+}

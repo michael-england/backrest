@@ -1,147 +1,148 @@
 {
   "_id": {
-	"$oid": "5858ae3422bc2b18e77db621"
+    "$oid": "5858ae3422bc2b18e77db621"
   },
   "name": "pages",
   "label": "Pages",
   "isSystemCollection": true,
   "definition": {
-	"name": {
-	  "label": "Name",
-	  "type": "String"
-	},
-	"path": {
-	  "label": "Path",
-	  "type": "String"
-	},
-	"script": {
-	  "label": "Script",
-	  "type": "String"
-	},
-	"style": {
-	  "label": "Style",
-	  "type": "String"
-	},
-	"content": {
-	  "label": "Content",
-	  "type": "String"
-	},
-	"components": {
-	  "label": "Components",
-	  "type": []
-	},
-	"_created": "Date",
-	"_modified": "Date"
+    "name": {
+      "label": "Name",
+      "type": "String"
+    },
+    "path": {
+      "label": "Path",
+      "type": "String"
+    },
+    "script": {
+      "label": "Script",
+      "type": "String"
+    },
+    "style": {
+      "label": "Style",
+      "type": "String"
+    },
+    "content": {
+      "label": "Content",
+      "type": "String"
+    },
+    "components": {
+      "label": "Components",
+      "type": []
+    },
+    "_created": "Date",
+    "_modified": "Date"
   },
   "acl": {
-	"create": {
-	  "owner": [
-		"name",
-		"path",
-		"script",
-		"style",
-		"content",
-		"components",
-		"_created",
-		"_modified"
-	  ],
-	  "admin": [
-		"name",
-		"path",
-		"script",
-		"style",
-		"content",
-		"components",
-		"_created",
-		"_modified"
-	  ],
-	  "public": [
-		"name",
-		"path",
-		"script",
-		"style",
-		"content",
-		"components",
-		"_created",
-		"_modified"
-	  ]
-	},
-	"read": {
-	  "owner": [
-		"_id",
-		"name",
-		"path",
-		"script",
-		"style",
-		"content",
-		"components",
-		"_created",
-		"_modified"
-	  ],
-	  "admin": [
-		"_id",
-		"name",
-		"path",
-		"script",
-		"style",
-		"content",
-		"components",
-		"_created",
-		"_modified"
-	  ],
-	  "public": [
-		"_id",
-		"name",
-		"path",
-		"script",
-		"style",
-		"content",
-		"components",
-		"_created",
-		"_modified"
-	  ]
-	},
-	"update": {
-	  "owner": [
-		"name",
-		"path",
-		"script",
-		"style",
-		"content",
-		"components",
-		"_created",
-		"_modified"
-	  ],
-	  "admin": [
-		"name",
-		"path",
-		"script",
-		"style",
-		"content",
-		"components",
-		"_created",
-		"_modified"
-	  ],
-	  "public": [
-		"name",
-		"path",
-		"script",
-		"style",
-		"content",
-		"components",
-		"_created",
-		"_modified"
-	  ]
-	},
-	"delete": [
-	  "admin",
-	  "public"
-	]
+    "create": {
+      "owner": [
+        "name",
+        "path",
+        "script",
+        "style",
+        "content",
+        "components",
+        "_created",
+        "_modified"
+      ],
+      "admin": [
+        "name",
+        "path",
+        "script",
+        "style",
+        "content",
+        "components",
+        "_created",
+        "_modified"
+      ],
+      "public": [
+        "name",
+        "path",
+        "script",
+        "style",
+        "content",
+        "components",
+        "_created",
+        "_modified"
+      ]
+    },
+    "read": {
+      "owner": [
+        "_id",
+        "name",
+        "path",
+        "script",
+        "style",
+        "content",
+        "components",
+        "_created",
+        "_modified"
+      ],
+      "admin": [
+        "_id",
+        "name",
+        "path",
+        "script",
+        "style",
+        "content",
+        "components",
+        "_created",
+        "_modified"
+      ],
+      "public": [
+        "_id",
+        "name",
+        "path",
+        "script",
+        "style",
+        "content",
+        "components",
+        "_created",
+        "_modified"
+      ]
+    },
+    "update": {
+      "owner": [
+        "name",
+        "path",
+        "script",
+        "style",
+        "content",
+        "components",
+        "_created",
+        "_modified"
+      ],
+      "admin": [
+        "name",
+        "path",
+        "script",
+        "style",
+        "content",
+        "components",
+        "_created",
+        "_modified"
+      ],
+      "public": [
+        "name",
+        "path",
+        "script",
+        "style",
+        "content",
+        "components",
+        "_created",
+        "_modified"
+      ]
+    },
+    "delete": [
+      "admin",
+      "public"
+    ]
   },
   "_modified": {
-	"$date": "2016-12-03T05:30:59.903+0000"
+    "$date": "2017-01-27T05:15:30.194Z"
   },
   "_created": {
-	"$date": "2016-12-03T05:30:59.903+0000"
-  }
+    "$date": "2016-12-31T04:49:14.643Z"
+  },
+  "_modifiedBy": "anonymous"
 }

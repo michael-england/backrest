@@ -1,68 +1,69 @@
 {
-	"_id": {
-		"$oid": "581ec431138c531597ab5368"
-	},
-	"name": "roles",
-	"label": "Roles",
-	"isSystemCollection": true,
-	"definition": {
-		"name": {
-			"label": "Name",
-			"type": "String"
-		},
-		"_created": "Date",
-		"_modified": "Date"
-	},
-	"acl": {
-		"create": {
-			"owner": [
-				"name",
-				"_created",
-				"_modified"
-			],
-			"admin": [
-				"name",
-				"_created",
-				"_modified"
-			],
-			"public": []
-		},
-		"read": {
-			"owner": [
-				"_id",
-				"name",
-				"_created",
-				"_modified"
-			],
-			"admin": [
-				"_id",
-				"name",
-				"_created",
-				"_modified"
-			],
-			"public": []
-		},
-		"update": {
-			"owner": [
-				"name",
-				"_created",
-				"_modified"
-			],
-			"admin": [
-				"name",
-				"_created",
-				"_modified"
-			],
-			"public": []
-		},
-		"delete": [
-			"admin"
-		]
-	},
-	"_modified": {
-		"$date": "2016-11-06T05:48:33.136Z"
-	},
-	"_created": {
-		"$date": "2016-11-06T05:48:33.136Z"
-	}
+  "_id": {
+    "$oid": "581ec431138c531597ab5368"
+  },
+  "name": "roles",
+  "label": "Roles",
+  "isSystemCollection": true,
+  "definition": {
+    "name": {
+      "label": "Name",
+      "type": "String"
+    },
+    "_created": "Date",
+    "_modified": "Date"
+  },
+  "acl": {
+    "create": {
+      "owner": [
+        "name",
+        "_created",
+        "_modified"
+      ],
+      "admin": [
+        "name",
+        "_created",
+        "_modified"
+      ],
+      "public": []
+    },
+    "read": {
+      "owner": [
+        "_id",
+        "name",
+        "_created",
+        "_modified"
+      ],
+      "admin": [
+        "_id",
+        "name",
+        "_created",
+        "_modified"
+      ],
+      "public": []
+    },
+    "update": {
+      "owner": [
+        "name",
+        "_created",
+        "_modified"
+      ],
+      "admin": [
+        "name",
+        "_created",
+        "_modified"
+      ],
+      "public": []
+    },
+    "delete": [
+      "admin"
+    ]
+  },
+  "_modified": {
+    "$date": "2017-01-27T05:16:07.067Z"
+  },
+  "_created": {
+    "$date": "2016-12-31T04:49:14.637Z"
+  },
+  "_modifiedBy": "anonymous"
 }

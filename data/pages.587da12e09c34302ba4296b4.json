@@ -1,0 +1,29 @@
+{
+  "_id": {
+    "$oid": "587da12e09c34302ba4296b4"
+  },
+  "name": "Schema",
+  "path": "schema",
+  "_created": {
+    "$date": "2017-01-17T04:44:30.367Z"
+  },
+  "_modified": {
+    "$date": "2017-01-27T05:14:50.255Z"
+  },
+  "components": [
+    "587da15309c34302ba4296b5",
+    "585a15bfd872d7874bb29a6d",
+    "585616bae4241c7d45cbee50",
+    "58561c72a3ece97ebaad9eb3",
+    "5858b872d872d7874bb29a68",
+    "5858c6efd872d7874bb29a6b",
+    "585b5d49f462b7ce160c089b",
+    "58561f98f29db17f3d47f8d9",
+    "58561d44a3ece97ebaad9eb4",
+    "585a1502d872d7874bb29a6c"
+  ],
+  "_modifiedBy": "anonymous",
+  "content": "<br-editor>\n\t<app-location route=\"{{route}}\" use-hash-as-path url-space-regex=\"^/schema\"></app-location>\n\t<app-route route=\"{{route}}\" pattern=\"/:id\" data=\"{{schemaData}}\" tail=\"{{schemaDataTail}}\"></app-route>\n\t<iron-ajax id=\"ajaxCollection\" auto url=\"/api/collections/{{schemaData.id}}\" handle-as=\"json\" last-response=\"{{collectionResponse}}\"></iron-ajax>\n\t<app-header>\n        <app-toolbar class=\"app-toolbar-default\">\n            <paper-icon-button icon=\"menu\" drawer-toggle></paper-icon-button>\n            <div main-title>{{collectionResponse.name}} <div class=\"sub-title\">Schema</div></div>\n            <paper-tabs selected=\"{{selected}}\">\n                <paper-tab>General</paper-tab>\n                <paper-tab>Security</paper-tab>\n                <paper-tab>Events</paper-tab>\n            </paper-tabs>\n        </app-toolbar>\n    </app-header>\n    \n    <paper-material>\n\t    <form is=\"iron-form\" id=\"form\" content-type=\"application/json\" method=\"post\" action=\"/api/collections/{{collectionResponse._id}}\" on-iron-form-presubmit=\"onFormPresubmit\">\n\t    \t<paper-input id=\"name\" label=\"Name\" value=\"{{collectionResponse.name}}\"></paper-input>\n            <paper-button onclick=\"app.save(event)\">Save</paper-button>\n\t    </form>\n    </paper-material>\n</br-editor>",
+  "style": "body {\n    margin: 0;\n    font-family: 'Roboto', 'Noto', sans-serif;\n    background-color: #f2f2f2;\n}\n\n.app-toolbar-default {\n    background-color: #f2f2f2;\n    color: #000;\n}\n\n.sub-title {\n\tcolor: #979696;\n\tfont-size: 12px;\n}\n\npaper-material {\n\tmargin: 0 20px 20px 20px;\n\tpadding: 20px;\n\tbackground-color: #fff;\n}\n\npaper-tabs {\n\t--paper-tabs-selection-bar-color: #2c5986;\n}\n\npaper-tab {\n\t--paper-tab-ink: #2c5986;\n}",
+  "script": "var app = document.querySelector('#app');\nvar form = document.querySelector('#form');\nvar ajaxCollection = document.querySelector('#ajaxCollection');\n\napp.selected = 0;\n\napp.save = function save() {\n    form.submit();\n};\n\napp.onFormPresubmit = function (event) {\n\tvar request = event.target.request;\n    request.method = 'put';\n    // request.body.content = content.value;\n    // request.body.style = style.value;\n    // request.body.script = script.value;\n};"
+}
